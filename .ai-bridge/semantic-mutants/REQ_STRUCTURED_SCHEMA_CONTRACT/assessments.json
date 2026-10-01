@@ -81,6 +81,25 @@
     ],
     "verdict": "distinct"
    },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "name": "''",
+     "spec": "SchemaSpec(name='a', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda s: s"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-f60131",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When name is an empty string, the original version uses the empty string while the changed version treats it as falsy and falls back to spec.name.",
+    "response_sha256": "d42c46f4b583af4136b6f624bb8e13d9a2195e42a57ec02913479025695aedb1",
+    "sources": [
+     "        name=spec.name if name is None else name,",
+     "        name=name or spec.name,"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "name": "''",
@@ -149,50 +168,131 @@
   },
   "prompt_sha256": "52f02f7b9da09ad2daeafd6179bd61693ac18b6f471f96a34651928fa53ec01c"
  },
- "SM-2AE24515": {
+ "SM-21182039": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "spec": "SchemaSpec(name='test', json_schema={}, parser=dict)",
-     "value": "{'a': None}"
+     "name": "'new'",
+     "spec": "SchemaSpec(name='old', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda x: x"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260929T183837Z-8a5e1a",
+    "call_id": "20261001T075444Z-fe1841",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version strips out dictionary keys that have None values before parsing, meaning an explicit None is passed to the parser differently than in the original version (as a missing key).",
-    "response_sha256": "618c30412dab391ef569b1d5c0bd89cbaae7268dec4f9180019fcc9231f5cfa1",
+    "reason": "The changed version ignores the provided `name` argument, whereas the original version uses it when it is not None.",
+    "response_sha256": "484e18354b0a98304066029392b73154823dd544bbbd7521e5d2a169bb093d20",
     "sources": [
-     "        candidate = {",
-     "            key: item",
-     "            for key, item in value.items()",
-     "            if item is not None",
-     "        }"
+     "name=spec.name if name is None else name,",
+     "name=spec.name,"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "name": "'b'",
+     "spec": "SchemaSpec(name='a', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda x: x"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-651745",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When a non-None name is provided, the original version updates the spec's name to that value, whereas the changed version ignores the name argument and keeps spec.name.",
+    "response_sha256": "1ca86613595c8414bc25250df942c5a1aa5699c7c7a4fc9d8647f5e437857d2f",
+    "sources": [
+     "        name=spec.name if name is None else name,",
+     "        name=spec.name,"
     ],
     "verdict": "distinct"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "spec": "SchemaSpec(name='s', json_schema={}, parser=lambda v: v)",
-     "value": "{'a': None}"
+     "name": "'b'",
+     "spec": "SchemaSpec(name='a', json_schema={}, parser=lambda x: x)",
+     "transform": "lambda s: {'type': 'object'}"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T164219Z-2ad4ff",
-    "confidence": 0.9,
+    "call_id": "20261001T075444Z-b59d3c",
+    "confidence": 0.97,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version strips None-valued keys before parsing, so an identity parser returns {} instead of {'a': None}.",
-    "response_sha256": "83e38e9b9eda1930e11dd28a569e4c9efc935ac796e6f38486439f1349dd6937",
+    "reason": "When name is given, the original returns a spec renamed to that name, while the changed version ignores it and keeps spec.name.",
+    "response_sha256": "8dbe0e8e3680eb07fb0cbc123a3169a4ada6d6d346b8bb46433cecce95276205",
     "sources": [
-     "if item is not None",
-     "parsed = spec.parse(candidate)",
-     "parsed = spec.parse(value)"
+     "name=spec.name if name is None else name,",
+     "name=spec.name,"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "c17e5fac023c42feba3279f734dc91494af9380ad4c41957280906cda376978b"
+  "prompt_sha256": "734f5ae3edff6070040be8de9bda8ef974b4b0e1f6a41184006f63c4ac1e65a5"
+ },
+ "SM-2AE24515": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "spec": "SchemaSpec(name=\"test\", json_schema={}, parser=dict)",
+     "value": "{\"a\": None}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-206e93",
+    "confidence": 0.99,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes keys with None values from dictionary inputs, which alters the payload passed to spec.parse and can result in a different parsed value or a validation error.",
+    "response_sha256": "0b684ce62d1398ec7c539d871e2d7e57cffa3cda673085b7445d568430eb40f5",
+    "sources": [
+     "        candidate = {",
+     "            key: item",
+     "            for key, item in value.items()",
+     "            if item is not None",
+     "        }",
+     "        parsed = spec.parse(candidate)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "spec": "SchemaSpec(name='test', json_schema={'required': ['a']}, parser=SchemaValidationResult)",
+     "value": "{'a': None}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-88e8c5",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a dictionary containing a required field mapped to None, the changed version strips that field so spec.parse receives a dictionary missing that key instead of the original payload, altering the validation result.",
+    "response_sha256": "266555e657a1a2f75e1930e14a1cc6741f6aa90e5c0bbc0e1e1607849ffdd42d",
+    "sources": [
+     "        parsed = spec.parse(value)",
+     "            if item is not None",
+     "        parsed = spec.parse(candidate)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "spec": "SchemaSpec(name='s', json_schema={}, parser=lambda v: v['a'])",
+     "value": "{'a': None}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T075444Z-f72cd5",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version strips None-valued keys, so a parser requiring key 'a' succeeds on {'a': None} in the original but raises KeyError in the changed version, giving valid=False.",
+    "response_sha256": "5edd3063f8829ce12a8dcdf230d5310265d1f8510b89d7b44102deae34b74f41",
+    "sources": [
+     "if item is not None",
+     "parsed = spec.parse(candidate)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "af895bcd376f05cebfe07ac1cbfd452c11ff84e3c75ab5b4c8198bbb235f7817"
  },
  "SM-4A74651D": {
   "answers": {
@@ -368,17 +468,47 @@
  },
  "SM-BF818699": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-2fb067",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The conditions only diverge if the 'type' key is explicitly mapped to None, but such an input will never reach the condition because Draft202012Validator.check_schema(dict(schema)) rejects None as a valid type and raises a SchemaError.",
+    "response_sha256": "817793c7b8a8807accf449460619d2cdc3994ac99be465cde49af14ead2c2cec",
+    "sources": [
+     "        Draft202012Validator.check_schema(dict(schema))",
+     "    if schema.get(\"type\", \"object\") != \"object\":"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-21f5f5",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions accept schemas without a 'type' keyword or with 'type' equal to 'object' and reject all other valid Draft 2020-12 schemas with ValueError, as schemas with 'type': None are already rejected by check_schema.",
+    "response_sha256": "56ebc3bc79b2ed467f4e8bdc1cd3c833c145000bbd4f21acea3cd263bf4f2444",
+    "sources": [
+     "    if schema.get(\"type\") not in {None, \"object\"}:",
+     "    if schema.get(\"type\", \"object\") != \"object\":"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "schema": "{\"type\": [\"object\"]}"
+     "schema": "{'type': ['object']}"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T164219Z-017d60",
+    "call_id": "20261001T075444Z-1fc706",
     "confidence": 0.93,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "A list-valued type passes check_schema; the original's set membership raises TypeError (unhashable list), while the changed != comparison raises ValueError.",
-    "response_sha256": "0122943582b7aa1e6b5ddfbd1db46641a47cda4189d34e7e01bcfa02f827efa4",
+    "reason": "With a list-valued type, the original's set membership check raises TypeError (unhashable list), while the changed != comparison raises ValueError.",
+    "response_sha256": "efdba61232dbed4b2513b1744851bb85c1891735591e0b00b82059429db03c0d",
     "sources": [
      "if schema.get(\"type\") not in {None, \"object\"}:",
      "if schema.get(\"type\", \"object\") != \"object\":"
@@ -386,49 +516,65 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "add6f69ddde938a1059ef8ce94cc69d986e6c10eaf041384ea27cd1201760f03"
+  "prompt_sha256": "c44bf666d95f7c283ab2a1dccefcdcf0031926797695b7367fddea2c6b94eb6d"
  },
  "SM-C6EBF982": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "model": "type('M', (BaseModel,), {'__annotations__': {'a': type(None)}})",
-     "value": "{'a': None}"
+     "value": "{\"a\": None}"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260929T183837Z-9956cb",
+    "call_id": "20261001T075444Z-4d3c09",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version strips keys with None values from the dictionary, causing a ValidationError for models that explicitly require those nullable fields, whereas the original version preserves them and validates successfully.",
-    "response_sha256": "34b96ee143590d8a10d631acc453f99b2611ead7cfdb090ee3a1d87f5f421104",
+    "reason": "The changed version removes dictionary keys with None values, causing Pydantic to raise a ValidationError for missing required fields that would have been satisfied by explicitly passing None in the original version.",
+    "response_sha256": "e58966a9414197dec6cc801aced597839e542385ddca31f2362edf1a16694fc4",
     "sources": [
-     "    if isinstance(value, dict):",
-     "        value = {k: v for k, v in value.items() if v is not None}",
-     "    return model.model_validate(value)"
+     "if isinstance(value, dict):",
+     "value = {k: v for k, v in value.items() if v is not None}",
+     "return model.model_validate(value)"
     ],
     "verdict": "distinct"
    },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-3de561",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "From the text alone, no project BaseModel subclasses are provided, and while stripping None values changes validation for schemas with required or default fields, BaseModel itself has no fields and validates identically in both versions.",
+    "response_sha256": "248ece8cd2aef29c3d43fdaec5a3cc4a056d1c5b439b1fc191d910922c14d0d6",
+    "sources": [
+     "    if isinstance(value, dict):",
+     "        value = {k: v for k, v in value.items() if v is not None}"
+    ],
+    "verdict": "unsure"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "model": "a BaseModel subclass with field `x: int | None = 5` (any project model with an Optional field whose default is not None)",
-     "value": "{\"x\": None}"
+     "model": "type('M', (BaseModel,), {'__annotations__': {'x': 'int | None'}, 'x': 5})",
+     "value": "{'x': None}"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T164219Z-fa002c",
-    "confidence": 0.9,
+    "call_id": "20261001T075444Z-e4dff1",
+    "confidence": 0.96,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "For a dict input containing None, the changed version drops the key so the field default is used, while the original keeps None, so results differ for a model with an Optional field whose default is not None.",
-    "response_sha256": "aad1e4feef1b50ceb5b43944b2b50a01b993493e63ef5c76a38e311fffe1b21e",
+    "reason": "The changed version drops None-valued dict entries, so a field with an explicit None gets its default (x=5) instead of None, or a missing-field error if it has no default.",
+    "response_sha256": "a92cd20e9876d20479ec338145b7748ad87edaf3bb1d90ecb8e33e71ca18cac1",
     "sources": [
      "value = {k: v for k, v in value.items() if v is not None}",
+     "if isinstance(value, dict):",
      "return model.model_validate(value)"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "a3eeb587fa8f744b6b65415160187fb41e9d512f72854853cd5ffd9d904dea0d"
+  "prompt_sha256": "ef445e8fbbc963b33463901aa89f0feb7da7ae10c3b333d734a739fcfa113421"
  },
  "SM-D49276DB": {
   "answers": {
@@ -564,32 +710,49 @@
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "schema": "{\"type\": \"object\"}"
+     "schema": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260929T183837Z-392ee6",
+    "call_id": "20261001T075444Z-971101",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "For any literal matching Mapping[str, Any], dict() succeeds and Draft202012Validator.check_schema() either passes or gracefully raises SchemaError, making the broader Exception catch functionally identical.",
-    "response_sha256": "ac89cd4d10d66543f17b2499fef6baec6c1da3939b0d8df1a5ca3f4f5a0ebe3e",
+    "reason": "Passing None causes dict() to raise a TypeError, which propagates in the original version but is caught and raised as a ValueError in the changed version.",
+    "response_sha256": "50244730efa3612a552081d10cee368ca70b734b0da84341a0a460f045ba1846",
     "sources": [
-     "except SchemaError as exc:",
-     "except Exception as exc:"
+     "    try:",
+     "        Draft202012Validator.check_schema(dict(schema))",
+     "    except Exception as exc:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-f0432d",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Draft202012Validator.check_schema only ever raises SchemaError on invalid schema mappings, so broadening the exception handler to Exception does not alter the function's behavior for any mapping input.",
+    "response_sha256": "87c9cf441734abe216acd813295e045052219f1aa6d0b15ded314a3fc4d42892",
+    "sources": [
+     "        Draft202012Validator.check_schema(dict(schema))",
+     "    except SchemaError as exc:",
+     "    except Exception as exc:"
     ],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "schema": "__import__('functools').reduce(lambda s, _: {'not': s}, range(100000), {})"
+     "schema": "__import__('functools').reduce(lambda inner, _: {'properties': {'a': inner}}, range(5000), {})"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T164219Z-7b9790",
-    "confidence": 0.7,
+    "call_id": "20261001T075444Z-118797",
+    "confidence": 0.55,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "A deeply nested schema makes check_schema raise RecursionError, which the original lets propagate, but the changed except Exception converts it to ValueError.",
-    "response_sha256": "fffd7b9838cb7d60a7b8a26be79a9111007bd3b8dacf05586077a78b73869a29",
+    "reason": "The changed version converts any non-SchemaError exception from check_schema (e.g. RecursionError on a very deeply nested schema) into ValueError, whereas the original lets it propagate.",
+    "response_sha256": "2c8472c506663cafc46730a0399977b25554a6b99e446a6461e57ee1f18ef920",
     "sources": [
      "except Exception as exc:",
      "except SchemaError as exc:"
@@ -597,7 +760,7 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "9f1375c2f34003d56b598a8aa2f82d89b6d00e7637dc0f0553f8bcfc5fc588f0"
+  "prompt_sha256": "63128941334d1c6b0bca9ddead37a3462b22b73abf34f0f31f8ed23b64d7ee63"
  },
  "SM-F375873A": {
   "answers": {

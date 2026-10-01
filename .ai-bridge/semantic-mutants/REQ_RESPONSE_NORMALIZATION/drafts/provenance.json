@@ -17,6 +17,15 @@
   "response_sha256": "78a0a9927abbb08b0d64049143e9487d869baef81a036f8a218c434b4638dc00",
   "attempt": 2
  },
+ "SM-2DBB5B58": {
+  "kind": "model",
+  "call_id": "20261001T080334Z-f97884",
+  "backend": "antigravity-cli",
+  "backend_version": "1.2.14",
+  "model": "gemini-3.8-flash-medium",
+  "response_sha256": "bc994f4a5703f57e8728a3012b525dbb800c62c45bea494a160c7376b6cf358d",
+  "attempt": 2
+ },
  "SM-44C084CF": {
   "kind": "model",
   "call_id": "20260929T170753Z-a96386",

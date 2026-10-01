@@ -284,42 +284,124 @@
  "SM-3DF25229": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T191129Z-480cbf",
+   "call_id": "20261001T080944Z-aaf158",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Moving the mode check first still rejects every image that breaks the mode, minimum or maximum bounds with ValueError, and valid images still pass. The only difference is which message appears when an image breaks both the mode rule and a size rule, and no requirement specifies that message or its priority.",
-   "response_sha256": "ca7521331fb277ddd554f1657cb3a372995c960e2d5d521cbb905978e284c756",
+   "reason": "Both versions reject every image with a bad mode or out-of-bounds dimensions by raising ValueError, and accept the same images. The only visible difference is the error message for an image that breaks more than one rule: the mutant reports the mode problem first, the original reports the dimension problem first. The requirement only asks that such images fail locally, not which violation is reported, so this difference doesn't matter to it.",
+   "response_sha256": "6152ad177e8ab92a55d5811ac8201ef0216a4ba40cc35fcdf6b64bfff6516634",
    "sources": [
+    "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
     "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
-    "raw images outside supported mode or dimension bounds shall fail before provider execution.",
     "if image.mode not in _ALLOWED_IMAGE_MODES:",
-    "msg = f\"Image mode {image.mode!r} is not supported.\""
+    "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "cb8484017d836ba19bb7a306851c039c2c815b9ccf36377f058050f4f4dd17b8",
+  "prompt_sha256": "d8bc5d11f5b86f06020d2789ed2cf7b3ff6e6bef13f5d00c1707ff9c67570b1e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T194428Z-87a5a9",
+   "call_id": "20261001T081018Z-259954",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "cb8484017d836ba19bb7a306851c039c2c815b9ccf36377f058050f4f4dd17b8",
-   "reason": "Both versions enforce the exact same constraints and reject the same invalid inputs by raising a ValueError. The change only alters the evaluation order and the resulting exception message when an image violates multiple constraints simultaneously, which the requirement does not dictate.",
-   "response_sha256": "86b1e4b5442b598053ca68147687f8f450e405cc171260b243a0852ffa784891",
+   "prompt_sha256": "d8bc5d11f5b86f06020d2789ed2cf7b3ff6e6bef13f5d00c1707ff9c67570b1e",
+   "reason": "Reordering independent validation checks that all raise ValueError on failure does not alter the function's return value, mutations to the input, or the type of exception raised.",
+   "response_sha256": "1dd7ac819fe8797f6729c6491f0d828a213b025c610679c3724fd78fa393dfc0",
    "sources": [
-    "raw images violating mode/min/max bounds are rejected locally.",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
     "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
     "if image.mode not in _ALLOWED_IMAGE_MODES:"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   }
+ },
+ "SM-73959DE4": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T083042Z-04d637",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The caller normalize_content takes any object, so it can pass bytes to _content_parts. Bytes are unsupported top-level content that must fail locally, but the mutant splits them into int items. For empty bytes it hands normalize_parts an empty tuple; if that is accepted, normalize_content(b\"\") yields a message with no parts instead of raising.",
+   "response_sha256": "86f576a7c6dd42e469496ab5b46e41a58ca3bdb3c99aff731f3d51e9f11f9e1d",
+   "sources": [
+    "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
+    "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
+    "if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+    "parts=normalize_parts(_content_parts(content)),"
+   ],
+   "test_focus": "Call normalize_content(b\"\") and normalize_content(bytearray(b\"\")) and assert TypeError (\"Unsupported message content\"); also assert normalize_content(b\"a\") raises the same error.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "1c33d622622ef24cb9a232f93dca0f7ec7947ff363218d09632d39f9e2c50bf7"
+ },
+ "SM-9B37A894": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T080944Z-3ddb78",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement says normalization must preserve the message role. The mutant ignores the caller's `role` argument and always returns \"user\". Execution confirmed it: with role=\"model\", the original keeps \"model\" and the mutant returns \"user\".",
+   "response_sha256": "18077e638f6498d0c14964af8144bca750cf1babc9593e871f460c7b3fd065e8",
+   "sources": [
+    "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "role=\"user\",",
+    "role=role,"
+   ],
+   "test_focus": "Call normalize_content with a role other than \"user\" (for example role=\"model\") and check that the returned NormalizedMessage's role equals that argument.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-10-01T08:13:39.017315Z",
+   "answer_sha256": "c21e65b864e230e39c2b0f3053f9ad1f9550f646970de376aea12e278d68b672",
+   "call_id": "20261001T081210Z-fb051e",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "c21e65b864e230e39c2b0f3053f9ad1f9550f646970de376aea12e278d68b672",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_multimodal_content_normalization_sm_9b37a894.py",
+   "response_sha256": "882948ab0da2b7a5ee6989866d653196b3a6ff04288a9f7c7501d7524d531fba",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "87ffc56a669b2d7f4dc297c79e00a9ef4732b9fa2080fc1424f28276e9bcacb5"
  },
  "SM-E1B20E59": {
   "answer": {

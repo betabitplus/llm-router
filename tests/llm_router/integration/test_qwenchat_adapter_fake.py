@@ -349,3 +349,42 @@ globals()["test_qwenchat_retries_upload_before_chat"] = pytest.mark.coverage_ite
     "VC_PROVIDER_QWENCHAT_UPLOAD_RETRY"
 )(globals()["test_qwenchat_retries_upload_before_chat"])
 del _test_name
+
+
+@pytest.mark.verifies("REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==2]")
+@pytest.mark.fault_item("TREQ_QWENCHAT_ADAPTER_BOUNDARY", "interface.payload-schema")
+@pytest.mark.fault_item(
+    "REQ_PROVIDER_ADAPTER_INTEROPERABILITY", "interface.payload-schema"
+)
+def test_qwenchat_success_payload_without_a_choice_message_is_a_provider_error() -> (
+    None
+):
+    path = qwen_chat_path()
+    for contract_id in (
+        "TREQ_QWENCHAT_ADAPTER_BOUNDARY",
+        "REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+    ):
+        retain_fault_injection(
+            contract_id=contract_id,
+            fault_class="interface.payload-schema",
+            mechanism="scripted QwenChat proxy answers 200 without a choice message",
+        )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=json.dumps(
+                        {"id": "chatcmpl-1", "choices": [{"index": 0}]}
+                    ).encode(),
+                )
+            ]
+        },
+    ) as server:
+        with pytest.raises(ProviderError) as exc_info:
+            _adapter(server).execute(_request())
+
+        assert exc_info.value.cause.retryable is False
+        assert exc_info.value.cause.retry_reason == "missing_choice_message"

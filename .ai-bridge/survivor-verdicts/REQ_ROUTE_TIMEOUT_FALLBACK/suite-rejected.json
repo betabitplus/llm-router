@@ -3,5 +3,10 @@
   "at": "2026-09-30T14:41:30.685675Z",
   "key": "SM-BD2A25D9",
   "reason": "the retained full test run fails it twice (2 requests where it expects 1: the terminal route is asked again when the tests before it ran), while it passes alone and with its own folder"
+ },
+ "20260930T205650Z-2f0eb0": {
+  "at": "2026-10-01T08:25:04.662640Z",
+  "key": "b9accd29af1a644f",
+  "reason": "it passes alone but fails in the full run: its routing trace depends on timing and on the router and server its hypothesis examples share"
  }
 }

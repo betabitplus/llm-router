@@ -46,11 +46,20 @@
  },
  "SM-BF818699": {
   "kind": "model",
-  "call_id": "20260929T165720Z-b0f4f0",
-  "backend": "claude-cli",
-  "backend_version": "2.1.282",
-  "model": "claude-sonnet-5-5",
-  "response_sha256": "65d6a8bf4991720731317f7431ed70228e036e63d3246e1fb0c438b464724045",
-  "attempt": 1
+  "call_id": "20261001T080004Z-145d1d",
+  "backend": "antigravity-cli",
+  "backend_version": "1.2.14",
+  "model": "gemini-3.8-flash-medium",
+  "response_sha256": "b65b351398fa6ffb621c9659e04db6a8474773705b739675ae3d071ce509f913",
+  "attempt": 2
+ },
+ "SM-EF50CA95": {
+  "kind": "model",
+  "call_id": "20261001T080334Z-9482ca",
+  "backend": "antigravity-cli",
+  "backend_version": "1.2.14",
+  "model": "gemini-3.8-flash-medium",
+  "response_sha256": "0c9e20df734bff3fc29203e34d480443e526ed6dbef2884aaed463019b8a993f",
+  "attempt": 2
  }
 }

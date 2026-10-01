@@ -243,6 +243,118 @@
   },
   "prompt_sha256": "64c7dc087d6a25c02cd41b102778ada711b6a50541cae02855b3670c3a6229a7"
  },
+ "SM-67D9CEE8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T083042Z-894ca8",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "On a timeout, the mutant calls shutdown(wait=True). A future that is already running can't be cancelled, so the caller stays blocked until the hung executor call finishes. Only then does it raise TimeoutError and try the fallback route, which breaks the rule to \"stop waiting on the current route\".",
+   "response_sha256": "603bb973f298f4646b4297a6279b8eae394556b3a5e44aa889593c4b4498eecb",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "pool.shutdown(wait=True, cancel_futures=True)"
+   ],
+   "test_focus": "Use a sync route whose executor blocks well beyond the attempt timeout, for example by waiting on an event that is never set. Check that the timeout error is raised, or the fallback route succeeds, within a small bound near timeout_seconds rather than after the blocked call returns.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-10-01T08:44:11.667417Z",
+   "answer_sha256": "53f87afde31611c33bd25c9eccd88229e6804c00b916719f0f7db8b0fae8196f",
+   "call_id": "20261001T083941Z-4341dd",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "53f87afde31611c33bd25c9eccd88229e6804c00b916719f0f7db8b0fae8196f",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_67d9cee8.py",
+   "response_sha256": "c8aa8909cb248968a13dd78d32a3fece9f5ac87017915e591ff69c25e6afc429",
+   "source": "last resort",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "6b0b64c15a6b4436a95353a735ce82f91e30135e7b760926c9ed082a38990108"
+ },
+ "SM-6C69BC54": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T083042Z-54378c",
+   "confirmed": false,
+   "effort": "xhigh",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After a timeout, the mutant's `shutdown(wait=True)` blocks until the hung executor call finishes, because `cancel_futures` does not stop a call that is already running. So the sync path keeps waiting on the timed-out route and only falls back or raises once that route returns, which may be never. That breaks the rule that a timeout \"shall stop waiting on the current route\".",
+   "response_sha256": "38d29cd86d08170b6ceb6fcb532fdef543e5e826b582b7b3ccc8b0240ebb8057",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "pool.shutdown(wait=True, cancel_futures=True)"
+   ],
+   "test_focus": "Use a sync executor whose first route blocks on an event that is never set, or not set until well after the timeout. The test must check that the request falls back to the next route, or raises the timeout error, within roughly the timeout and without waiting for the blocked call to return.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-10-01T08:48:58.362303Z",
+   "answer_sha256": "dc4b07c27417335cb379d5e8d038291aa7034bd61d873f1a759fe7088bcc6c84",
+   "call_id": "20261001T084120Z-a53083",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "4113339e8546153a6655bcb5b19caa94f4430c6f893da0d9b7a77e3f3f373ba3",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_sm_6c69bc54.py",
+   "response_sha256": "da5bb22a49f1c28229628dd3ff28b471770a317aee39789c0b91f6c9bde03975",
+   "source": "last resort",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "5894dd2f500bbc1e2c487586f0407367ccf86c1c496cd2aec4ddfd0ea69d77f9"
+ },
  "SM-908D5413": {
   "answer": {
    "backend": "claude-cli",
@@ -509,9 +621,11 @@
    "verdict": "pin"
   },
   "operator": "boolean",
-  "pin": {
+  "prompt_sha256": "fa13670112cfd3b32fef451206a7ea2333ea479a832e9aed0398573d1e59cacc",
+  "rejected_pin": {
    "adopted_at": "2026-09-30T21:03:30.695911Z",
    "answer_sha256": "2b6dfea457a242adf370a15b6e8c63f67cccfb4a7f0ad1c8a4eedd1c212d2d2e",
+   "at": "2026-10-01T08:25:04.661580Z",
    "call_id": "20260930T205650Z-2f0eb0",
    "cascade": {
     "accepted": true,
@@ -527,6 +641,7 @@
    "model": "claude-opus-5-5",
    "normalizer": "ruff 0.16.3",
    "path": "tests/llm_router/mutation_pins/test_pin_req_route_timeout_fallback_b9accd29af1a644f.py",
+   "reason": "it passes alone but fails in the full run: its routing trace depends on timing and on the router and server its hypothesis examples share",
    "response_sha256": "1338a574f6e0155ad47125b4d7d5211f7c08fc8ff3e0cbe6748ce277b0aa8d65",
    "source": "last resort",
    "sources": [
@@ -543,8 +658,7 @@
     "tests.llm_router.support.workers.retry.openai_success_response",
     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
-  },
-  "prompt_sha256": "fa13670112cfd3b32fef451206a7ea2333ea479a832e9aed0398573d1e59cacc"
+  }
  },
  "ec71df1dcf7f4fd5": {
   "answer": {

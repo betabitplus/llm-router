@@ -1,26 +1,68 @@
 {
  "SM-1134D975": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "'\"{}\"'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-2881a6",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the input is a valid JSON string (like '\"{}\"'), the changed version's json.loads succeeds immediately and returns a Python string, resulting in a TypeError, whereas the original version unconditionally calls _extract_json_payload which can strip the quotes to extract the inner object '{}' and successfully return a dictionary.",
+    "response_sha256": "3c0446a5538f9f56b5f51ceef07f66ba454b17657c453f57f094c9272710b490",
+    "sources": [
+     "        value = _extract_json_payload(value)",
+     "        try:",
+     "            decoded = json.loads(value)",
+     "        except json.JSONDecodeError:",
+     "            value = _extract_json_payload(value)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'\"{}\"'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-643235",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a JSON string literal such as '\"{}\"', the changed version decodes it directly to a string and raises TypeError, whereas the original version extracts the enclosed JSON object payload and returns an empty dictionary.",
+    "response_sha256": "3d89dbfcb7b91fc8de067f86da6469256d8ed8f8bd4723a03e10858cf00f798b",
+    "sources": [
+     "        try:",
+     "            decoded = json.loads(value)",
+     "        except json.JSONDecodeError:",
+     "            value = _extract_json_payload(value)",
+     "    if not isinstance(decoded, dict):",
+     "        msg = \"Structured output must be a JSON object.\"",
+     "        raise TypeError(msg)"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "value": "'\"x {\\\\\"a\\\\\":1} y\"'"
+     "value": "'\"{}\"'"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T164215Z-7dcfe1",
-    "confidence": 0.55,
+    "call_id": "20261001T075444Z-c15afb",
+    "confidence": 0.7,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version parses valid raw JSON directly (a JSON string, giving TypeError), while the original extracts the braces first and likely fails with ValueError on the escaped quotes.",
-    "response_sha256": "6e903f1e416909ed09f5fcec51d4287d692c3079b576a92febc884a1ea89b1c8",
+    "reason": "The changed version parses the raw string first, so a valid JSON string literal like \"{}\" decodes to a str and raises TypeError, whereas the original first trims it to the object text {} and returns {}.",
+    "response_sha256": "30bf6ec6543598ea8dbdf501189e42fbbea2e3b259ed663342d1c45fb2a1656e",
     "sources": [
      "value = _extract_json_payload(value)",
      "decoded = json.loads(value)",
-     "except json.JSONDecodeError:"
+     "msg = \"Structured output must be a JSON object.\""
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "e0d360898cb03f517279970493857c005a633dfc117d2d4cd4385ffa53b81604"
+  "prompt_sha256": "4b9e7cff362d5ed903921af95678c5e4ba778e9323b02731d32ac7b2fa0b50ee"
  },
  "SM-69699DF1": {
   "answers": {
@@ -36,6 +78,21 @@
     "sources": [
      "    first_arr = stripped.find(\"[\")",
      "    last_arr = stripped.rfind(\"]\")"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-f14f47",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Hoisting the side-effect-free calculations of first_arr and last_arr before the first if statement does not affect control flow, return values, or exceptions for any input.",
+    "response_sha256": "daa1aa91a276f43cd70e128cae4cd49505f9b861e3d3ba55b387324eecf433f2",
+    "sources": [
+     "first_arr = stripped.find(\"[\")",
+     "last_arr = stripped.rfind(\"]\")"
     ],
     "verdict": "equivalent"
    },
@@ -62,16 +119,16 @@
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "spec": "SchemaSpec(name='', json_schema={}, parser=SchemaSpec)",
-     "value": "{}"
+     "spec": "SchemaSpec(name='test', json_schema={}, parser=int)",
+     "value": "[]"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260929T183837Z-4f7a30",
+    "call_id": "20261001T075444Z-b4c416",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When the value is a dictionary or list, the changed version immediately returns it as valid, whereas the original version calls spec.parse() which may raise an exception or return a different object entirely.",
-    "response_sha256": "9385c2edea60b305fecacd5d8f97db9ae597026861c7c02b571c74953ba158b7",
+    "reason": "The changed version immediately returns valid for lists, bypassing validation, whereas the original version delegates to spec.parse which may raise an exception and return valid=False.",
+    "response_sha256": "48fce9ab5fa302ade8f516715694faf96c8d0b958ef26daf85681daec61e6186",
     "sources": [
      "    if isinstance(value, (dict, list)):",
      "        return SchemaValidationResult(valid=True, value=value)",
@@ -80,18 +137,36 @@
     ],
     "verdict": "distinct"
    },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "spec": "SchemaSpec(name='test', json_schema={}, parser=SchemaSpec)",
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-ef0552",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When the candidate output is a dictionary or list, the changed version immediately returns valid without invoking the schema parser, whereas the original version validates it via spec.parse and returns invalid upon failure.",
+    "response_sha256": "df6c1df3be82bf63fb80c6a09a61e8a5ff66c2a518bc869ef010528ad3562199",
+    "sources": [
+     "    if isinstance(value, (dict, list)):",
+     "        return SchemaValidationResult(valid=True, value=value)"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "spec": "SchemaSpec(name='s', json_schema={}, parser=lambda v: 1/0)",
+     "spec": "SchemaSpec(name='s', json_schema={}, parser=lambda v: (_ for _ in ()).throw(ValueError('bad')))",
      "value": "{}"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T164219Z-898f3f",
+    "call_id": "20261001T075444Z-023d59",
     "confidence": 0.96,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version returns valid=True with the raw value for any dict or list without calling the parser, whereas the original returns valid=False when the parser raises on a dict.",
-    "response_sha256": "502313b7527cdfb9dc15480d6fb715ea9364a27f1287640e7efb59387c19df89",
+    "reason": "The changed version returns valid=True with the raw value for any dict or list without calling the parser, so a parser that rejects or transforms a dict gives a different result in the original.",
+    "response_sha256": "68cc2e3183a9095744a220dc9fab943bd59e598009d22687a5f241e47654729d",
     "sources": [
      "if isinstance(value, (dict, list)):",
      "return SchemaValidationResult(valid=True, value=value)",
@@ -100,6 +175,6 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "a5d948ab157a2ac597e4fbb448870b5bc6a2b3b880475c6240f7be470459a7ea"
+  "prompt_sha256": "575f8d135b18d141a11898f0b9dbbb057d979bc0ff1877f9e610b8fc9d37b122"
  }
 }

@@ -189,3 +189,31 @@ for _test_name in (
         "VC_PROVIDER_GEMINI_WEBAPI_ADAPTER_BOUNDARY"
     )(globals()[_test_name])
 del _test_name
+
+
+@pytest.mark.verifies("REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==2]")
+@pytest.mark.fault_item(
+    "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY", "interface.payload-schema"
+)
+@pytest.mark.fault_item(
+    "REQ_PROVIDER_ADAPTER_INTEROPERABILITY", "interface.payload-schema"
+)
+def test_gemini_webapi_answer_without_text_is_a_provider_error() -> None:
+    client = FakeClient(
+        [SimpleNamespace(usage={"prompt_tokens": 2, "completion_tokens": 3})]
+    )
+    for contract_id in (
+        "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
+        "REQ_PROVIDER_ADAPTER_INTEROPERABILITY",
+    ):
+        retain_local_fault_injection(
+            contract_id=contract_id,
+            fault_class="interface.payload-schema",
+            mechanism="fake Gemini WebAPI client answers an object without text",
+        )
+
+    with pytest.raises(ProviderError) as exc_info:
+        GeminiWebAPIAdapter(client=client).execute(_request())
+
+    assert exc_info.value.cause.retryable is False
+    assert exc_info.value.cause.retry_reason == "missing_response_text"

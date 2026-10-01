@@ -3,66 +3,6 @@
  "contract_id": "TREQ_USAGE_NORMALIZATION",
  "proposals": [
   {
-   "id": "SM-E9558A01",
-   "class": "spec.wrong-outcome",
-   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
-   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
-   "rationale": "Input and output token counts are read from each other's key sets (swapped), so input_tokens is populated from the output-token field names and vice versa, silently mislabeling the two counts while total may still look plausible.",
-   "original_sha256": "cd885edae06dd543d756d8362318b6959a196dcef6c53bb3c83b10d35e85770b",
-   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
-   "prompt_sha256": "deb3d97e32532e623404aec4bd1a509d9f6e02aca6918019643ce4a83228d2fa",
-   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _OUTPUT_KEYS)\n    output_tokens = _first_int(value, _INPUT_KEYS)\n    total_tokens = _first_int(value, _TOTAL_KEYS)\n    if total_tokens == 0 and (input_tokens or output_tokens):\n        total_tokens = input_tokens + output_tokens\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )\n",
-   "generator": {
-    "kind": "model",
-    "call_id": "20260926T142208Z-ccbc67",
-    "backend": "claude-cli",
-    "backend_version": "2.1.282",
-    "model": "claude-sonnet-5",
-    "response_sha256": "5d0303be71664759c06e315062ae56c8b817adf2c10669a6566532e5b179ef69",
-    "index": 0
-   }
-  },
-  {
-   "id": "SM-67E8442B",
-   "class": "spec.wrong-outcome",
-   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
-   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
-   "rationale": "The explicit total-token field is looked up but then unconditionally discarded and replaced by input+output, so payloads that only carry a provider-reported total (with input/output fields absent or zero) end up with total_tokens forced to 0 instead of the reported value.",
-   "original_sha256": "cd885edae06dd543d756d8362318b6959a196dcef6c53bb3c83b10d35e85770b",
-   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
-   "prompt_sha256": "deb3d97e32532e623404aec4bd1a509d9f6e02aca6918019643ce4a83228d2fa",
-   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _INPUT_KEYS)\n    output_tokens = _first_int(value, _OUTPUT_KEYS)\n    total_tokens = _first_int(value, _TOTAL_KEYS)\n    total_tokens = input_tokens + output_tokens\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )\n",
-   "generator": {
-    "kind": "model",
-    "call_id": "20260926T142208Z-ccbc67",
-    "backend": "claude-cli",
-    "backend_version": "2.1.282",
-    "model": "claude-sonnet-5",
-    "response_sha256": "5d0303be71664759c06e315062ae56c8b817adf2c10669a6566532e5b179ef69",
-    "index": 1
-   }
-  },
-  {
-   "id": "SM-20FB7E3E",
-   "class": "spec.wrong-outcome",
-   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
-   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
-   "rationale": "When the total-token field is missing and a fallback must be computed, only input_tokens is used instead of the sum of input_tokens and output_tokens, so any output tokens are silently dropped from the fallback total.",
-   "original_sha256": "cd885edae06dd543d756d8362318b6959a196dcef6c53bb3c83b10d35e85770b",
-   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
-   "prompt_sha256": "deb3d97e32532e623404aec4bd1a509d9f6e02aca6918019643ce4a83228d2fa",
-   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _INPUT_KEYS)\n    output_tokens = _first_int(value, _OUTPUT_KEYS)\n    total_tokens = _first_int(value, _TOTAL_KEYS)\n    if total_tokens == 0 and (input_tokens or output_tokens):\n        total_tokens = input_tokens\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )\n",
-   "generator": {
-    "kind": "model",
-    "call_id": "20260926T142208Z-ccbc67",
-    "backend": "claude-cli",
-    "backend_version": "2.1.282",
-    "model": "claude-sonnet-5",
-    "response_sha256": "5d0303be71664759c06e315062ae56c8b817adf2c10669a6566532e5b179ef69",
-    "index": 2
-   }
-  },
-  {
    "id": "SM-45102913",
    "class": "spec.missing-partition",
    "target": "src/llm_router/_internal/capabilities/usage.py::_get_value",
@@ -140,6 +80,66 @@
     "model": "claude-sonnet-5",
     "response_sha256": "6e7b193594245458497a0763fb34335ce290dcf0b696e814471642fb6bba2e9d",
     "index": 1
+   }
+  },
+  {
+   "id": "SM-4ADFECD5",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
+   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
+   "rationale": "Total tokens computed strictly as the sum of input and output tokens, ignoring the explicit total field from the payload",
+   "original_sha256": "be548da5a59dc252559cc7f6d7b1e7a11e1bd084eba28dcda49c9b85826e1c7d",
+   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
+   "prompt_sha256": "1d403a9aca0f2f6030b688d78002cbd6678acd81a1c714fa61c73ba4511e69ee",
+   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _INPUT_KEYS)\n    output_tokens = _first_int(value, _OUTPUT_KEYS)\n    # A total below its parts is not consistent: it is at least input plus output.\n    total_tokens = input_tokens + output_tokens\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261001T074831Z-a567f0",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.14",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "80600a5d28203097645a7bdc534dc45ed6a66a336abc5660b5fce61c6f9058aa",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-CC9CEFA4",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
+   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
+   "rationale": "Total tokens taken directly from the payload without ensuring it is at least the sum of input and output tokens",
+   "original_sha256": "be548da5a59dc252559cc7f6d7b1e7a11e1bd084eba28dcda49c9b85826e1c7d",
+   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
+   "prompt_sha256": "1d403a9aca0f2f6030b688d78002cbd6678acd81a1c714fa61c73ba4511e69ee",
+   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _INPUT_KEYS)\n    output_tokens = _first_int(value, _OUTPUT_KEYS)\n    # A total below its parts is not consistent: it is at least input plus output.\n    total_tokens = _first_int(value, _TOTAL_KEYS)\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261001T074831Z-a567f0",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.14",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "80600a5d28203097645a7bdc534dc45ed6a66a336abc5660b5fce61c6f9058aa",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-6A9253F4",
+   "class": "spec.wrong-outcome",
+   "target": "src/llm_router/_internal/capabilities/usage.py::normalize_usage",
+   "risk": "an input, output or total token count is taken from the wrong field or computed wrongly",
+   "rationale": "Output tokens are mistakenly read from the input keys due to a copy-paste error",
+   "original_sha256": "be548da5a59dc252559cc7f6d7b1e7a11e1bd084eba28dcda49c9b85826e1c7d",
+   "context_sha256": "a455e9b83a4fe03563afdd3b77ca2baa526be2846616b7953e70698b21d6205d",
+   "prompt_sha256": "1d403a9aca0f2f6030b688d78002cbd6678acd81a1c714fa61c73ba4511e69ee",
+   "replacement": "def normalize_usage(value: object) -> UsageStats | None:\n    \"\"\"Normalize common provider usage payloads into public usage stats.\"\"\"\n    if value is None:\n        return None\n    if isinstance(value, UsageStats):\n        return value\n\n    input_tokens = _first_int(value, _INPUT_KEYS)\n    output_tokens = _first_int(value, _INPUT_KEYS)\n    # A total below its parts is not consistent: it is at least input plus output.\n    total_tokens = max(_first_int(value, _TOTAL_KEYS), input_tokens + output_tokens)\n\n    return UsageStats(\n        input_tokens=input_tokens,\n        output_tokens=output_tokens,\n        total_tokens=total_tokens,\n    )",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261001T074831Z-a567f0",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.14",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "80600a5d28203097645a7bdc534dc45ed6a66a336abc5660b5fce61c6f9058aa",
+    "index": 2
    }
   }
  ]

@@ -46,7 +46,13 @@ first changes, one in ten of the suppressions another answerer decided is asked 
 the role no longer upholds is pinned (amended 2026-09-30). A pin whose mutant other pins of its
 contract kill is removed, by the kill matrix of the contract's pins and a greedy cover, and comes
 back as it was when the campaign shows the removal cost a kill (amended 2026-09-30). An escalated survivor keeps its class failing and waits for the person, whose
-verdict wins over the model's. A verdict counts while the code, the tests and the question it
+verdict wins over the model's. The person decides only what a Goal or Feature promises: an
+escalation that turns on a requirement's or technical requirement's wording, and a pin no rung
+could write, are decided by the person's delegate (the agent's model, Claude Opus 5.5), who
+extends the requirement when the configuration and the code show its intent, or records the
+verdict with its reason and, for a pin, the path a test can take, under its own name in the
+decisions; the person may override any of them (amended 2026-10-01: such questions had reached
+the person, who takes Goals and Features only). A verdict counts while the code, the tests and the question it
 answered are unchanged. Every model a role lists passes that role's canaries, cases with a
 known outcome, before its answers count, and again after any change of model, question or
 canary set; an assessor passes the calibration floors.

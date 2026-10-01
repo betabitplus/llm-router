@@ -267,3 +267,35 @@ for _test_name in (
         "VC_PROVIDER_OPENAI_ADAPTER_BOUNDARY"
     )(globals()[_test_name])
 del _test_name
+
+
+@pytest.mark.verifies("REQ_PROVIDER_ADAPTER_INTEROPERABILITY[revision==2]")
+@pytest.mark.fault_item(_CONTRACT, "interface.payload-schema")
+@pytest.mark.fault_item(
+    "REQ_PROVIDER_ADAPTER_INTEROPERABILITY", "interface.payload-schema"
+)
+def test_success_payload_without_a_choice_message_is_a_provider_error() -> None:
+    path = openai_chat_path()
+    for contract_id in (_CONTRACT, "REQ_PROVIDER_ADAPTER_INTEROPERABILITY"):
+        retain_fault_injection(
+            contract_id=contract_id,
+            fault_class="interface.payload-schema",
+            mechanism="scripted provider returns HTTP 200 without a choice message",
+        )
+    with ScriptedHTTPServer(
+        port=0,
+        routes={
+            ("POST", path): [
+                ScriptedResponse(
+                    status_code=200,
+                    headers={"Content-Type": "application/json"},
+                    body=json.dumps({"id": "chatcmpl-1", "choices": []}).encode(),
+                )
+            ]
+        },
+    ) as server:
+        with pytest.raises(ProviderError) as exc_info:
+            _adapter(server).execute(_request())
+
+        assert exc_info.value.cause.retryable is False
+        assert exc_info.value.cause.retry_reason == "missing_choice_message"

@@ -224,7 +224,23 @@ def parse_gemini_webapi_response(
     response: object,
 ) -> ProviderResult:
     """Parse Gemini WebAPI SDK output into the provider-neutral result port."""
-    output_text = str(getattr(response, "text", "") or "").strip()
+    text = getattr(response, "text", None)
+    if text is None:
+        # An SDK answer without text is a malformed response, not an empty answer.
+        failure = ProviderFailure(
+            provider=request.provider,
+            model=request.model,
+            message="Provider response carried no text.",
+            retryable=False,
+            retry_reason="missing_response_text",
+        )
+        raise ProviderError(
+            failure,
+            request.provider,
+            request.model,
+            message=failure.message,
+        )
+    output_text = str(text).strip()
     parsed = (
         parse_prompted_structured_data(spec=request.schema, text=output_text)
         if request.schema is not None

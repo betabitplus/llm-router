@@ -555,38 +555,41 @@
  "SM-AD46F34B": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T191216Z-a88f9b",
+   "call_id": "20261001T080944Z-d366fa",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Moving the checks around only changes a result if a status code is in _NON_RETRYABLE_STATUS_CODES and is also >= _SERVER_ERROR_STATUS_MIN. The non-retryable set is labelled \"caller_or_auth_status\", which points to 4xx codes only, and a symbolic search of 298 paths found no input where the two versions differ. So every status code still gets the same classification and reason.",
-   "response_sha256": "dd7cfaa0ee2c72299a6be8366418d3f0ef7cc11c5545608ed1775e229d8d3fb3",
+   "reason": "The swap only matters for a status that is both in _NON_RETRYABLE_STATUS_CODES and >= _SERVER_ERROR_STATUS_MIN. The non-retryable set holds caller/auth (4xx) codes below the server-error threshold, so every status gets the same classification and reason. The symbolic search also found no differing input after 298 paths.",
+   "response_sha256": "1366f17a1100e468ae1cb3cb1b98eb89e7b0481f8a3c0ca46791336a3c5e2701",
    "sources": [
-    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
-    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
-    "reason=\"caller_or_auth_status\","
+    "if status_code in _NON_RETRYABLE_STATUS_CODES:",
+    "reason=\"caller_or_auth_status\",",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "semantic",
-  "prompt_sha256": "08a04f5add75e21ce5ae6527649c7732ab3b25fc43bd6ac0294884373ba290de",
+  "prompt_sha256": "b633d0b370d1f6fad6132fab879012f4b3eb818f4d2f2ae7d31b80761f9dffa2",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T201201Z-2b4718",
+   "call_id": "20261001T081059Z-cdd303",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "08a04f5add75e21ce5ae6527649c7732ab3b25fc43bd6ac0294884373ba290de",
-   "reason": "The sets of non-retryable and server error HTTP statuses are mutually exclusive, so swapping the order of these conditionals does not alter the output for any input, fulfilling the requirement for status classification identically.",
-   "response_sha256": "6f9d000b8a6efd98c603ca1a19744a699d274cd5d133df4ddb29bffb67529e89",
+   "prompt_sha256": "b633d0b370d1f6fad6132fab879012f4b3eb818f4d2f2ae7d31b80761f9dffa2",
+   "reason": "Swapping the evaluation order of these conditional returns does not alter the function's output because the sets of non-retryable status codes and server error status codes are disjoint. The implementation behavior remains completely equivalent.",
+   "response_sha256": "d313929abf04467cb2629b61cf336060fe1569f6a0c5b84302ce3f3c6a32e03f",
    "sources": [
-    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
-    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
-    "if status_code in _NON_RETRYABLE_STATUS_CODES:"
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "if status_code in _NON_RETRYABLE_STATUS_CODES:",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:"
    ],
    "test_focus": "",
    "verdict": "equivalent"

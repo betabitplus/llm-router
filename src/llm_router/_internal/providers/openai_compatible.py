@@ -197,6 +197,23 @@ class OpenAICompatibleAdapter:
             )
 
         message = _first_message(data)
+        if not message:
+            # A success without a choice message is malformed, not an empty answer.
+            failure = ProviderFailure(
+                provider=request.provider,
+                model=request.model,
+                message="Provider response carried no choice message.",
+                retryable=False,
+                status_code=status_code,
+                retry_reason="missing_choice_message",
+            )
+            _log_provider_failure(request=request, failure=failure)
+            raise ProviderError(
+                failure,
+                request.provider,
+                request.model,
+                message=failure.message,
+            )
         result = ProviderResult(
             data=data,
             provider=request.provider,

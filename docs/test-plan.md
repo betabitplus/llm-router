@@ -558,7 +558,9 @@ its requirement names through what the code offers its callers, since a private 
 a refactoring that breaks nothing (on 2026-09-30 a third of the REQ pins read or replaced one,
 against one module in fifty of the project's own tests). A parametrized value with a bracket
 needs `ids=`: a test's id becomes a need's title in the documentation, where `[[` starts a
-sphinx-needs function call and stops the build. Every test run blocks the network but for the
+sphinx-needs function call and stops the build. A pin is a fast check: a draft whose runs on the
+original take more than 3 s by pytest's own time (the median of its five) is rejected (on
+2026-10-01 eight pins took 41 of the 52 s of all pins). Every test run blocks the network but for the
 machine itself (pytest-recording's `--block-network`): the retained run, CI and the pre-push
 hook alike, so a test whose call the block stops behaves the same in each. On 2026-10-01 the
 pre-push run, without the block, let a pin's call reach a real provider, and the pin was taken
@@ -633,7 +635,9 @@ and how the names those callers use are built. A branch no caller can take canno
 where the requirement is observed (a contextual equivalent, in GEM-LLM's terms), so the verdict
 then answers irrelevant and cites the caller lines that show it, and its review must agree, as
 for any suppression; a caller that reaches the change keeps the pin, and the verdict names that
-caller for the next climb. A mutant still pinned after that waits for the person. The Model
+caller for the next climb. A mutant still pinned after that goes to the person's delegate, who
+decides below Goal and Feature level (ADR_0006): irrelevant when no public path can observe the
+change, or pin with the path a test can take, which the next climb is asked to follow. The Model
 roles page lists every pin verdict still waiting for its pin, with where its ladder stands.
 
 ##### Model generation
@@ -897,8 +901,12 @@ asked again, since that spends the verdict's budget.
 | `escalate`   | Deciding changes what a Feature or Goal promises, and no requirement settles it.               | The mutant stays in its class, and the decision waits for the person.                                                                                            |
 
 The person decides only escalations: a comparison, a type, a default or a message inside a
-requirement's scope is the verdict model's to decide, never a reason to escalate. A person's
-verdict, when recorded, wins over the model's. A verdict counts while the code, the tests and
+requirement's scope is the verdict model's to decide, never a reason to escalate. An escalation
+that turns on a requirement's or technical requirement's wording is the person's delegate's to
+decide (ADR_0006, amended 2026-10-01): it extends the requirement when the configuration and the
+code show the intent, as for the retry wait cap the configuration validates, and only a question
+of what a Goal or Feature promises waits for the person. A person's or delegate's verdict, when
+recorded, wins over the model's; the decisions name who decided. A verdict counts while the code, the tests and
 the question it answered are unchanged. A mutation pin is a test module under
 `tests/llm_router/mutation_pins/` that verifies its contract and names, in its first line, the
 mutant it pins; it proves no coverage case and no depth, so it never changes a criterion's

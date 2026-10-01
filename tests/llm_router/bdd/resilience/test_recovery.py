@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
+import time
 from typing import Any
 
 import pytest
 from pydantic import BaseModel, Field
 from pytest_bdd import given, scenarios, then, when
 
+from llm_router import get_config
 from tests.llm_router.support.assertions import parse_json_object
 from tests.llm_router.support.fault_server import (
     ScriptedHTTPServer,
@@ -63,6 +66,14 @@ for _test_name, _criterion in (
         "VC_PROVIDER_RETRY_ATTEMPT_BOUND",
     ),
     (
+        "test_synchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
+        "VC_PROVIDER_RETRY_WAIT_BOUND",
+    ),
+    (
+        "test_asynchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
+        "VC_PROVIDER_RETRY_WAIT_BOUND",
+    ),
+    (
         "test_invalid_structured_output_is_repaired",
         "VC_STRUCTURED_REPAIR_RECOVERY",
     ),
@@ -99,6 +110,14 @@ for _test_name, _path_id in (
     ),
     (
         "test_asynchronous_provider_retry_stops_at_the_configured_attempt_limit",
+        "async",
+    ),
+    (
+        "test_synchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
+        "sync",
+    ),
+    (
+        "test_asynchronous_provider_retry_never_waits_longer_than_the_configured_maximum",
         "async",
     ),
     ("test_structured_output_stops_at_a_oneattempt_budget", "budget-1"),
@@ -588,6 +607,64 @@ def async_retry_exhausts_budget(case: dict[str, Any]) -> None:
 @then("exactly two asynchronous provider attempts are made")
 def exactly_two_async_attempts(case: dict[str, Any]) -> None:
     exactly_two_sync_attempts(case)
+
+
+def _run_recording_waits(
+    case: dict[str, Any],
+    monkeypatch: pytest.MonkeyPatch,
+    scenario: str,
+) -> None:
+    """Run three attempts with every retry wait recorded beside the configured maximum
+    instead of slept: the retry sleeps through ``time.sleep`` or ``asyncio.sleep``."""
+    waits: list[tuple[float, float]] = []
+
+    def record(seconds: float) -> None:
+        waits.append((float(seconds), get_config().retry_policy.max_wait_seconds))
+
+    async def record_async(seconds: float, *_args: object, **_kwargs: object) -> None:
+        record(seconds)
+
+    if scenario.startswith("async_"):
+        monkeypatch.setattr(asyncio, "sleep", record_async)
+    else:
+        monkeypatch.setattr(time, "sleep", record)
+    retryable = ScriptedResponse(
+        status_code=503,
+        headers={"Content-Type": "application/json"},
+        body=openai_error_response(status_code=503, message="still unavailable"),
+    )
+    with ScriptedHTTPServer(
+        port=0, routes={("POST", _OPENAI_PATH): [retryable, retryable, retryable]}
+    ) as server:
+        case["result"] = run_retry_worker(
+            case="openai",
+            scenario=scenario,
+            server_base_url=server.base_url,
+            max_attempts=3,
+        )
+    case["waits"] = waits
+
+
+@when("synchronous retry waits between three attempts")
+def sync_retry_waits(case: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
+    _run_recording_waits(case, monkeypatch, "exhausted")
+
+
+@when("asynchronous retry waits between three attempts")
+def async_retry_waits(case: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
+    _run_recording_waits(case, monkeypatch, "async_exhausted")
+
+
+@then("no synchronous retry wait exceeds the configured maximum")
+def sync_waits_within_maximum(case: dict[str, Any]) -> None:
+    assert case["result"].ok is False
+    assert len(case["waits"]) == 2
+    assert all(seconds <= maximum for seconds, maximum in case["waits"])
+
+
+@then("no asynchronous retry wait exceeds the configured maximum")
+def async_waits_within_maximum(case: dict[str, Any]) -> None:
+    sync_waits_within_maximum(case)
 
 
 @given("every structured response is invalid", target_fixture="case")

@@ -342,6 +342,23 @@ def parse_qwenchat_response(
             message=failure.message,
         )
 
+    if not _has_choice_message(data):
+        # A success without a choice message is malformed, not an empty answer.
+        failure = ProviderFailure(
+            provider=request.provider,
+            model=request.model,
+            message="Provider response carried no choice message.",
+            retryable=False,
+            status_code=status_code,
+            retry_reason="missing_choice_message",
+        )
+        log_provider_failure(request=request, failure=failure)
+        raise ProviderError(
+            failure,
+            request.provider,
+            request.model,
+            message=failure.message,
+        )
     output_text = _response_text(data)
     parsed = (
         parse_prompted_structured_data(spec=request.schema, text=output_text)
@@ -624,6 +641,14 @@ def _json_mapping(
         request.model,
         message=failure.message,
     )
+
+
+def _has_choice_message(data: dict[str, Any]) -> bool:
+    """Return whether a QwenChat response body carries a first choice message."""
+    choices = data.get("choices")
+    if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+        return False
+    return isinstance(choices[0].get("message"), dict)
 
 
 def _response_text(data: dict[str, Any]) -> str:

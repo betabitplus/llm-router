@@ -86,6 +86,181 @@
    ]
   }
  ],
+ "SM-67D9CEE8": [
+  {
+   "at": "2026-10-01T08:34:42.445117Z",
+   "call_id": "20261001T083156Z-52ddd4",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "5eab135dcb0d740e2673b8395fdefd3aa7832b8cda4d7d66812159edc01d3980",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert False is True | +  where False = TimeoutWorkerResult(ok=False, output_text='', error_type='ValueError', error_message='Unknown timeout worker scenario: fallback', routing_trace=[], returncode=0, stdout='', stderr='').ok)",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.timeout.run_timeout_inprocess"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:38:01.920558Z",
+   "call_id": "20261001T083443Z-a9b3f4",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "67e430c192c2bb50efcbddac9a5b2ff807d42950350caf4fdd38eedb2eb68314",
+   "reason": "it does not fail on the mutant: it runs the changed lines 424\u2013431, yet nothing it checks depends on what the change does",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.timeout.run_timeout_inprocess"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:39:40.541953Z",
+   "call_id": "20261001T083802Z-9fe022",
+   "cause": "slow",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "aab20f04bf388c16d5a36b63fedf2fd1a7ff93a04359f7746814e847755435ec",
+   "reason": "it takes 3.22 s on the original, and a pin runs within 3 s",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.timeout.run_timeout_inprocess"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:44:11.664988Z",
+   "call_id": "20261001T083941Z-4341dd",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "be83613ab499deb2128b3db3278758cb6f0f4989848c12dadbe11b13dcc3ab6e",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "SM-6C69BC54": [
+  {
+   "at": "2026-10-01T08:34:23.676973Z",
+   "call_id": "20261001T083156Z-68c3d7",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "6e2c04c9991c50253b70a481419e663620fb5541f7eabf0b1e36a643728a0588",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert False is True | +  where False = TimeoutWorkerResult(ok=False, output_text='', error_type='ValueError', error_message='Unknown timeout worker scenario: fallback', routing_trace=[], returncode=0, stdout='', stderr='').ok)",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.timeout.run_timeout_inprocess"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:38:05.369682Z",
+   "call_id": "20261001T083425Z-27150d",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "02d776f9a69ebf8bd2af75fdd0f4773ec58f233c7fc844d431903adbfaf2b44f",
+   "reason": "it does not fail on the mutant: it runs the changed line 433, yet nothing it checks depends on what the change does",
+   "sources": [
+    "pytest",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.timeout.run_timeout_inprocess"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:41:19.392342Z",
+   "call_id": "20261001T083806Z-737e13",
+   "cause": "slow",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9399e95ffa672fab6109a064a97455d00d7e3ae4b6dc9ebc4289986693726fe5",
+   "reason": "it takes 3.01 s on the original, and a pin runs within 3 s",
+   "sources": [
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.timeout.run_timeout_inprocess"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:48:58.359841Z",
+   "call_id": "20261001T084120Z-a53083",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "c60fa78c22c685499fd8db3dad47e2bb6cf18d269766b79ac407a2ccbf00381f",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
  "SM-908D5413": [
   {
    "at": "2026-09-29T17:27:59.741236Z",
@@ -521,6 +696,18 @@
     "tests.llm_router.support.workers.retry.openai_success_response",
     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
+  },
+  {
+   "at": "2026-10-01T08:25:04.663800Z",
+   "call_id": "20260930T205650Z-2f0eb0",
+   "cause": "suite",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "d1a61d6d0f44ac7eaa8e8702380bc4f7ee73dac89548d3e11fceffe3a29f5f4f",
+   "reason": "it passes alone but fails in the full run: its routing trace depends on timing and on the router and server its hypothesis examples share",
+   "sources": []
   }
  ]
 }

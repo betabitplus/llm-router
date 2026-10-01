@@ -4090,10 +4090,28 @@ def derive_model_validation_records():
 
 
 def current_needs():
+    """The requirements as the built portal holds them, refused while a requirement's revision in the
+    docs source is newer: a question or a pin built from them would carry the old statement and
+    verify the old revision (2026-10-01: two pins did, and the portal could not build)."""
     path=ROOT/"docs/_build/html/needs.json"
     payload=json.loads(path.read_text())
     version=payload.get("current_version","")
-    return (payload.get("versions") or {}).get(version,{}).get("needs") or {}
+    needs=(payload.get("versions") or {}).get(version,{}).get("needs") or {}
+    behind=sorted(need_id for need_id,revision in source_revisions_cached().items() if need_id in needs and int((needs[need_id] or {}).get("revision") or 0)!=revision)
+    if behind:
+        raise SystemExit("the built portal holds an older revision of "+", ".join(behind)+" than the docs source: build the portal before any stage that reads requirements")
+    return needs
+
+
+_SOURCE_REVISIONS=None
+
+
+def source_revisions_cached():
+    """The source revisions, read once per run."""
+    global _SOURCE_REVISIONS
+    if _SOURCE_REVISIONS is None:
+        _SOURCE_REVISIONS=source_revisions()
+    return _SOURCE_REVISIONS
 
 
 def junit_depth_rows():
@@ -6806,7 +6824,8 @@ def current_verdict(item,verdicts,decisions):
     survivor's current question, reviewed as ADR_0006 asks, else none."""
     decided=decisions.get(item["key"]) or {}
     if decided.get("verdict") in EQ.VERDICTS_FINAL and decided.get("reason"):
-        return {**decided,"by":"person"}
+        # The person's, or the delegate's who decides below Feature level on the person's behalf.
+        return {**decided,"by":decided.get("by") or "person"}
     entry=verdicts.get(item["key"]) or {}
     if entry.get("prompt_sha256")!=sha256_text(item["prompt"]):
         return None
@@ -7372,7 +7391,7 @@ def refresh_pins(contract_ids=None):
         for key,entry in sorted(verdicts.items()):
             pin=entry.get("pin") or {}
             person=decided.get(key) or {}
-            verdict={**person,"by":"person"} if person.get("verdict") in EQ.VERDICTS_FINAL and person.get("reason") else reviewed_verdict(entry)
+            verdict={**person,"by":person.get("by") or "person"} if person.get("verdict") in EQ.VERDICTS_FINAL and person.get("reason") else reviewed_verdict(entry)
             if not pin or not verdict or verdict.get("verdict")!="pin":
                 continue
             draft,origin=pin_draft_origin(contract_id,key,{**pin,"source":pin.get("source") or "kept semantic draft"})
@@ -8245,7 +8264,8 @@ def semantic_mutant_actual(plans=None,test_rows=None,apply_verdicts=True):
             decided=(verdict_state().get(contract_id) or {}).get("items") or {}
             retained={**retained,"results":[
               {**row,"outcome":"equivalent","reason":f"judged {decided[row['id']]['verdict']['verdict']} by {decided[row['id']]['verdict'].get('by')}: {decided[row['id']]['verdict'].get('reason')}","by":decided[row["id"]]["verdict"].get("by")}
-              if row.get("id") in decided and decided[row["id"]]["verdict"] and decided[row["id"]]["verdict"]["verdict"] in {"equivalent","irrelevant"} else row
+              # Only a survivor: a caught, filtered or duplicate mutant has no verdict to take it out.
+              if row.get("outcome") in {"undecided","distinguished"} and row.get("id") in decided and decided[row["id"]]["verdict"] and decided[row["id"]]["verdict"]["verdict"] in {"equivalent","irrelevant"} else row
               for row in retained.get("results") or []
             ]}
         if state=="current":
@@ -9152,6 +9172,7 @@ DRAFT_CAUSES={
   "behaviour":"wrong behaviour on the original",
   "weak":"does not catch the mutant",
   "suite":"fails in the project's full test run, though it passes alone",
+  "slow":"too slow for a pin on the original",
   "unknown":"not kept, cause not recorded (before attempts were recorded)",
 }
 API_ERRORS=re.compile(r"\b(ImportError|ModuleNotFoundError|AttributeError|NameError|TypeError|ModelNotFoundError|ValidationError)\b")
@@ -9171,6 +9192,8 @@ def draft_cause(judged):
         return "lint"
     if int(judged.get("passes_on_original") or 0)<SEMANTIC.DRAFT_PASSES:
         return "runtime-api" if API_ERRORS.search(" ".join(judged.get("original_errors") or [])) else "behaviour"
+    if judged.get("slow_seconds"):
+        return "slow"
     return "weak" if not judged.get("fails_on_mutant") else "unknown"
 
 
@@ -9413,7 +9436,7 @@ def waiting_pins():
             rung=max((int(row.get("level") or 1) for row in drafts),default=0)
             last=DRAFT_CAUSES.get(str(drafts[-1].get("cause")),str(drafts[-1].get("cause"))) if drafts else ""
             if ladder_exhausted(contract_id,key):
-                stage="every rung tried, and asked again with its callers in view it is still pin: it waits for the person"
+                stage="every rung tried, and asked again with its callers in view it is still pin: it waits for the person's delegate (ADR_0006)"
             elif drafts:
                 stage=f"climbing: rung {rung} so far, the last draft {last}"
             else:
@@ -9595,7 +9618,7 @@ def recorded_verdicts():
         decided=person_decisions(folder.name)
         for key,entry in load_verdicts(folder.name).items():
             person=decided.get(key) or {}
-            verdict={**person,"by":"person"} if person.get("verdict") in EQ.VERDICTS_FINAL and person.get("reason") else reviewed_verdict(entry)
+            verdict={**person,"by":person.get("by") or "person"} if person.get("verdict") in EQ.VERDICTS_FINAL and person.get("reason") else reviewed_verdict(entry)
             if verdict:
                 result.setdefault(folder.name,{})[key]={**verdict,"operator":entry.get("operator")}
     return result

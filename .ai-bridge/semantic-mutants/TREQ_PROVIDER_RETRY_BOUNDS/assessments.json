@@ -1,0 +1,28 @@
+{
+ "SM-57FED309": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "context_getter": "None",
+     "logger": "logging.getLogger('x')",
+     "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=1.0, max_attempts=6)",
+     "state_sink": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T090148Z-11e337",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops max=policy.max_wait_seconds, so the exponential backoff is no longer capped at max_wait (sleeps can reach 16s instead of 1s) and the multiplier is changed from 1 to min_wait.",
+    "response_sha256": "c7974e733ef686559b670eb2782424cbaca820a5b49bd57cbbdc66c9adb6df22",
+    "sources": [
+     "wait=wait_random_exponential(",
+     "multiplier=policy.min_wait_seconds,",
+     "max=policy.max_wait_seconds,"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ec35b9dd28fdc54c5da4f77bd6f10970d2fd71ca4ac17a6a20da6dcf0ac96a24"
+ }
+}

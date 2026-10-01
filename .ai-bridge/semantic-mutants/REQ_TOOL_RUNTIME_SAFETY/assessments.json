@@ -100,6 +100,21 @@
     ],
     "verdict": "distinct"
    },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-7642d3",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When tool execution is not allowed, run_tool_round does not advance the loop state, so the changed early return produces the identical state and observability behavior as the original version.",
+    "response_sha256": "ce6dfee31acb390545d14760258b140a8b3b193dbe19b95553921b15aeebc553",
+    "sources": [
+     "    if not state.can_execute_tools():",
+     "        return state"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {},
     "backend": "claude-cli",

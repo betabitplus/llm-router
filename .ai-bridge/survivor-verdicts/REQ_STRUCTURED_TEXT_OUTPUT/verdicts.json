@@ -1813,43 +1813,56 @@
  "SM-1134D975": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T171746Z-77bd27",
+   "call_id": "20261001T080944Z-d4bf9f",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "On the confirmed input, both versions reject the output and produce no structured result; the only difference is the exception class (ValueError vs TypeError). The requirement only covers returning structured data that parses and validates against the caller's schema, and says nothing about which error type a rejected output raises. For text that is already a valid JSON object, skipping extraction should give the same dict or a more faithful one (inferred, not run).",
-   "response_sha256": "1fb7e7cecd866a4ff2228c0d2d455364a9525102e751befc7d8087652f3e7e13",
+   "reason": "The original always runs the text through `_extract_json_payload` before parsing. The mutant parses the raw text first. So when the provider wraps the object in text that is itself valid JSON, such as `'\"{}\"'`, the mutant now raises TypeError where the original returned `{}`. That means provider-specific formatting changes the public structured result, which the requirement forbids.",
+   "response_sha256": "3b561addfd8b80831fcf87c41566b7d6c421e88011cb387739fba622139d4047",
    "sources": [
-    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
     "Provider-specific response formatting shall not change the public structured result.",
-    "        try:\n            decoded = json.loads(value)\n        except json.JSONDecodeError:\n            value = _extract_json_payload(value)",
-    "the original gives ('raises', 'ValueError') and the mutant gives ('raises', 'TypeError')"
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "value = _extract_json_payload(value)",
+    "decoded = json.loads(value)"
    ],
-   "test_focus": "",
-   "verdict": "irrelevant"
+   "test_focus": "Pass a candidate whose wrapping around the JSON object is itself valid JSON, such as `'\"{}\"'`, and check that `_parse_json_object` returns the extracted object `{}` instead of raising TypeError.",
+   "verdict": "pin"
   },
   "operator": "semantic",
-  "prompt_sha256": "03320b27b72da404ca2e5700a2d30e8a8a0006284cae95f29eeed36ea19fa6f7",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T201120Z-94386b",
-   "confirmed": true,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "03320b27b72da404ca2e5700a2d30e8a8a0006284cae95f29eeed36ea19fa6f7",
-   "reason": "The requirement mandates that the text route must return structured data that parses and validates against the schema, independent of provider-specific formatting. It does not mandate which specific exception type to raise when parsing malformed or garbage inputs. The difference between raising a ValueError and a TypeError for invalid input is an implementation detail not covered by the requirement.",
-   "response_sha256": "f0c386b53c692e7102fe9f59ae0a37a3a35cd8b502ae745cdb54031df11d2ea5",
+  "pin": {
+   "adopted_at": "2026-10-01T08:13:23.922197Z",
+   "answer_sha256": "f9c563065f53dd740ecfbdaa8a5b81c9d970372a771a7f6f34a157b295ebcb84",
+   "call_id": "20261001T081147Z-326950",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "9405c45807d852e010f9ab8842f488b5768386ecb231cd68ee552e17153cb9f2",
+   "effort": "",
+   "model": "gemini-3.8-flash-medium",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_structured_text_output_sm_1134d975.py",
+   "response_sha256": "a910c079830736ed10d9272ebcb2bef800ed4b56a1c64ac2ad5fd47cdcf64e02",
+   "source": "draft author",
    "sources": [
-    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema. Provider-specific response formatting shall not change the public structured result.",
-    "value = _extract_json_payload(value)",
-    "raise ValueError(msg) from exc",
-    "raise TypeError(msg)"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "42b7cf0fd0ac2faab0110bd1e01aaf2f9e9d13f7edce310da981959dba525f29"
  },
  "SM-2D3D81E7": {
   "answer": {
@@ -1908,37 +1921,40 @@
  "SM-69699DF1": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T191129Z-e70aed",
+   "call_id": "20261001T080944Z-c3fa40",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only moves the `find(\"[\")` and `rfind(\"]\")` calls ahead of the object check. On a str these calls have no side effects and cannot raise, and the order of the returns (object first, then array, then the stripped text) is unchanged, so every input gives the same result.",
-   "response_sha256": "7cf2d31d89dc6be3263cf2a0fed921fa9dfe294e4fea49ef3d15a5d88b7bb10e",
+   "reason": "The mutant only moves the `find`/`rfind` calls for \"[\" and \"]\" ahead of the object check. These calls on a `str` have no side effects and cannot raise. The object-first, array-second return order is unchanged, so every input gives the same extracted payload. The public structured result is therefore the same.",
+   "response_sha256": "7433649b22922bdaa4e5d7661fea61cf5a61f3f5cf1dbe37b34e34715ca9acfb",
    "sources": [
+    "Provider-specific response formatting shall not change the public structured result.",
     "first_arr = stripped.find(\"[\")",
     "last_arr = stripped.rfind(\"]\")",
-    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:",
-    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
+    "if first_obj != -1 and last_obj != -1 and last_obj > first_obj:"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "semantic",
-  "prompt_sha256": "cea18fdaf292132a511494a16eaecb97db2317a94341929d4e4fa9e5a75de4c7",
+  "prompt_sha256": "da5a3c0f9314faf9da808e09cdb07e2cb6861ffe9555dcb2121d6923bff2ec2e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T201201Z-d311eb",
+   "call_id": "20261001T081018Z-cb571e",
    "confirmed": false,
+   "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "cea18fdaf292132a511494a16eaecb97db2317a94341929d4e4fa9e5a75de4c7",
-   "reason": "Moving the array boundary search calls before the object return statement does not alter behavior because string search methods are pure and have no side-effects.",
-   "response_sha256": "971022cddc16465a7a66ba1c0c10d396ae323f325ee25107f05374817af6d6c7",
+   "prompt_sha256": "da5a3c0f9314faf9da808e09cdb07e2cb6861ffe9555dcb2121d6923bff2ec2e",
+   "reason": "Hoisting the side-effect-free calculations of first_arr and last_arr before the first return statement does not alter behavior because string search methods are pure and do not raise exceptions.",
+   "response_sha256": "9cd04c14cb9c9acd250b4de62fd6754d6ab037776e5167d336ff941fc3d3ecae",
    "sources": [
-    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
-    "    first_arr = stripped.find(\"[\")"
+    "Every supported adapter family returns a public structured result that validates against the same caller-requested schema without provider-specific result formatting leaking through.",
+    "first_arr = stripped.find(\"[\")",
+    "last_arr = stripped.rfind(\"]\")"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -1987,45 +2003,43 @@
  "SM-A1CB8BE4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T152601Z-723697",
+   "call_id": "20261001T080944Z-0cf19f",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only differs when value is a dict or list. Both callers pass only strings: the prompted path passes candidates from _structured_candidates (tuple[str, ...]) and the executor passes ProviderResult.output_text (str). So the changed branch can't be reached where the requirement's structured result is observed.",
-   "response_sha256": "4671df600b1e4f803d331ba7a4077611eb012a64561daf7940cafd5e198dddb8",
+   "reason": "The mutant only behaves differently when the value is a dict or list. Both project callers always pass strings: the prompted parser passes candidates from `_structured_candidates`, which returns `tuple[str, ...]`, and the executor passes `ProviderResult.output_text`, which is a `str`. So the skipped validation can never be seen in the structured result the requirement checks.",
+   "response_sha256": "c2f51677d258efbab9381da8a1e1319d1678498af2f22b3df2b48ada02782214",
    "sources": [
     "if isinstance(value, (dict, list)):",
-    "return SchemaValidationResult(valid=True, value=value)",
+    "for candidate in _structured_candidates(text):",
     "_structured_candidates(text: str) -> tuple[str, ...]",
     "validation = validate_schema_output(plan.schema, result.output_text)",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str,",
+    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str",
     "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "9321645b12c24fc44e0a6a5cf45fc6c21275146e91467575371fb1ef8b2e58cb",
+  "prompt_sha256": "91d33cd748e14c0591e24f02729dbc87780df3fef028a6d3071dda1f3a53e45e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T152635Z-500e40",
+   "call_id": "20261001T081059Z-8e7c53",
    "confirmed": true,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "9321645b12c24fc44e0a6a5cf45fc6c21275146e91467575371fb1ef8b2e58cb",
-   "reason": "The mutated code adds a short-circuit to return early without parsing if `value` is a dictionary or list. However, both callers of `validate_schema_output` in the project (`parse_prompted_structured_data` and `_validate_structured_result`) only ever pass string arguments (`candidate` from `_structured_candidates` which returns a tuple of strings, and `result.output_text` which is typed as a string). Because no caller can hand the function a dictionary or list, the difference cannot be reached or observed.",
-   "response_sha256": "f8555e0879769c32a2e15c002f92ec2f0ca1cb32c4eab2a2c788c2caedb84001",
+   "prompt_sha256": "91d33cd748e14c0591e24f02729dbc87780df3fef028a6d3071dda1f3a53e45e",
+   "reason": "The mutated code adds an early return for dict or list values, but both callers in the project pass strings (from _structured_candidates which returns tuple[str, ...] and ProviderResult.output_text which is a str). Thus, the changed code path is never reached, and the difference cannot be observed.",
+   "response_sha256": "0caebb68744ad469bc75d88da2c018634541054f26dfa0fa6f98a3fc82d30576",
    "sources": [
-    "Requirement REQ_STRUCTURED_TEXT_OUTPUT (Structured text output): A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
     "    if isinstance(value, (dict, list)):",
-    "        result = validate_schema_output(spec, candidate)",
     "_structured_candidates(text: str) -> tuple[str, ...]",
-    "    validation = validate_schema_output(plan.schema, result.output_text)",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
+    "validation = validate_schema_output(plan.schema, result.output_text)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"

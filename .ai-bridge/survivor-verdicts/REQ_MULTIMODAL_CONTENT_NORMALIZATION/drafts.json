@@ -505,6 +505,79 @@
    "sources": [
     "llm_router._internal.capabilities.content.normalize_content"
    ]
+  },
+  {
+   "at": "2026-10-01T08:13:00.308179Z",
+   "call_id": "20261001T081150Z-963067",
+   "cause": "grounding",
+   "context_gaps": [
+    "llm_router.Router"
+   ],
+   "grounding": [
+    "llm_router has no Router"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "c4de13efcedd0d4b0baf60ca43a76a8da0164e6e6e781e00e7865b132bfe6e03",
+   "reason": "it does not fit the project's code as written: llm_router has no Router",
+   "sources": [
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.Router",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:14:19.160675Z",
+   "call_id": "20261001T081300Z-54edb5",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "84992d8a853ed35c25961868e78d024e0cfa7a3e3605ed8318d0c5e71c8577f5",
+   "reason": "it imports llm_router._internal.capabilities.content",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:16:03.009500Z",
+   "call_id": "20261001T081419Z-3ce103",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "b7a9d4a0fb711c58a5da79b0e5021f83da95649afad3535849fc2330268f4364",
+   "reason": "it does not fail on the mutant: of the changed lines 86\u201388 it runs line 86 but never line 88",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:19:52.847733Z",
+   "call_id": "20261001T081603Z-b3afe8",
+   "cause": "weak",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "9db14bca6e1cf7a38d564152e848110a3dd310325086377e32edf6d650bf233e",
+   "reason": "it does not fail on the mutant: of the changed lines 86\u201388 it runs line 86 but never line 88",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "llm_router.Model",
+    "llm_router.Provider"
+   ]
   }
  ],
  "4e35b24fc276e4ad": [
@@ -657,6 +730,234 @@
     "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
     "tests.llm_router.support.fault_server.ScriptedResponse",
     "tests.llm_router.support.workers.retry.openai_chat_path"
+   ]
+  }
+ ],
+ "SM-73959DE4": [
+  {
+   "at": "2026-10-01T08:13:24.616882Z",
+   "call_id": "20261001T081150Z-a32f40",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no normalize_content (it lives in llm_router._internal.capabilities.content)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "574fa0e1769272e96a93beb984b9c683daf8edaa5628b009d413e6bae12e2e72",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_content (it lives in llm_router._internal.capabilities.content)",
+   "sources": [
+    "llm_router.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:14:06.045345Z",
+   "call_id": "20261001T081330Z-a51d5f",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "1fc46551f724f9d1cf5b9d73cc0026d7147d78e1b6d0dc97e08e25db8738702b",
+   "reason": "it imports llm_router._internal.capabilities.content",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:15:53.551836Z",
+   "call_id": "20261001T081406Z-22f082",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f0794dac27d914383ed7b2280356939e2c4d4499e23772c6c921442ee1227e24",
+   "reason": "it does not fail on the mutant: it runs the changed line 86, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:18:04.127657Z",
+   "call_id": "20261001T081554Z-cb81f4",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "009b2010f6f4681f79ded5022367a8ffa4de8e92af209283a7b3a7ec0107b037",
+   "reason": "it imports llm_router._internal.capabilities.content",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:33:12.694023Z",
+   "call_id": "20261001T083157Z-8ac0cd",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no normalize_content (it lives in llm_router._internal.capabilities.content)"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "8e9aff4f799b0dc7dde713e8b2baf3c21e4987960384036cd1f4fa27dc3f913d",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_content (it lives in llm_router._internal.capabilities.content)",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:33:35.271751Z",
+   "call_id": "20261001T083313Z-1e17ba",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "d9c25a644685f098ee059e9d7f2b45cc0b7baad286b982fb45c9c3b0b68f69ce",
+   "reason": "it imports llm_router._internal.capabilities.content",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:36:42.959499Z",
+   "call_id": "20261001T083336Z-012962",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "e3ae91df224ce549b4606459560400fe97a54f8301f6fa3c483b8d29c8cbedb1",
+   "reason": "it does not fail on the mutant: it runs the changed line 86, yet nothing it checks depends on what the change does",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ProviderSentinelHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:40:31.755050Z",
+   "call_id": "20261001T083643Z-cf75bc",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "94c70c452c92153266af766d9e70cb23aeb37caa7329789382c26c773d4eb192",
+   "reason": "it imports llm_router._internal.capabilities.content",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  }
+ ],
+ "SM-9B37A894": [
+  {
+   "at": "2026-10-01T08:11:59.267666Z",
+   "call_id": "20261001T081150Z-b5b22f",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [
+    "llm_router has no normalize_content (it lives in llm_router._internal.capabilities.content)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "7bccfea11cc1095d007c279e69ccbb3249a0a1e641a2f24167b1114fda1db999",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_content (it lives in llm_router._internal.capabilities.content)",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:12:09.743836Z",
+   "call_id": "20261001T081159Z-f1a72a",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "0cb20e823a60498a84eb7524911f3bc1841a311ebb2b376d19272317845cde64",
+   "reason": "it imports llm_router._internal.capabilities.content",
+   "sources": [
+    "llm_router._internal.capabilities.content.normalize_content",
+    "llm_router._internal.capabilities.content.TextPart"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:13:39.015047Z",
+   "call_id": "20261001T081210Z-fb051e",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "c89e577f1745899ddeaa52e4219689009039f4d7a60320ec5995a358777bc99c",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.install_fast_worker_runtime_config",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
   }
  ],

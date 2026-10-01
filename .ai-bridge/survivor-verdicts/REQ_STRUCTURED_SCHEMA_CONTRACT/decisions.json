@@ -1,0 +1,9 @@
+{
+ "SM-C6EBF982": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant drops None values only on the mapping branch of _parse_pydantic_model. The router validates structured output from the response text, which takes the text branch (model_validate_json); no public path hands the parser a mapping, and three rungs, the last the verdict's own model with tools, never reached the changed lines. No public path can observe it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "irrelevant"
+ }
+}

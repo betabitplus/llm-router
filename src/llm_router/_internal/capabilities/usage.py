@@ -36,9 +36,8 @@ def normalize_usage(value: object) -> UsageStats | None:
 
     input_tokens = _first_int(value, _INPUT_KEYS)
     output_tokens = _first_int(value, _OUTPUT_KEYS)
-    total_tokens = _first_int(value, _TOTAL_KEYS)
-    if total_tokens == 0 and (input_tokens or output_tokens):
-        total_tokens = input_tokens + output_tokens
+    # A total below its parts is not consistent: it is at least input plus output.
+    total_tokens = max(_first_int(value, _TOTAL_KEYS), input_tokens + output_tokens)
 
     return UsageStats(
         input_tokens=input_tokens,

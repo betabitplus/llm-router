@@ -1,0 +1,30 @@
+{
+ "b286d88b39b3a8e6": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant only drops the outstanding tool calls kept in the tool-loop state when the round limit is already reached. At the limit the executor builds the public response from the provider's own tool calls (result.tool_calls) and the executed steps, never from that state, so no caller can observe it; the requirement promises only that execution stops at the limit, which still holds. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "irrelevant"
+ },
+ "c7d2d7e9975406e2": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant only turns the parsed tool calls into a generator instead of a tuple. Executed calls consume it the same way, and on the already-limited path it lands only in the tool-loop state's outstanding calls, which the public response never reads: at the limit the executor answers with the provider's own tool calls and the executed steps. No public path can observe it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after the drafts that followed the earlier focus ran the path and did not catch the mutant.",
+  "verdict": "irrelevant"
+ },
+ "da6dae3b18c978b6": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant only changes the completed-rounds count kept in the tool-loop state on the already-limited path. The executor returns at the limit and reads that count only for its log line; the public response and the stop at the configured round count are unchanged. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "irrelevant"
+ },
+ "f7f884d8946a1724": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-01",
+  "level": "requirement",
+  "reason": "The mutant drops earlier steps on the already-limited path of run_tool_round. Through the executor that path is reached only when the limit is zero, before any step ran, so there are no earlier steps to drop; with a limit of one or more the executor returns right after the round that reaches it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "irrelevant"
+ }
+}

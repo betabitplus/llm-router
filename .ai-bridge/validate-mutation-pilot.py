@@ -1062,7 +1062,7 @@ STRUCTURED_BYPASS_CONTROLS = {
     "REQ_IMAGE_INPUT": {"interface.payload-schema": (1, 1)},
     "REQ_VIDEO_INPUT": {"interface.payload-schema": (1, 1)},
 }
-DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "suite", "unknown"}
+DRAFT_CAUSES = {"kept", "syntax", "grounding", "runtime-api", "rules", "lint", "behaviour", "weak", "suite", "slow", "unknown"}
 
 
 def check_draft_attempts(by_call: dict) -> None:
@@ -2169,6 +2169,7 @@ def main() -> None:
         "VC_PROVIDER_RETRY_TRANSIENT_RECOVERY",
         "VC_PROVIDER_RETRY_PERMANENT_NO_RETRY",
         "VC_PROVIDER_RETRY_ATTEMPT_BOUND",
+        "VC_PROVIDER_RETRY_WAIT_BOUND",
         "VC_REPAIR_PROMPT_BOUNDS",
         "VC_STRUCTURED_REPAIR_RECOVERY",
         "VC_STRUCTURED_REPAIR_ATTEMPT_BOUND",
@@ -4450,6 +4451,7 @@ def main() -> None:
             "cells": {
                 ("system_integration", "substitute"): {
                     "VC_PROVIDER_RETRY_ATTEMPT_BOUND": 2,
+                    "VC_PROVIDER_RETRY_WAIT_BOUND": 2,
                 },
             },
             "treqs": [],
@@ -4782,7 +4784,7 @@ def main() -> None:
                 "TREQ_GEMINI_WEBAPI_ADAPTER_BOUNDARY",
                 "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY",
             ],
-            "faults": {},
+            "faults": {"interface.payload-schema": (3, 3)},
         },
         "TREQ_OPENAI_ADAPTER_BOUNDARY": {
             "cells": {
@@ -4791,7 +4793,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {"interface.error-status": (1, 1), "runtime.malformed-response": (1, 1), "runtime.unavailable-disconnect": (1, 1)},
+            "faults": {"interface.error-status": (1, 1), "interface.payload-schema": (1, 1), "runtime.malformed-response": (1, 1), "runtime.unavailable-disconnect": (1, 1)},
         },
         "TREQ_QWENCHAT_ADAPTER_BOUNDARY": {
             "cells": {
@@ -4803,7 +4805,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {"interface.error-status": (1, 1), "interface.unexpected-interaction": (1, 1), "runtime.unavailable-disconnect": (1, 1)},
+            "faults": {"interface.error-status": (1, 1), "interface.payload-schema": (1, 1), "interface.unexpected-interaction": (1, 1), "runtime.unavailable-disconnect": (1, 1)},
         },
         "TREQ_AISTUDIO_ADAPTER_BOUNDARY": {
             "cells": {
@@ -4821,7 +4823,7 @@ def main() -> None:
                 },
             },
             "treqs": [],
-            "faults": {"interface.error-status": (2, 2)},
+            "faults": {"interface.error-status": (2, 2), "interface.payload-schema": (1, 1)},
         },
         "TREQ_GOOGLE_GENAI_ADAPTER_BOUNDARY": {
             "cells": {
@@ -7489,6 +7491,7 @@ def main() -> None:
         "src/llm_router/_internal/providers/openai_compatible.py",
         "src/llm_router/_internal/providers/qwenchat.py",
         "src/llm_router/_internal/providers/retry.py",
+        "src/llm_router/_internal/capabilities/usage.py",
         "src/llm_router/_internal/runtime/executor.py",
         "src/llm_router/_internal/runtime/effective_settings.py",
         "src/llm_router/_internal/session/serialization.py",

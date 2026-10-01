@@ -4,35 +4,168 @@
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T183837Z-0f6536",
+    "call_id": "20261001T075444Z-fa49bc",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "Since both versions evaluate the same conditions and raise the exact same exception type (ValueError) for invalid inputs, the changed order of checks does not affect the defined behavior.",
-    "response_sha256": "4475e702a3099c23ce5252041cfb3af15eefe2bd9a7d6416848df01c93f1a4a8",
+    "reason": "Reordering independent validation checks that all raise ValueError on failure does not alter the function's return value, mutations to the input, or the type of exception raised.",
+    "response_sha256": "c0ee43f24c49b959f7f8236a19b3f7131678a32be47ee80aa45d69e7303cff13",
+    "sources": [
+     "    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
+     "    if image.mode not in _ALLOWED_IMAGE_MODES:"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-2aeef6",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions perform identical checks that raise ValueError on invalid dimensions or modes and return None otherwise, without modifying the image, so reordering the checks does not alter the return value, mutation state, or exception type.",
+    "response_sha256": "55d60a58746aae954cc6839f42cd7f07e69b0e10dc909dde94396256759abc96",
     "sources": [
      "    if image.mode not in _ALLOWED_IMAGE_MODES:",
+     "        raise ValueError(msg)",
      "    if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:",
-     "        raise ValueError(msg)"
+     "    if image.width > _MAX_IMAGE_DIMENSION or image.height > _MAX_IMAGE_DIMENSION:"
     ],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260929T164215Z-05a8b0",
-    "confidence": 0.72,
+    "call_id": "20261001T075444Z-034064",
+    "confidence": 0.85,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "Only the check order changed; every failing input still raises ValueError and valid inputs return None, and only the message differs when several checks fail.",
-    "response_sha256": "6b4b12e494cf11a5a496e23c5f432e44c307c74f116f8479ec932d97cad3679c",
+    "reason": "All three checks raise ValueError and nothing else is returned or mutated, so reordering only changes the message text for images that violate several rules, not the exception type.",
+    "response_sha256": "a2b308416df5ddf96ae12a3a5e88a876ae7afb640f394d4333f357a4f65157b3",
     "sources": [
      "if image.mode not in _ALLOWED_IMAGE_MODES:",
-     "if image.width < _MIN_IMAGE_DIMENSION or image.height < _MIN_IMAGE_DIMENSION:"
+     "msg = f\"Image mode {image.mode!r} is not supported.\"",
+     "raise ValueError(msg)"
     ],
     "verdict": "equivalent"
    }
   },
-  "prompt_sha256": "b189631d4149e7a856e5933490a467cb3fb96353cd07f0a7b4b14749d6d04e3f"
+  "prompt_sha256": "1fbbe5fdde8efd3582fc5eb6ed2efb2de282985823f09e0a278e557a97363e65"
+ },
+ "SM-73959DE4": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "content": "b\"a\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-afb0a7",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When passing a bytes object, the original version raises a TypeError, whereas the changed version returns a tuple of integers.",
+    "response_sha256": "800a8eb1c779f5b33c935cd3a09aea40c870288e2e8856625ab1cef202e61e5f",
+    "sources": [
+     "    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+     "    if isinstance(content, Sequence):"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "content": "b''"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-22cd01",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For bytes input such as b'', the original version raises a TypeError because it explicitly excludes bytes and bytearray, whereas the changed version returns an empty tuple because bytes is an instance of Sequence.",
+    "response_sha256": "fd547910c3242608a70b0bfc8079a15151225a7a2662e3639c86c5637cb898a0",
+    "sources": [
+     "    if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+     "    if isinstance(content, Sequence):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "content": "b'abc'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T075444Z-8957cc",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For bytes content the original raises TypeError, while the changed version returns tuple(b'abc') == (97, 98, 99).",
+    "response_sha256": "32ca3ff2eed457a6d00fdeeea431f2e7d8e93546bc9d23a30a0293d110f66d1a",
+    "sources": [
+     "if isinstance(content, Sequence) and not isinstance(content, bytes | bytearray):",
+     "if isinstance(content, Sequence):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "73d375f4572fba4f0be31903eb4c4a8640ee3681e7a7ae4352dec6b03d623198"
+ },
+ "SM-9B37A894": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "content": "\"hello\"",
+     "role": "\"model\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-6a46bc",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version ignores the provided role argument and hardcodes it to \"user\", resulting in a different output when a non-default role is passed.",
+    "response_sha256": "70d411175cf9e988d85537c118b66e74498b15a581a49eba4239526233ab72aa",
+    "sources": [
+     "        role=role,",
+     "        role=\"user\","
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "content": "'hello'",
+     "role": "'assistant'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075444Z-8fc137",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version sets the NormalizedMessage role to the provided role argument, while the changed version hardcodes role to 'user', producing different outputs when role is not 'user'.",
+    "response_sha256": "4976c037481b3d75a7fa8ddefe61278314492a9135164b0471439300fee91bc8",
+    "sources": [
+     "        role=role,",
+     "        role=\"user\","
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "content": "\"hello\"",
+     "role": "\"assistant\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T075444Z-20ebfb",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version hardcodes role=\"user\", so a non-default role such as \"assistant\" is returned as \"user\" instead of being preserved.",
+    "response_sha256": "28967aece824fbaacf1034dd2ee400ca6cd74b08b6c5716340fb4f4c92300ba0",
+    "sources": [
+     "role=\"user\",",
+     "role=role,",
+     "def normalize_content(content: object, *, role: ChatRole = \"user\") -> NormalizedMessage:"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "85002e7aa7b5606226ea88c23fc4a426097d964f6394c1f2ae6e3cae3080825b"
  }
 }

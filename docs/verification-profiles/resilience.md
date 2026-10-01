@@ -168,19 +168,20 @@ statements; they cannot change what the requirement means.
 ## Profile · TREQ_PROVIDER_RETRY_BOUNDS
 
 **Verification intent.** Prove that one resolved provider route never exceeds the
-configured same-route retry maximum and that the initial provider call counts as attempt
-one.
+configured same-route retry maximum, that the initial provider call counts as attempt
+one, and that no wait before a retry exceeds the configured maximum retry wait.
 
 **Models:** {ref}`Provider retry <test-plan-provider-retry-model>`
 
 ### Required coverage
 
-| Test level         | Boundary   | Representation | M&S target |          Target |
-| ------------------ | ---------- | -------------- | ---------- | --------------: |
-| System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
+| Test level         | Boundary   | Representation | M&S target |         Target |
+| ------------------ | ---------- | -------------- | ---------- | -------------: |
+| System Integration | Substitute | Surrogate      | L0         | **2 criteria** |
 
-**Coverage basis.** The same attempt ceiling must hold in sync and async public
-execution, with the initial provider call counted as attempt one in both paths.
+**Coverage basis.** The same attempt ceiling and the same wait ceiling must hold in sync
+and async public execution, with the initial provider call counted as attempt one in both
+paths.
 
 **Representation basis.** Actual retry/runtime code is exercised against a scripted
 provider boundary; the external participant is therefore Surrogate at L0.
@@ -190,6 +191,7 @@ provider boundary; the external participant is therefore Surrogate at L0.
 | Criterion                         | Contract                                    | Test level         | Boundary   | Required paths | Required path IDs | Success criterion                                                                                                          |
 | --------------------------------- | ------------------------------------------- | ------------------ | ---------- | -------------: | ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `VC_PROVIDER_RETRY_ATTEMPT_BOUND` | {need}`[[id]] <TREQ_PROVIDER_RETRY_BOUNDS>` | System Integration | Substitute |              2 | `sync` · `async`  | Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond. |
+| `VC_PROVIDER_RETRY_WAIT_BOUND`    | {need}`[[id]] <TREQ_PROVIDER_RETRY_BOUNDS>` | System Integration | Substitute |              2 | `sync` · `async`  | Sync and async retry each wait no longer than the configured maximum retry wait before any further attempt.                |
 
 ### Evidence aggregation
 

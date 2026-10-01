@@ -141,6 +141,229 @@
     "llm_router._internal.config.models.RetryPolicy",
     "llm_router._api.errors.ProviderError"
    ]
+  },
+  {
+   "at": "2026-10-01T08:13:22.327463Z",
+   "call_id": "20261001T081146Z-89741a",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "f3f99dbd2d95b9d468f9e09a76107f901dc0864f4d02ccb61377a48bdbd770bb",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_async_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:14:09.223844Z",
+   "call_id": "20261001T081322Z-97a6a2",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "ad0648ceeefeeba8b49e9114e4625acdab0dd8feb5c44757898b3f3b51efd0c1",
+   "reason": "it breaks the project's lint rules (ruff: line 15: N818 Exception name `RetryableCause` should be named with an Error suffix)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:15:23.698389Z",
+   "call_id": "20261001T081409Z-91bb18",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "202c7e7d26252bb719850a383ad250954a3d893412357587f01ff8f6233660cd",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T09:06:16.834917Z",
+   "call_id": "20261001T090442Z-9bf2ce",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "234624e1afb3eadc7630e3cbaebe3d7ca0ecc721830988285033bb800585a4a2",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T09:07:06.388044Z",
+   "call_id": "20261001T090617Z-043835",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "ec4bcd25f642ef0be68b06d03bee1a72887b642a200ea0d7f6922e2b9af5e356",
+   "reason": "it breaks the project's lint rules (ruff: line 15: N818 Exception name `RetryableCause` should be named with an Error suffix)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T09:08:03.549379Z",
+   "call_id": "20261001T090706Z-eeffe6",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9fe2d48cd79a92b274d69dafc4f408fbcae9950f9ec00d2def85dfec0e441c80",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_async_retrying"
+   ]
+  }
+ ],
+ "cdebfb831ae4dc16": [
+  {
+   "at": "2026-10-01T08:13:44.841617Z",
+   "call_id": "20261001T081147Z-a2ca1a",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "4b91e510668ccc66e790a8481963fbbe86322959bb8bb93e8b5090d703b9f77a",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying",
+    "llm_router._api.errors.ProviderError"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:14:38.592696Z",
+   "call_id": "20261001T081345Z-44834d",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "371978b491402b4c1aded28616c8c85a2fa60237df6e8f80d1621e7f69f042c2",
+   "reason": "it breaks the project's lint rules (ruff: line 13: N818 Exception name `RetryableCause` should be named with an Error suffix)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:15:29.144775Z",
+   "call_id": "20261001T081439Z-99fb52",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "04e2a33f4f2ef54e0a14a9c9652668e5d91372eecd96bd039e82c0f7926771ec",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T09:06:26.160436Z",
+   "call_id": "20261001T090442Z-bb61ad",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "ProviderError cannot be built without provider, model"
+   ],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ca48b339c492bda943f00950ffff8f2c19b914c7096eab3c913446eea7a83f7d",
+   "reason": "it does not fit the project's code as written: ProviderError cannot be built without provider, model",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
+  },
+  {
+   "at": "2026-10-01T09:07:22.682822Z",
+   "call_id": "20261001T090626Z-75c1c0",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "2e9baebecee2d0607cd54bdd11a9f36f24eb111c712182285ceb5b1779967fda",
+   "reason": "it breaks the project's lint rules (ruff: line 13: N818 Exception name `RetryableCause` should be named with an Error suffix)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T09:07:58.053918Z",
+   "call_id": "20261001T090723Z-caecba",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8a2570ae5e12c97b16fdcb07967eba453f9141766911ceed0a806c840292234a",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AttributeError: 'NoneType' object has no attribute 'warning')",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._internal.providers.retry.build_provider_retrying"
+   ]
+  },
+  {
+   "at": "2026-10-01T09:09:34.230199Z",
+   "call_id": "20261001T090758Z-ed5e07",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "cc13e9a7a0d8a2fa5959f0f0dee2c16d7ea93aa917fe1d4aa8365c791abbff57",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.providers.retry.build_provider_retrying",
+    "llm_router._internal.config.models.RetryPolicy",
+    "llm_router._api.errors.ProviderError"
+   ]
   }
  ]
 }

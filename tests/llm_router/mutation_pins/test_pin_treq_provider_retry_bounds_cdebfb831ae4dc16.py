@@ -1,69 +1,59 @@
 # mutation-pin: TREQ_PROVIDER_RETRY_BOUNDS cdebfb831ae4dc16
 # pinned-by: claude-opus-5-5
+# written-by: claude-opus-5-5, the last resort, the verdict's own model with tools
 from __future__ import annotations
-
-from typing import Any
 
 import pytest
 
-import llm_router._internal.providers.retry as retry_mod
+from llm_router._api.errors import ProviderError
 from llm_router._internal.config.models import RetryPolicy
 from llm_router._internal.providers.retry import build_provider_retrying
 
 pytestmark = pytest.mark.verification_kind("unit")
 
 
-class _TestLogger:
-    def __call__(self, *args: Any, **kwargs: Any) -> None:
-        pass
+class RetryableCauseError(Exception):
+    """Private-style provider cause flagged as retryable."""
 
-    def log(self, *args: Any, **kwargs: Any) -> None:
-        pass
-
-    def warning(self, *args: Any, **kwargs: Any) -> None:
-        pass
-
-    def info(self, *args: Any, **kwargs: Any) -> None:
-        pass
-
-    def debug(self, *args: Any, **kwargs: Any) -> None:
-        pass
+    retryable: bool = True
 
 
-class DummyProviderError(Exception):
-    """Simulates a provider error for testing."""
+class RecordingLogger:
+    """Collect retry warning events emitted between attempts."""
+
+    def __init__(self) -> None:
+        self.events: list[str] = []
+
+    def warning(self, event: str, **values: object) -> None:
+        del values
+        self.events.append(event)
 
 
-@pytest.mark.verifies("TREQ_PROVIDER_RETRY_BOUNDS[revision==1]")
-def test_provider_retrying_reraises_same_exception_when_exhausted(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    def _is_retryable(error: BaseException) -> bool:
-        return isinstance(error, Exception)
-
-    monkeypatch.setattr(retry_mod, "is_retryable_provider_error", _is_retryable)
-
+@pytest.mark.verifies("TREQ_PROVIDER_RETRY_BOUNDS[revision==2]")
+def test_sync_exhausted_retry_surfaces_last_provider_error() -> None:
     max_attempts = 3
     policy = RetryPolicy(
         min_wait_seconds=0.0,
         max_wait_seconds=0.0,
         max_attempts=max_attempts,
     )
-    retrying = build_provider_retrying(
-        policy=policy,
-        logger=_TestLogger(),
-    )
+    retry_logger = RecordingLogger()
+    retrying = build_provider_retrying(policy=policy, logger=retry_logger)
+    raised: list[ProviderError] = []
 
-    error = DummyProviderError("simulated provider failure")
-    attempts = 0
-
-    def failing_provider_call() -> None:
-        nonlocal attempts
-        attempts += 1
+    def operation() -> None:
+        error = ProviderError(
+            RetryableCauseError("upstream overloaded"),
+            "openrouter",
+            "deepseek-v3",
+            message=f"provider outage on attempt {len(raised) + 1}",
+        )
+        raised.append(error)
         raise error
 
-    with pytest.raises(DummyProviderError) as exc_info:
-        retrying(failing_provider_call)
+    with pytest.raises(ProviderError, match=r"provider outage on attempt 3") as info:
+        retrying(operation)
 
-    assert exc_info.value is error
-    assert attempts == max_attempts
+    assert len(raised) == max_attempts
+    assert info.value is raised[-1]
+    assert len(retry_logger.events) == max_attempts - 1

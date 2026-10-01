@@ -1982,6 +1982,85 @@
     "tests.llm_router.support.workers.retry.openai_success_response",
     "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
    ]
+  },
+  {
+   "at": "2026-10-01T08:13:13.710480Z",
+   "call_id": "20261001T081149Z-db571c",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "f8eb7281e71c1312062d4f31bb461acf4eae63cfdc266ade3081240c31fd3b71",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:14:09.030810Z",
+   "call_id": "20261001T081314Z-5dc7b9",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)"
+   ],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "8d2a9540b5012c4273982f818ffa7c64f903055f7b80b631b3d5292d9f004ad6",
+   "reason": "it does not fit the project's code as written: llm_router has no normalize_schema (it lives in llm_router._internal.capabilities.schema)",
+   "sources": [
+    "llm_router.normalize_schema"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:14:50.599274Z",
+   "call_id": "20261001T081409Z-040d04",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "eab8dc4454756dc67452686e7302a746b5c2550fd843d85c80f1cd21d8479225",
+   "reason": "it imports llm_router._internal.capabilities.schema",
+   "sources": [
+    "llm_router._internal.capabilities.schema.normalize_schema",
+    "llm_router._internal.capabilities.schema.validate_schema_output"
+   ]
+  },
+  {
+   "at": "2026-10-01T08:20:36.416689Z",
+   "call_id": "20261001T081451Z-aaade8",
+   "cause": "weak",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "9036c5442374bfbc6ed3f5b5fb9b9066fd8bb22d989f8b98ce86a41c0609b78e",
+   "reason": "it does not fail on the mutant: it never reaches the changed lines 181\u2013182: of the function under test it runs lines 176 and 178\u2013180; the nearest it gets is line 180",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
   }
  ],
  "SM-D49276DB": [

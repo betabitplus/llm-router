@@ -109,6 +109,50 @@
   },
   "prompt_sha256": "9ec211f15f2eed5366cf722472a4d4441b93ae0b61287344ce4d6e3b94da186d"
  },
+ "SM-2DBB5B58": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261001T083039Z-cd4784",
+   "confirmed": true,
+   "effort": "xhigh",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only ignores an explicit `tool_calls=` override. Every visible caller passes just `result`, `tool_trace` and sometimes `structured_data`, so the public `tool_calls` field still comes from `result.tool_calls` in both versions. The call at line 418 is not visible in the excerpt, but no test written in a copy of the project could tell the versions apart there, so the requirement on normalized tool semantics is not affected.",
+   "response_sha256": "864f06fb02ba4252274930d26cd0631938ad8104b261f1c752afdf7c1cbbe66a",
+   "sources": [
+    "tool_calls=list(result.tool_calls),",
+    "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
+    "response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),",
+    "response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),",
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics."
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "3b997e037cdd695fb68319de8285d0cc8d41ef40f57512382193eb2a1b463609",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261001T083101Z-4efa47",
+   "confirmed": true,
+   "effort": "",
+   "level": "implementation",
+   "model": "gemini-3.1-pro-high",
+   "problems": [],
+   "prompt_sha256": "3b997e037cdd695fb68319de8285d0cc8d41ef40f57512382193eb2a1b463609",
+   "reason": "No caller provides the `tool_calls` argument to `build_public_response`, so it always defaults to `None`. As a result, the original conditional expression and the mutant's direct usage of `result.tool_calls` behave identically in all actual executions, making the difference unobservable where the requirement is observed.",
+   "response_sha256": "70228314235a382a31b18e972a54c2808199333d89ca542a7f524068cb10c106",
+   "sources": [
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
+    "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
+    "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),",
+    "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "SM-44C084CF": {
   "answer": {
    "backend": "claude-cli",

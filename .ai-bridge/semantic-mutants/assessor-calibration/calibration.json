@@ -1793,11 +1793,11 @@
   }
  },
  "below_floors": [],
- "calibrated_at": "2026-10-01T06:39:37.246652Z",
+ "calibrated_at": "2026-10-01T09:09:49.457540Z",
  "complete": true,
  "configurations": [
   {
-   "distinct": 110,
+   "distinct": 109,
    "labelled_distinct": 2,
    "members": [
     "claude-cli:claude-sonnet-5-5@low",
@@ -1815,7 +1815,7 @@
   "antigravity-cli:gemini-3.8-flash-high"
  ],
  "metrics": {
-  "distinct": 110,
+  "distinct": 109,
   "distinct_confirmed": 14,
   "distinct_labelled": 2,
   "equivalent_labelled": 14,
@@ -1861,8 +1861,8 @@
     "unsure": 0
    }
   },
-  "observed": 96,
-  "observed_pending": 25,
+  "observed": 95,
+  "observed_pending": 23,
   "pairs": 28
  },
  "missing": [],
@@ -6537,6 +6537,80 @@
     "status": "error"
    }
   },
+  "REQ_TOOL_CHOICE:eecdb1201e9ab7e6": {
+   "answers": {
+    "antigravity-cli:gemini-3.1-pro-high": {
+     "arguments": {
+      "choice": "{}",
+      "registry": "ToolRegistry(tools={})"
+     },
+     "backend": "antigravity-cli",
+     "call_id": "20261001T061830Z-9cd8a8",
+     "confidence": 0.95,
+     "model": "gemini-3.1-pro-high",
+     "problems": [],
+     "reason": "If the mapping does not specify a tool name, the original version correctly bypasses validation, whereas the modified version calls `_require_tool_exists` with `None`, raising an exception when it tries to check the registry.",
+     "response_sha256": "a220944b0a46398cd7ab37cd480bc72c7f8641bb0f443031eb6061cb83d84b17",
+     "sources": [
+      "        if name is not None:",
+      "        if True:"
+     ],
+     "verdict": "distinct"
+    },
+    "antigravity-cli:gemini-3.8-flash-high": {
+     "arguments": {
+      "choice": "{}",
+      "registry": "ToolRegistry()"
+     },
+     "backend": "antigravity-cli",
+     "call_id": "20261001T061815Z-02824a",
+     "confidence": 1,
+     "model": "gemini-3.8-flash-high",
+     "problems": [],
+     "reason": "When choice is a mapping without a named tool and a registry is provided, the original version skips validation while the changed version unconditionally calls _require_tool_exists with name=None, raising an exception.",
+     "response_sha256": "53969310a849dc04ea0c54cc6a13e348dc210e88cf8144f59c9a2a153d6d2e42",
+     "sources": [
+      "        if name is not None:",
+      "        if True:",
+      "            _require_tool_exists(name, registry=registry)"
+     ],
+     "verdict": "distinct"
+    },
+    "claude-cli:claude-sonnet-5-5@low": {
+     "arguments": {
+      "choice": "{}",
+      "registry": "ToolRegistry(tools={})"
+     },
+     "backend": "claude-cli",
+     "call_id": "20261001T061834Z-e98a38",
+     "confidence": 0.72,
+     "model": "claude-sonnet-5-5",
+     "problems": [],
+     "reason": "For a mapping with no extractable name and a registry present, the original skips validation and returns a raw ToolChoice, while the changed version calls _require_tool_exists(None), which likely raises because None is not a registered tool.",
+     "response_sha256": "8dfbb8fb3444cd1d35a4197b6541279a69ad40f2a13be8cfd596324a3ff59718",
+     "sources": [
+      "if True:",
+      "_require_tool_exists(name, registry=registry)",
+      "if name is not None:"
+     ],
+     "verdict": "distinct"
+    }
+   },
+   "contract_id": "REQ_TOOL_CHOICE",
+   "fingerprint": "eecdb1201e9ab7e6",
+   "pin_path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_eecdb1201e9ab7e6.py",
+   "prompt_sha256": "ce11be1a6cae7068e846494883df898b38be42ac7b69e8bc9d934aea974465b0",
+   "score": 0.0,
+   "scores": [
+    0.0
+   ],
+   "symbolic": {
+    "crosshair": "0.0.110",
+    "reason": "TypeError: cannot pickle 'mappingproxy' object",
+    "seconds": 2.4,
+    "status": "error"
+   }
+  },
   "REQ_TOOL_RUNTIME_SAFETY:4180d032448ab8db": {
    "answers": {
     "antigravity-cli:gemini-3.1-pro-high": {
@@ -8316,163 +8390,6 @@
     "status": "none"
    }
   },
-  "TREQ_PROVIDER_RETRY_BOUNDS:a3f68e4f70d254ab": {
-   "answers": {
-    "antigravity-cli:gemini-3.1-pro-high": {
-     "arguments": {
-      "context_getter": "None",
-      "logger": "RetryLogger()",
-      "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
-      "state_sink": "None"
-     },
-     "backend": "antigravity-cli",
-     "call_id": "20261001T060704Z-583cb4",
-     "confidence": 1,
-     "model": "gemini-3.1-pro-high",
-     "problems": [],
-     "reason": "The original version returns an AsyncRetrying instance with reraise=True, whereas the changed version returns one with reraise=False, resulting in different configuration and behavior for the returned object on any valid input.",
-     "response_sha256": "b52d9b143b6a7b8230333be12c4c45037751e99e05035a3a59a88bf89d94ed72",
-     "sources": [
-      "        reraise=True,",
-      "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
-     ],
-     "verdict": "distinct"
-    },
-    "antigravity-cli:gemini-3.8-flash-high": {
-     "arguments": {
-      "context_getter": "None",
-      "logger": "RetryLogger()",
-      "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
-      "state_sink": "None"
-     },
-     "backend": "antigravity-cli",
-     "call_id": "20261001T060705Z-60f42b",
-     "confidence": 0.95,
-     "model": "gemini-3.8-flash-high",
-     "problems": [],
-     "reason": "The original version returns an AsyncRetrying instance with reraise=True whereas the changed version returns one with reraise=False, altering the retry policy's exception re-raising behavior.",
-     "response_sha256": "4db630cb913a23af69f9349fc2760daf6239b8116f5278e0cc00f90aebec4685",
-     "sources": [
-      "        reraise=True,",
-      "    return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
-     ],
-     "verdict": "distinct"
-    },
-    "claude-cli:claude-sonnet-5-5@low": {
-     "arguments": {
-      "context_getter": "None",
-      "logger": "a RetryLogger test double that records calls",
-      "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1)",
-      "state_sink": "None"
-     },
-     "backend": "claude-cli",
-     "call_id": "20261001T060701Z-0883fd",
-     "confidence": 0.9,
-     "model": "claude-sonnet-5-5",
-     "problems": [],
-     "reason": "With reraise=False, exhausting retries on a retryable error raises tenacity.RetryError, whereas the original reraise=True raises the original exception, so the exception type differs.",
-     "response_sha256": "3c3b37efe555cd36d305da8d598cd53c8eba166ccf5138d618565345d6b22b19",
-     "sources": [
-      "reraise=True,",
-      "reraise=False)"
-     ],
-     "verdict": "distinct"
-    }
-   },
-   "contract_id": "TREQ_PROVIDER_RETRY_BOUNDS",
-   "fingerprint": "a3f68e4f70d254ab",
-   "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_a3f68e4f70d254ab.py",
-   "prompt_sha256": "2fa052ce03418ceca81949013b0300cedf2397f9c1c7b0910982aaed62641a42",
-   "score": 0.0,
-   "scores": [
-    0.0
-   ],
-   "symbolic": {
-    "crosshair": "0.0.110",
-    "paths": 298,
-    "seconds": 9.2,
-    "status": "none"
-   }
-  },
-  "TREQ_PROVIDER_RETRY_BOUNDS:cdebfb831ae4dc16": {
-   "answers": {
-    "antigravity-cli:gemini-3.1-pro-high": {
-     "arguments": {
-      "context_getter": "None",
-      "logger": "RetryLogger()",
-      "policy": "RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)",
-      "state_sink": "None"
-     },
-     "backend": "antigravity-cli",
-     "call_id": "20261001T060708Z-299d1f",
-     "confidence": 1,
-     "model": "gemini-3.1-pro-high",
-     "problems": [],
-     "reason": "The changed version modifies the reraise parameter passed to Retrying from True to False, which changes whether the resulting Retrying object will directly reraise exceptions or wrap them in a RetryError.",
-     "response_sha256": "2d32025e699d1ba2d02a47e00381c12d7cad093289120e18dfa4df3c1a616c5a",
-     "sources": [
-      "        reraise=True,",
-      "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
-     ],
-     "verdict": "distinct"
-    },
-    "antigravity-cli:gemini-3.8-flash-high": {
-     "arguments": {
-      "arguments": "{'context_getter': 'None', 'logger': 'None', 'policy': 'RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3)', 'state_sink': 'None'}",
-      "confidence": "1",
-      "reason": "The original version configures Retrying with reraise=True to re-raise the original exception when retry attempts are exhausted, whereas the changed version sets reraise=False which causes Retrying to raise a RetryError instead.",
-      "sources": "['        reraise=True,', \"    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)\"]",
-      "verdict": "distinct"
-     },
-     "backend": "antigravity-cli",
-     "call_id": "20261001T060708Z-a5a4dc",
-     "confidence": 1,
-     "model": "gemini-3.8-flash-high",
-     "problems": [],
-     "reason": "The original version configures Retrying with reraise=True to re-raise the original exception when retry attempts are exhausted, whereas the changed version sets reraise=False which causes Retrying to raise a RetryError instead.",
-     "response_sha256": "6b0fb7b8097632ed98245388e3cecf328878efa5adb5e70129276dcb7b92d0b1",
-     "sources": [
-      "        reraise=True,",
-      "    return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), before_sleep=build_retry_before_sleep_logger(logger, event_type='llm_router.provider.retry.scheduled', context_getter=context_getter, state_sink=state_sink), reraise=False)"
-     ],
-     "verdict": "distinct"
-    },
-    "claude-cli:claude-sonnet-5-5@low": {
-     "arguments": {
-      "context_getter": "None",
-      "logger": "None",
-      "policy": "RetryPolicy(min_wait_seconds=0.0, max_wait_seconds=0.0, max_attempts=1)",
-      "state_sink": "None"
-     },
-     "backend": "claude-cli",
-     "call_id": "20261001T060706Z-9e0473",
-     "confidence": 0.9,
-     "model": "claude-sonnet-5-5",
-     "problems": [],
-     "reason": "The change flips reraise from True to False, so when retries are exhausted the returned Retrying raises tenacity.RetryError instead of the original exception.",
-     "response_sha256": "d61256702a70a360f52d0093c90b5650730cc77b49842c0bc62244c24317b95a",
-     "sources": [
-      "reraise=True,",
-      "stop=stop_after_attempt(policy.max_attempts),"
-     ],
-     "verdict": "distinct"
-    }
-   },
-   "contract_id": "TREQ_PROVIDER_RETRY_BOUNDS",
-   "fingerprint": "cdebfb831ae4dc16",
-   "pin_path": "tests/llm_router/mutation_pins/test_pin_treq_provider_retry_bounds_cdebfb831ae4dc16.py",
-   "prompt_sha256": "6d7a13e269f24690a80daa068b8368eb51f89a15881230780b0e15ecef08baf8",
-   "score": 0.0,
-   "scores": [
-    0.0
-   ],
-   "symbolic": {
-    "crosshair": "0.0.110",
-    "paths": 298,
-    "seconds": 8.8,
-    "status": "none"
-   }
-  },
   "TREQ_PROVIDER_RETRY_CLASSIFICATION:103e134c5bae2419": {
    "answers": {
     "antigravity-cli:gemini-3.1-pro-high": {
@@ -8779,7 +8696,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
-    "seconds": 8.5,
+    "seconds": 8.7,
     "status": "none"
    }
   },
@@ -8865,7 +8782,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
-    "seconds": 9.0,
+    "seconds": 8.6,
     "status": "none"
    }
   },
@@ -9019,7 +8936,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 2.0,
+    "seconds": 1.8,
     "status": "error"
    }
   },
@@ -9097,7 +9014,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 2.0,
+    "seconds": 1.7,
     "status": "error"
    }
   },
@@ -9178,7 +9095,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 1.8,
+    "seconds": 1.7,
     "status": "error"
    }
   },
@@ -9256,7 +9173,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 1.9,
+    "seconds": 1.7,
     "status": "error"
    }
   },
@@ -9330,7 +9247,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 2.0,
+    "seconds": 1.8,
     "status": "error"
    }
   },
@@ -9411,7 +9328,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 1.8,
+    "seconds": 1.7,
     "status": "error"
    }
   },
@@ -9480,7 +9397,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 1.9,
+    "seconds": 1.8,
     "status": "error"
    }
   },
@@ -9558,7 +9475,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 1.8,
+    "seconds": 1.7,
     "status": "error"
    }
   }
@@ -10579,6 +10496,23 @@
     "verdict": "distinct"
    }
   },
+  "REQ_TOOL_CHOICE:eecdb1201e9ab7e6": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "call_id": "20261001T061830Z-9cd8a8",
+    "response_sha256": "a220944b0a46398cd7ab37cd480bc72c7f8641bb0f443031eb6061cb83d84b17",
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "call_id": "20261001T061815Z-02824a",
+    "response_sha256": "53969310a849dc04ea0c54cc6a13e348dc210e88cf8144f59c9a2a153d6d2e42",
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "call_id": "20261001T061834Z-e98a38",
+    "response_sha256": "8dfbb8fb3444cd1d35a4197b6541279a69ad40f2a13be8cfd596324a3ff59718",
+    "verdict": "distinct"
+   }
+  },
   "REQ_TOOL_RUNTIME_SAFETY:4180d032448ab8db": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "call_id": "20260928T230823Z-2482c4",
@@ -10936,40 +10870,6 @@
     "verdict": "distinct"
    }
   },
-  "TREQ_PROVIDER_RETRY_BOUNDS:a3f68e4f70d254ab": {
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "call_id": "20261001T060704Z-583cb4",
-    "response_sha256": "b52d9b143b6a7b8230333be12c4c45037751e99e05035a3a59a88bf89d94ed72",
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "call_id": "20261001T060705Z-60f42b",
-    "response_sha256": "4db630cb913a23af69f9349fc2760daf6239b8116f5278e0cc00f90aebec4685",
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5-5@low": {
-    "call_id": "20261001T060701Z-0883fd",
-    "response_sha256": "3c3b37efe555cd36d305da8d598cd53c8eba166ccf5138d618565345d6b22b19",
-    "verdict": "distinct"
-   }
-  },
-  "TREQ_PROVIDER_RETRY_BOUNDS:cdebfb831ae4dc16": {
-   "antigravity-cli:gemini-3.1-pro-high": {
-    "call_id": "20261001T060708Z-299d1f",
-    "response_sha256": "2d32025e699d1ba2d02a47e00381c12d7cad093289120e18dfa4df3c1a616c5a",
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "call_id": "20261001T060708Z-a5a4dc",
-    "response_sha256": "6b0fb7b8097632ed98245388e3cecf328878efa5adb5e70129276dcb7b92d0b1",
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5-5@low": {
-    "call_id": "20261001T060706Z-9e0473",
-    "response_sha256": "d61256702a70a360f52d0093c90b5650730cc77b49842c0bc62244c24317b95a",
-    "verdict": "distinct"
-   }
-  },
   "TREQ_PROVIDER_RETRY_CLASSIFICATION:103e134c5bae2419": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "call_id": "20261001T060714Z-fe574c",
@@ -11289,10 +11189,8 @@
   },
   "TREQ_TOOL_REGISTRY:77252785424d95f7": {},
   "TREQ_TOOL_REGISTRY:77986b22a0ac6322": {},
-  "TREQ_USAGE_NORMALIZATION:1356bcae910da7c0": {},
   "TREQ_USAGE_NORMALIZATION:516ee0826f5a2224": {},
-  "TREQ_USAGE_NORMALIZATION:58413afa88ad9810": {},
-  "TREQ_USAGE_NORMALIZATION:f3d4b39e06f3f013": {}
+  "TREQ_USAGE_NORMALIZATION:58413afa88ad9810": {}
  },
  "observed_pending": [
   "REQ_MULTI_ROUND_TOOL_EXECUTION:9a1e3f3eefc3663d",
@@ -11316,10 +11214,8 @@
   "TREQ_ROUTE_ORDER:eec518360ab2e988",
   "TREQ_TOOL_REGISTRY:77252785424d95f7",
   "TREQ_TOOL_REGISTRY:77986b22a0ac6322",
-  "TREQ_USAGE_NORMALIZATION:1356bcae910da7c0",
   "TREQ_USAGE_NORMALIZATION:516ee0826f5a2224",
-  "TREQ_USAGE_NORMALIZATION:58413afa88ad9810",
-  "TREQ_USAGE_NORMALIZATION:f3d4b39e06f3f013"
+  "TREQ_USAGE_NORMALIZATION:58413afa88ad9810"
  ],
  "pair_prompts": {
   "D01": "af3002d1d52dab5407103af76453101828ab521f4df200414704757fab615910",

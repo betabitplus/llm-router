@@ -1202,6 +1202,25 @@ def mutant_tests(workdir: Path, file: Path, path: str, mutated_source: str, sele
 
 # A kept draft passes on the original this many times in a row (TestGen-LLM's reliability filter).
 DRAFT_PASSES = 5
+# A pin is a fast check: a draft whose runs on the original take longer than this, by pytest's own
+# session time (the median of its five), is rejected (2026-10-01: eight pins took 41 of the 52 s of
+# all pins).
+DRAFT_SECONDS = 3.0
+
+
+def session_seconds(run: dict) -> float | None:
+    """pytest's own time for a run, from its summary line (\"1 passed in 0.43s\")."""
+    match = re.search(r" in ([0-9]+(?:\.[0-9]+)?)s", run.get("tail") or "")
+    return float(match.group(1)) if match else None
+
+
+def draft_too_slow(runs: list[dict]) -> float | None:
+    """The median session time of a draft's runs on the original when it is above the limit."""
+    times = sorted(seconds for seconds in (session_seconds(run) for run in runs) if seconds is not None)
+    if not times:
+        return None
+    median = times[len(times) // 2]
+    return median if median > DRAFT_SECONDS else None
 # Where a semantic mutant's draft is judged; a mutation pin is judged where it will live.
 DRAFT_PATH = "tests/test_semantic_draft.py"
 
@@ -1270,6 +1289,7 @@ def judge_draft(
         file.write_text(original)
         runs = [run_tests(PROJECT, workdir, [as_path]) for _ in range(DRAFT_PASSES)]
         passes = [run["returncode"] == 0 for run in runs]
+        slow = draft_too_slow(runs) if all(passes) else None
         file.write_text(mutated)
         fails = run_tests(PROJECT, workdir, [as_path])["returncode"] == 1
         reach = {}
@@ -1284,7 +1304,8 @@ def judge_draft(
         else:
             target.write_text(replaced)
     return {
-        "accepted": all(passes) and fails,
+        "accepted": all(passes) and fails and not slow,
+        "slow_seconds": slow,
         "ran": True,
         "passes_on_original": sum(passes),
         # What went wrong on the original, for the draft author's next attempt.
@@ -1598,6 +1619,8 @@ def draft_rejection(judged: dict) -> str:
         )
     if judged.get("grounding"):
         reasons.append("it does not fit the project's code as written: " + " | ".join(judged["grounding"][:6]))
+    if judged.get("slow_seconds"):
+        reasons.append(f"it takes {judged['slow_seconds']} s on the original, and a pin runs within {DRAFT_SECONDS:g} s")
     if judged.get("ran", True):
         if int(judged.get("passes_on_original") or 0) < DRAFT_PASSES:
             errors = judged.get("original_errors") or []

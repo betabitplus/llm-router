@@ -1,21 +1,63 @@
 {
  "SM-2DBB5B58": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "output_text": "None",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"\", output_text=\"\")",
+     "structured_data": "None",
+     "tool_calls": "(1,)",
+     "tool_trace": "()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075441Z-1900e3",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version conditionally falls back to `result.tool_calls` only when the `tool_calls` argument is `None`, while the changed version unconditionally ignores the `tool_calls` argument and always uses `result.tool_calls`, yielding different outputs when a differing sequence is provided.",
+    "response_sha256": "c037bdd9df459f17b6e395c52a4f338fdec6ae2179a3aa436231377e5f30c9f3",
+    "sources": [
+     "        tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
+     "        tool_calls=list(result.tool_calls),"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "output_text": "None",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', output_text='')",
+     "structured_data": "None",
+     "tool_calls": "[1]",
+     "tool_trace": "()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T075441Z-029aff",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When tool_calls is provided, the original version uses it to populate the response's tool_calls, whereas the changed version ignores it and always uses result.tool_calls.",
+    "response_sha256": "48d247aafc7d1b273703a21f970d078e8e6e650e7bcd5337242f05e99bd4ee65",
+    "sources": [
+     "        tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
+     "        tool_calls=list(result.tool_calls),"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "output_text": "None",
-     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', output_text='x', tool_calls=(ToolCall(id='1', name='f', arguments={}),))",
+     "result": "ProviderResult(data={}, provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', output_text='x', tool_calls=())",
      "structured_data": "None",
-     "tool_calls": "[]",
+     "tool_calls": "[tc]  # any ToolCall instance, e.g. a ToolCall built with the project's own constructor",
      "tool_trace": "()"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T164215Z-c20a7d",
-    "confidence": 0.93,
+    "call_id": "20261001T075441Z-76e967",
+    "confidence": 0.97,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version ignores the tool_calls override, so with result.tool_calls non-empty and tool_calls=[] the original returns an empty list and the changed version returns the result's calls.",
-    "response_sha256": "9187a48d8be712db86e62ed61885ec82b4ea8392797d17aa51b9da0140b64015",
+    "reason": "The changed version drops the tool_calls override, so a non-None tool_calls argument that differs from result.tool_calls is ignored and the response's tool_calls differ.",
+    "response_sha256": "7a4ee5937ebcf505007bde307fced518be6e212dca370c2e884ece3e1dc38575",
     "sources": [
      "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
      "tool_calls=list(result.tool_calls),"
@@ -23,6 +65,6 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "54da68cf84062235af417ab86a88d8ae4011a4cdabadac244d385e21add31101"
+  "prompt_sha256": "c7fc913d15c4d1ec100e334be873d04950954b4d72fe0209c836b0531af50619"
  }
 }

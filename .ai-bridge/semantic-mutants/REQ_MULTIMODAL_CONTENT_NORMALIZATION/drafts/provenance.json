@@ -8,6 +8,24 @@
   "response_sha256": "0f23d76b5c7087a1e5160bc174815e62fa2f0b4343f1e00bf8bee010c53f05fa",
   "attempt": 1
  },
+ "SM-73959DE4": {
+  "kind": "model",
+  "call_id": "20261001T080004Z-4ca39c",
+  "backend": "antigravity-cli",
+  "backend_version": "1.2.14",
+  "model": "gemini-3.8-flash-medium",
+  "response_sha256": "e86f05307e0a3030eb354677f5f004d53e400ef629201ad6663ed2ed686d171c",
+  "attempt": 1
+ },
+ "SM-9B37A894": {
+  "kind": "model",
+  "call_id": "20261001T080056Z-73df2b",
+  "backend": "antigravity-cli",
+  "backend_version": "1.2.14",
+  "model": "gemini-3.8-flash-medium",
+  "response_sha256": "2231e49dd9975ba0ddcd64741d0135a2951ee67ff1ad4365c6f4ae13eb71820c",
+  "attempt": 1
+ },
  "SM-E1B20E59": {
   "kind": "model",
   "call_id": "20260929T165720Z-d715af",
