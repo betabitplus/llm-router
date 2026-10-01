@@ -36,6 +36,7 @@
 ## Боковые ветки
 
 - [054.1 — Health Map: сводка на карточке слоя идёт за видом](entries/054.1-2026-10-01-health-map-card-follows-view.md) — ветка `experimental-assurance-portal-site`, отошла после 054.
+- [054.2 — Health Map говорит то же, что страницы контрактов](entries/054.2-2026-10-01-map-agrees-with-contract-pages.md) — та же ветка.
 
 ## Записи
 

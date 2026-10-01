@@ -396,12 +396,19 @@ def portal_map_shell(shell_path, title, article_html):
 
 
 def health_layer_status(status):
+    """A verdict in the map's words. UNKNOWN stays unknown, as on every monitor: neither a pass nor a failure."""
     value=str(status or "UNKNOWN").upper().replace("_"," ")
     if value in {"MET","PASSED","PASS"}:
         return "passed"
     if value in {"N/A","NA"}:
         return "na"
+    if value=="UNKNOWN":
+        return "unknown"
     return "failed"
+
+
+# A mark that does not pass: it fails, or it cannot be decided yet.
+NOT_PASSING=("failed","unknown")
 
 
 def health_metric(label, statuses):
@@ -432,9 +439,11 @@ def health_layer_result(statuses, *, href, label, detail="", applicable=True, me
     if not applicable:
         return {"status":"na","label":label,"detail":detail,"href":href,"passed":0,"total":0,"metrics":[]}
     normalized=[status for status in statuses if health_layer_status(status)!="na"]
-    passed=sum(health_layer_status(status)=="passed" for status in normalized)
+    states=[health_layer_status(status) for status in normalized]
+    passed=states.count("passed")
     total=len(normalized)
-    status="passed" if total and passed==total else "failed"
+    # A failure outweighs an undecided check, and an undecided one a pass, as combine() does on the monitors.
+    status="failed" if "failed" in states or not total else "unknown" if "unknown" in states else "passed"
     return {
       "status":status,
       "label":label,
@@ -775,9 +784,13 @@ def health_map_payload():
               applicable=bool(test_statuses),
               metrics=[health_metric("Tests",test_statuses)] if test_statuses else [],
             )
-            direct=(contract_direct.get(need_id) or {}).get("overall","UNKNOWN")
+            # A Requirement's verdict includes the Technical requirements its profile requires, as its page says:
+            # they are its own target, not children it merely contains, so its Overall and its Technical support
+            # mark (on the Assurance layer) are its own.
+            required=list(((contracts.get(need_id) or {}).get("target") or {}).get("required_treqs") or [])
+            support=[(contract_direct.get(child) or {}).get("overall","UNKNOWN") for child in required]
             return {
-              "overall":health_layer_result([direct],href=fallback,label="Overall"),
+              "overall":health_layer_result([effective_contract_overall(need_id)],href=fallback,label="Overall"),
               "execution":execution,
               "coverage":{
                 **(layers.get("coverage") or health_layer_result(["UNKNOWN"],href=fallback,label="Coverage")),
@@ -785,7 +798,13 @@ def health_map_payload():
               },
               "faults":layers.get("faults") or not_applicable("Faults"),
               "evidence":layers.get("evidence") or not_applicable("Evidence"),
-              "assurance":not_applicable("Assurance"),
+              "assurance":health_layer_result(
+                support,
+                href=fallback+f"#ce-technical-support-{need_id.lower()}",
+                label="Technical support",
+                applicable=bool(support),
+                metrics=[health_metric("Technical requirements",support)] if support else [],
+              ),
             }
         entity=upper_by_id.get(need_id)
         if not entity:
@@ -992,10 +1011,10 @@ def health_map_payload():
         for key,label in layer_keys:
             own=row["own"][key]
             sources=("assurance","overall") if key=="assurance" else (key,)
-            marked[key]=own["status"]=="failed" or any(
+            marked[key]=own["status"] in NOT_PASSING or any(
               marks[source] for marks in child_marks for source in sources
             )
-            if row["layers"][key]["status"]=="failed" and not marked[key]:
+            if row["layers"][key]["status"] in NOT_PASSING and not marked[key]:
                 row["own"][key]={
                   **health_layer_result(
                     ["UNKNOWN"],href=row["layers"][key].get("href"),label=label,
@@ -1015,6 +1034,7 @@ def health_map_payload():
         layer_summary[key]={
           "status":root["layers"][key]["status"],
           "failing":sum(row["status"]=="failed" for row in own_applicable),
+          "unknown":sum(row["status"]=="unknown" for row in own_applicable),
           "applicable":len(own_applicable),
         }
     return {"rows":rows,"summary":{"layers":layer_summary}}
@@ -1062,6 +1082,7 @@ HEALTH_METRIC_CAUSES={
   "M&S":("Model not validated","The model or simulation behind the evidence is not validated to the required level."),
   "Integration":("Integration check fails","An integration check of this goal or capability fails."),
   "Validation":("Validation check fails","A validation check of this goal or capability fails."),
+  "Technical requirements":("Technical requirement does not pass","A Technical requirement this Requirement's profile requires does not pass: see its own page."),
   "Unattributed failure":("Fails for an unclear reason","The layer fails here, but no own check says why."),
   "Assurance profile":("No assurance plan","The goal or capability has no assurance profile."),
 }
@@ -1104,7 +1125,7 @@ def health_fault_cause(state,plan):
 
 def health_layer_causes(rows,contracts,plans):
     """For every layer, which red marks fail and why; each red mark carries at least one cause."""
-    failing={key:{row["id"] for row in rows if row["own"][key]["status"]=="failed"} for key in HEALTH_LAYER_KEYS}
+    failing={key:{row["id"] for row in rows if row["own"][key]["status"] in NOT_PASSING} for key in HEALTH_LAYER_KEYS}
     causes={key:defaultdict(set) for key in HEALTH_LAYER_KEYS}
     for row in rows:
         for key in HEALTH_LAYER_KEYS[1:]:
@@ -1158,7 +1179,7 @@ def health_layer_causes(rows,contracts,plans):
     # Overall fails because a layer fails: its causes are the layers themselves, most red marks first.
     out["overall"]=sorted(
       [
-        {"id":key,"label":HEALTH_LAYER_NAMES[key],"hint":"Fails in the "+HEALTH_LAYER_NAMES[key]+" layer.","ids":sorted(failing[key])}
+        {"id":key,"label":HEALTH_LAYER_NAMES[key],"hint":"Does not pass in the "+HEALTH_LAYER_NAMES[key]+" layer.","ids":sorted(failing[key])}
         for key in HEALTH_LAYER_KEYS[1:]
         if failing[key]
       ],
@@ -1211,11 +1232,12 @@ def run_delta(snapshots,schema,stamp,values,compare):
 
 
 def health_changes(before,after):
-    """Up: a mark that fails now and did not fail before. Down: one that failed and no longer fails."""
+    """Up: a mark that does not pass now and passed before. Down: one that did not pass and passes now. An undecided
+    mark does not pass, so a failure turning undecided is no fix."""
     return {
       key:{
-        "up":sorted(row_id for row_id,value in after.items() if value[key]=="failed" and (before.get(row_id) or {}).get(key)!="failed"),
-        "down":sorted(row_id for row_id,value in before.items() if row_id in after and value.get(key)=="failed" and after[row_id][key]!="failed"),
+        "up":sorted(row_id for row_id,value in after.items() if value[key] in NOT_PASSING and (before.get(row_id) or {}).get(key) not in NOT_PASSING),
+        "down":sorted(row_id for row_id,value in before.items() if row_id in after and value.get(key) in NOT_PASSING and after[row_id][key] not in NOT_PASSING),
       }
       for key in HEALTH_LAYER_KEYS
     }

@@ -765,6 +765,7 @@ function mapStrip(o){
  function edgeNote(counts,side){
    const arrow='<i class="fa-solid fa-chevron-'+side+'" aria-hidden="true"></i>';
    const note=counts.failed?'<span class="tf-map-edge-note failed"><i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>'+counts.failed+"</span>"
+     :counts.unknown?'<span class="tf-map-edge-note unknown"><i class="fa-solid fa-circle-question" aria-hidden="true"></i>'+counts.unknown+"</span>"
      :counts.passed?'<span class="tf-map-edge-note passed"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>'+counts.passed+"</span>"
      :counts.other?'<span class="tf-map-edge-note">'+counts.other+"</span>":"";
    return side==="left"?arrow+note:note+arrow;
@@ -772,13 +773,14 @@ function mapStrip(o){
  function edgeTip(counts,side){
    const where=side==="left"?"to the left":"to the right";
    if(counts.failed)return counts.failed+(counts.failed===1?" failing layer ":" failing layers ")+where;
+   if(counts.unknown)return counts.unknown+(counts.unknown===1?" undecided layer ":" undecided layers ")+where;
    if(counts.passed)return"Only passing layers "+where;
    return counts.other?counts.other+(counts.other===1?" more layer ":" more layers ")+where:"";
  }
  // Each scroll edge counts the layers it hides, failing first where the page judges them.
  function updateEdges(){
    const view=scroller.getBoundingClientRect(),at=scroller.scrollLeft,max=scroller.scrollWidth-scroller.clientWidth;
-   const hidden={left:{failed:0,passed:0,other:0},right:{failed:0,passed:0,other:0}};
+   const hidden={left:{failed:0,unknown:0,passed:0,other:0},right:{failed:0,unknown:0,passed:0,other:0}};
    tabs.querySelectorAll("[data-map-layer]").forEach(tab=>{
      if(pinWidth&&tab.closest(".pinned"))return;
      const box=tab.getBoundingClientRect(),middle=box.left+box.width/2-view.left;
@@ -2239,6 +2241,19 @@ def map_strip(page: str, legend: str) -> str:
 HEALTH_MAP_CSS = r"""/* Health's palette: pass, fail and not applicable, and the ink of their words. The shared map does the rest. */
 #verification-health-map{--tf-hm-pass:#8ed3a2;--tf-hm-fail:#dc3f47;--tf-hm-na:#dde0e5;--tf-hm-pass-ink:#1f7a3f;--tf-hm-fail-ink:#c42b34;--tf-hm-na-strong:color-mix(in srgb,var(--tf-hm-na) 86%,#000)}
 html[data-theme=dark] #verification-health-map{--tf-hm-pass:#22603a;--tf-hm-fail:#e5484d;--tf-hm-na:#2f353d;--tf-hm-pass-ink:#5fcf85;--tf-hm-fail-ink:#ff6b70;--tf-hm-na-strong:color-mix(in srgb,var(--tf-hm-na) 78%,#fff)}
+/* UNKNOWN: a check that cannot be decided yet, in amber as on every monitor: neither a pass nor a failure. */
+#verification-health-map{--tf-hm-unknown:#f0bf4c;--tf-hm-unknown-ink:#8f5f00}
+html[data-theme=dark] #verification-health-map{--tf-hm-unknown:#a8761a;--tf-hm-unknown-ink:#f0b64a}
+.tf-health-verdict.unknown{color:var(--tf-hm-unknown-ink)}.tf-map-sw.unknown{background:var(--tf-hm-unknown)}
+#verification-health-map .tf-map-tile.unknown{fill:var(--tf-hm-unknown)}
+#verification-health-map .tf-health-own-unknown{stroke:var(--tf-hm-unknown);stroke-width:1.6}
+#verification-health-map .tf-map-dot.unknown{fill:var(--tf-hm-unknown)}
+.tf-map-ring-big.unknown,.tf-map-ring-name.unknown{fill:var(--tf-hm-unknown-ink)}
+#verification-health-map .tf-map-pill.unknown{color:var(--tf-hm-unknown-ink);background:color-mix(in srgb,var(--tf-hm-unknown) 18%,transparent)}
+#verification-health-map .tf-map-card-rows .value.unknown{color:var(--tf-hm-unknown-ink)}
+.tf-health-chip.unknown,.tf-health-mark.unknown{color:var(--tf-hm-unknown-ink);background:color-mix(in srgb,var(--tf-hm-unknown) 18%,transparent)}
+.tf-health-find-marks i.unknown{background:var(--tf-hm-unknown)}
+#verification-health-map .tf-map-group.unknown .tf-map-group-head,#verification-health-map .tf-map-rows-label.unknown,#verification-health-map .tf-map-edge-note.unknown,#verification-health-map .tf-map-mark.unknown,#verification-health-map .tf-map-stamp .unknown{color:var(--tf-hm-unknown-ink)}
 .tf-health-verdict{font-size:.78rem;font-weight:700;letter-spacing:.02em}
 .tf-health-verdict.failed{color:var(--tf-hm-fail-ink)}.tf-health-verdict.passed{color:var(--tf-hm-pass-ink)}
 .tf-map-sw.passed{background:var(--tf-hm-pass)}.tf-map-sw.failed{background:var(--tf-hm-fail)}.tf-map-sw.na{background:var(--tf-hm-na)}
@@ -2321,6 +2336,7 @@ const METRIC_LABELS={
  "M&S":"Model validated",
  "Integration":"Integration checks",
  "Validation":"Validation checks",
+ "Technical requirements":"Technical requirements passing",
  "Unattributed failure":"Fails for an unclear reason",
  "Assurance profile":"Assurance plan exists"
 };
@@ -2329,20 +2345,23 @@ const insights=model.insights||{},layerCauses=insights.causes||{};
 const layerByKey=new Map(LAYERS.map(layer=>[layer[0],layer]));
 // What health judges: the verdict of every goal, capability and contract in every layer.
 const status=(row,key)=>row?.own?.[key]?.status||"na";
-const word=value=>value==="passed"?"PASS":value==="failed"?"FAIL":"N/A";
-const mark=value=>value==="failed"?"✕":"✓";
+const word=value=>({passed:"PASS",failed:"FAIL",unknown:"UNKNOWN"})[value]||"N/A";
+const mark=value=>({failed:"✕",unknown:"?"})[value]||"✓";
+// A verdict that does not pass: it fails, or it cannot be decided yet.
+const notPassing=value=>value==="failed"||value==="unknown";
+const iconOf=value=>({passed:"fa-circle-check",unknown:"fa-circle-question"})[value]||"fa-circle-xmark";
 const isContainer=row=>row.level==="goal"||row.level==="feature"||row.level==="product";
 const marked=rows.filter(row=>row.level!=="product");
 function hrefFor(row,key){
  const own=row.own?.[key],canonical=row.layers?.[key],fallback=row.layers?.overall?.href;
- if(isContainer(row))return own?.status==="failed"&&own.href?own.href:fallback;
+ if(isContainer(row))return notPassing(own?.status)&&own.href?own.href:fallback;
  if(own&&own.status!=="na"&&own.href)return own.href;
  return canonical?.href||fallback;
 }
 // What a layer says about a mark: its verdict, or for a goal or capability the verdict of its own checks.
 function says(row,key){
  const value=status(row,key);
- return{text:isContainer(row)?(value==="na"?"No own checks":value==="failed"?"Own checks fail":"Own checks pass"):word(value),tone:value};
+ return{text:isContainer(row)?(value==="na"?"No own checks":value==="failed"?"Own checks fail":value==="unknown"?"Own checks undecided":"Own checks pass"):word(value),tone:value};
 }
 function layerSummary(layer){
  const metrics=(layer?.metrics||[]).filter(metric=>metric.total);
@@ -2367,7 +2386,7 @@ function describe(row,key){
    const unbound=Number(own.unbound_tests||0);
    if(key==="coverage"&&unbound)body+='<span class="note">'+unbound+(unbound===1?" linked test is":" linked tests are")+" not tied to a required case</span>";
  }
- if(row.level==="requirement"&&(key==="overall"||key==="assurance")){
+ if(row.level==="requirement"&&key==="overall"){
    const support=(row.layers?.assurance?.metrics||[]).find(metric=>metric.label==="TREQ support"&&metric.total);
    if(support)body+='<div class="sub">Technical requirements</div><span>Passing</span>'+valueCell(support.passed,support.total);
  }
@@ -2381,13 +2400,14 @@ function describe(row,key){
 }
 // A layer's colours on the map: contracts in their verdict, goals and capabilities outlined red where their own
 // check fails. Red and green never blend directly: a changing tile passes through the neutral midpoint.
-const tone=(node,value)=>{node.classList.remove("passed","failed","na");node.classList.add(value)};
+const tone=(node,value)=>{node.classList.remove("passed","failed","unknown","na");node.classList.add(value)};
 function paint(entries,key,animated){
  const through=[];
  entries.forEach(entry=>{
    const value=status(entry.row,key);
    if(entry.kind!=="leaf"){
      entry.shape.classList.toggle("tf-health-own-failed",value==="failed");
+     entry.shape.classList.toggle("tf-health-own-unknown",value==="unknown");
      if(entry.dot)tone(entry.dot,value);
      return;
    }
@@ -2406,44 +2426,46 @@ function paint(entries,key,animated){
  if(through.length)setTimeout(()=>through.forEach(entry=>tone(entry.shape,entry.value)),120);
 }
 const summaryOf=key=>model.summary.layers[key]||{};
-const verdictOf=key=>summaryOf(key).status==="passed"?"passed":"failed";
+const verdictOf=key=>({passed:"passed",unknown:"unknown"})[summaryOf(key).status]||"failed";
 const failingOf=key=>Number(summaryOf(key).failing||0);
+const unknownOf=key=>Number(summaryOf(key).unknown||0);
 const applicableOf=key=>Number(summaryOf(key).applicable||0);
-const countLine=key=>failingOf(key)?failingOf(key)+" of "+applicableOf(key)+" fail":"all "+applicableOf(key)+" pass";
+// A layer counts its failures first; where nothing fails, the marks it cannot decide yet.
+const countLine=key=>failingOf(key)?failingOf(key)+" of "+applicableOf(key)+" fail":unknownOf(key)?unknownOf(key)+" of "+applicableOf(key)+" unknown":"all "+applicableOf(key)+" pass";
 // Overall stays first; failing layers follow, most red marks first; passing layers keep their default order.
 function layerOrder(){
  const[first,...rest]=LAYERS.map(layer=>layer[0]);
- return{first,failing:rest.filter(key=>verdictOf(key)==="failed").sort((a,b)=>failingOf(b)-failingOf(a)),passing:rest.filter(key=>verdictOf(key)==="passed")};
+ return{first,failing:rest.filter(key=>verdictOf(key)==="failed").sort((a,b)=>failingOf(b)-failingOf(a)),unknown:rest.filter(key=>verdictOf(key)==="unknown"),passing:rest.filter(key=>verdictOf(key)==="passed")};
 }
 // What each layer says, for its card and its row in the All layers table.
 function verdictHtml(key,row){
  const verdict=verdictOf(key);
- return'<span class="tf-health-verdict '+verdict+'"><i class="fa-solid '+(verdict==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i>'+(row?'<span class="tf-map-row-word"> '+word(verdict)+"</span>":" "+word(verdict))+"</span>";
+ return'<span class="tf-health-verdict '+verdict+'"><i class="fa-solid '+iconOf(verdict)+'" aria-hidden="true"></i>'+(row?'<span class="tf-map-row-word"> '+word(verdict)+"</span>":" "+word(verdict))+"</span>";
 }
 function layerCard(key){
- const failing=failingOf(key);
- return{status:verdictHtml(key,false),count:failing?"<b>"+failing+"</b> of "+applicableOf(key)+" fail":"all "+applicableOf(key)+" pass"};
+ const failing=failingOf(key),unknown=unknownOf(key);
+ return{status:verdictHtml(key,false),count:failing?"<b>"+failing+"</b> of "+applicableOf(key)+" fail":unknown?"<b>"+unknown+"</b> of "+applicableOf(key)+" unknown":"all "+applicableOf(key)+" pass"};
 }
 function layerRow(key){
- const failing=failingOf(key);
- return{status:verdictHtml(key,true),count:failing?"<b>"+failing+"</b>/"+applicableOf(key):"all "+applicableOf(key)};
+ const failing=failingOf(key),unknown=unknownOf(key);
+ return{status:verdictHtml(key,true),count:failing?"<b>"+failing+"</b>/"+applicableOf(key):unknown?"<b>"+unknown+"</b>/"+applicableOf(key):"all "+applicableOf(key)};
 }
 // The verdict as a mark alone, for a card that shows one of its layer's measures: the card keeps its place among the
 // failing or passing layers, and the mark's hint says the verdict it keeps.
 function layerMark(key){
  const verdict=verdictOf(key);
- return'<span class="tf-health-verdict '+verdict+' tf-map-mark-only" data-tip="Health: '+word(verdict)+", "+countLine(key)+'"><i class="fa-solid '+(verdict==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i></span>';
+ return'<span class="tf-health-verdict '+verdict+' tf-map-mark-only" data-tip="Health: '+word(verdict)+", "+countLine(key)+'"><i class="fa-solid '+iconOf(verdict)+'" aria-hidden="true"></i></span>';
 }
-// Overall first, then failing layers and passing layers behind the pass line.
+// Overall first, then failing layers, layers that cannot be decided yet, and passing layers behind the pass line.
 function layerGroups(){
  const order=layerOrder();
- return[{tone:verdictOf(order.first),keys:[order.first]},{tone:"failed",icon:"fa-circle-xmark",label:"Failing",keys:order.failing},{tone:"passed",icon:"fa-circle-check",label:"Passing",keys:order.passing}];
+ return[{tone:verdictOf(order.first),keys:[order.first]},{tone:"failed",icon:"fa-circle-xmark",label:"Failing",keys:order.failing},{tone:"unknown",icon:"fa-circle-question",label:"Unknown",keys:order.unknown},{tone:"passed",icon:"fa-circle-check",label:"Passing",keys:order.passing}];
 }
 // Overall's rings beyond the shared core: each contract's overall verdict, then one ring per layer in strip order,
 // failing layers inside the pass line and passing ones outside, like the strip's two groups.
 function ringBands(outer){
- const order=layerOrder(),keys=[...order.failing,...order.passing];
- const split=order.failing.length&&order.passing.length?order.failing.length:0;
+ const order=layerOrder(),inside=[...order.failing,...order.unknown],keys=[...inside,...order.passing];
+ const split=inside.length&&order.passing.length?inside.length:0;
  const start=.655*outer,gap=Math.max(1.2,.008*outer),passGap=split?Math.max(3,.024*outer):0;
  const thick=(outer-start-passGap-gap*(keys.length-1))/keys.length;
  let radius=start;
@@ -2464,8 +2486,8 @@ function ringBands(outer){
 const RINGS={
  bands:ringBands,
  // The centre: the product verdict, the same words as the Overall card.
- centre:()=>{const verdict=verdictOf("overall");return{href:hrefFor(root,"overall"),label:"Product: "+word(verdict)+", "+countLine("overall"),cls:status(root,"overall")==="failed"?"tf-health-own-failed":"",kicker:"OVERALL",big:word(verdict),tone:verdict,small:countLine("overall")}},
- container:row=>status(row,"overall")==="failed"?"tf-health-own-failed":"",
+ centre:()=>{const verdict=verdictOf("overall");return{href:hrefFor(root,"overall"),label:"Product: "+word(verdict)+", "+countLine("overall"),cls:ownClass(root,"overall"),kicker:"OVERALL",big:word(verdict),tone:verdict,small:countLine("overall")}},
+ container:row=>ownClass(row,"overall"),
  dot:row=>status(row,"overall"),
  ray:(link,row,a0,a1,geometry)=>el("path",{d:arcPath(0,0,geometry.bands.leaf[0],geometry.bands.leaf[1],a0,a1),class:"tf-map-tile "+status(row,"overall"),"data-seg":"overall"},link),
  rayThumb:(row,a0,a1,geometry)=>[["overall",geometry.bands.leaf],...geometry.bands.tracks.map(track=>[track.key,track.band])].map(([key,band])=>'<path d="'+arcPath(0,0,band[0],band[1],a0,a1)+'" class="tf-map-tile '+status(row,key)+'"/>').join(""),
@@ -2481,8 +2503,8 @@ const RINGS={
        rings.add({row:leaf.row,kind:"track",layer:track.key,link,shape,anchor:shape,band:track.band,angles:[a0,a1]});
      });
      tree.columns.groups.forEach(group=>{
-       if(group.end<=group.start||status(group.row,track.key)!=="failed")return;
-       el("path",{d:arcPath(0,0,track.band[0]-1,track.band[1]+1,rings.angleAt(group.start)-.004,rings.angleAt(group.end)+.004),fill:"none",class:"tf-health-own-failed tf-health-track-own"},cells);
+       if(group.end<=group.start||!notPassing(status(group.row,track.key)))return;
+       el("path",{d:arcPath(0,0,track.band[0]-1,track.band[1]+1,rings.angleAt(group.start)-.004,rings.angleAt(group.end)+.004),fill:"none",class:ownClass(group.row,track.key)+" tf-health-track-own"},cells);
      });
    });
    const pass=geometry.bands.passRadius;
@@ -2499,7 +2521,9 @@ function whyLine(row,key){
 }
 // Facets of the shared filters: the verdict in every layer and why a layer fails. A layer's panel shows its own
 // verdict and its causes; the filters stay when another layer opens.
-const VERDICTS=[["failed","Fail"],["passed","Pass"],["na","N/A"]],VERDICT_FILL={failed:"var(--tf-hm-fail)",passed:"var(--tf-hm-pass)",na:"var(--tf-hm-na-strong)"};
+const VERDICTS=[["failed","Fail"],["unknown","Unknown"],["passed","Pass"],["na","N/A"]],VERDICT_FILL={failed:"var(--tf-hm-fail)",unknown:"var(--tf-hm-unknown)",passed:"var(--tf-hm-pass)",na:"var(--tf-hm-na-strong)"};
+// The outline of a goal or capability whose own check does not pass, in its verdict's colour.
+const ownClass=(row,key)=>({failed:"tf-health-own-failed",unknown:"tf-health-own-unknown"})[status(row,key)]||"";
 // The colour a layer gives a mark, in legend order, for the bars that split marks over a layer's colours.
 function toneOf(row,key){
  if(row.level==="product")return null;
@@ -2526,8 +2550,8 @@ const PANELS=Object.fromEntries(LAYERS.map(([key,label])=>[key,{title:label,help
 PANELS.overall={title:"Layer × health",help:"Point at a cell to light its ring in every ray, or click it to keep only those marks there.",before:()=>matrixHtml(),facets:[]};
 function matrixHtml(){
  const filters=map.filters;
- return mapMatrix({label:"Marks by layer and health",template:"6.6rem repeat(3,minmax(0,1fr))",
-   columns:VERDICTS.map(([value,label])=>({value,label,swatch:mapSwatch(value)})),
+ return mapMatrix({label:"Marks by layer and health",template:"6.6rem repeat("+verdictsShown().length+",minmax(0,1fr))",
+   columns:verdictsShown().map(([value,label])=>({value,label,swatch:mapSwatch(value)})),
    rows:map.strip.order().map(key=>({key,label:layerByKey.get(key)[1],small:countLine(key)})),
    cell:(row,column)=>{
      const name=row.label+" × "+column.label,all=marked.filter(item=>status(item,row.key)===column.value),hits=all.filter(item=>filters.matches(item,row.key));
@@ -2538,20 +2562,22 @@ function matrixHtml(){
        lines:[plural(contracts,"contract","contracts"),...(ownAll?[plural(own,"own check","own checks")]:[])]};
    }});
 }
+// Unknown takes its place in the legend and the matrix only while some mark is undecided.
+const verdictsShown=()=>VERDICTS.filter(([value])=>value!=="unknown"||marked.some(row=>LAYERS.some(([key])=>status(row,key)==="unknown")));
 // The legend of each layer: its colours with their counts.
 function legendHtml(key){
  const count=value=>marked.filter(row=>status(row,key)===value).length;
- return{items:VERDICTS.map(([value,label])=>mapLegendItem(mapSwatch(value),label,count(value))).join("")+mapLegendItem(mapSwatch("own"),"Own check fails",undefined,true),
+ return{items:verdictsShown().map(([value,label])=>mapLegendItem(mapSwatch(value),label,count(value))).join("")+mapLegendItem(mapSwatch("own"),"Own check fails",undefined,true),
    help:key==="overall"?"Inside out: goals, capabilities and contracts, then one ring per layer; failing layers sit inside the dashed line, passing ones outside, and the table shows the same health per layer.":"its colour is its health in this layer, and a red outline marks a goal or capability that fails its own check."};
 }
 // The contracts table: the rings unrolled, one column per layer in the strip's order, each contract's verdict there
 // with what it counts (the mark opens that layer's evidence), then why it fails. A layer that judges no contract keeps
 // its column, empty, as its ring does. A group row counts what fails in every column.
-const tableOrder=()=>{const order=layerOrder();return[order.first,...order.failing,...order.passing]};
-const failsIn=row=>LAYERS.slice(1).filter(([key])=>status(row,key)==="failed").map(([key])=>key);
+const tableOrder=()=>{const order=layerOrder();return[order.first,...order.failing,...order.unknown,...order.passing]};
+const failsIn=row=>LAYERS.slice(1).filter(([key])=>notPassing(status(row,key))).map(([key])=>key);
 const allCauses=row=>LAYERS.slice(1).flatMap(([key])=>causesOf(row.id,key));
 const countOfChecks=(row,key)=>{const own=row.own?.[key];return key!=="overall"&&own?.total?own.passed+"/"+own.total:""};
-const markHtml=(row,key)=>{const value=status(row,key),detail=key==="overall"?"":row.own?.[key]?.detail;return'<a class="tf-health-mark '+value+'" href="'+escapeHtml(hrefFor(row,key))+'" title="'+escapeHtml(layerByKey.get(key)[1]+": "+word(value)+(detail?", "+detail:""))+'">'+(value==="failed"?"✕":value==="passed"?"✓":"–")+"</a>"};
+const markHtml=(row,key)=>{const value=status(row,key),detail=key==="overall"?"":row.own?.[key]?.detail;return'<a class="tf-health-mark '+value+'" href="'+escapeHtml(hrefFor(row,key))+'" title="'+escapeHtml(layerByKey.get(key)[1]+": "+word(value)+(detail?", "+detail:""))+'">'+({failed:"✕",unknown:"?",passed:"✓"}[value]||"–")+"</a>"};
 function tableCell(row,key){
  if(key==="why")return'<td class="tf-health-why-cell">'+escapeHtml(allCauses(row).map(cause=>cause.label).join(" · "))+"</td>";
  const checks=countOfChecks(row,key);
@@ -2559,20 +2585,20 @@ function tableCell(row,key){
 }
 function groupCell(list,key){
  if(key==="why")return"<td></td>";
- const judged=list.filter(row=>status(row,key)!=="na"),failing=judged.filter(row=>status(row,key)==="failed").length;
- return'<td class="tf-health-cell">'+(failing?'<span class="tf-health-fails" title="'+escapeHtml(failing+" of "+judged.length+" fail")+'">✕ '+failing+"</span>":judged.length?'<span class="tf-map-muted" title="All pass">✓</span>':'<span class="tf-map-muted" title="Judges no contract">–</span>')+"</td>";
+ const judged=list.filter(row=>status(row,key)!=="na"),failing=judged.filter(row=>status(row,key)==="failed").length,unknown=judged.filter(row=>status(row,key)==="unknown").length;
+ return'<td class="tf-health-cell">'+(failing?'<span class="tf-health-fails" title="'+escapeHtml(failing+" of "+judged.length+" fail")+'">✕ '+failing+"</span>":unknown?'<span class="tf-health-mark unknown" title="'+escapeHtml(unknown+" of "+judged.length+" unknown")+'">? '+unknown+"</span>":judged.length?'<span class="tf-map-muted" title="All pass">✓</span>':'<span class="tf-map-muted" title="Judges no contract">–</span>')+"</td>";
 }
 const TABLE={
  columns:[...tableOrder().map(key=>{const[,label,help]=layerByKey.get(key);return[key,label,help]}),["why","Why it fails","The causes of its red marks in every layer"]],
  groups:[["verdict","Health"],["fails","Fails in"]],
  keys:(row,group)=>group==="verdict"?[status(row,"overall")]:failsIn(row).length?failsIn(row):["none"],
- name:(group,key)=>group==="verdict"?({failed:"Fail",passed:"Pass",na:"N/A"}[key]||key):key==="none"?"Fails nowhere":layerByKey.get(key)[1],
- order:(group,keys)=>(group==="verdict"?["failed","passed","na"]:[...map.strip.order(),"none"]).filter(key=>keys.includes(key)),
- sortValue:(row,key)=>key==="why"?allCauses(row).length:{failed:2,passed:1,na:0}[status(row,key)],
+ name:(group,key)=>group==="verdict"?({failed:"Fail",unknown:"Unknown",passed:"Pass",na:"N/A"}[key]||key):key==="none"?"Fails nowhere":layerByKey.get(key)[1],
+ order:(group,keys)=>(group==="verdict"?["failed","unknown","passed","na"]:[...map.strip.order(),"none"]).filter(key=>keys.includes(key)),
+ sortValue:(row,key)=>key==="why"?allCauses(row).length:{failed:3,unknown:2,passed:1,na:0}[status(row,key)],
  stats:list=>{
-   const failing=list.filter(row=>status(row,"overall")==="failed").length;
+   const failing=list.filter(row=>status(row,"overall")==="failed").length,unknown=list.filter(row=>status(row,"overall")==="unknown").length;
    const by=LAYERS.slice(1).map(([key,label])=>[label,list.filter(row=>status(row,key)==="failed").length]).filter(([,count])=>count).sort((a,b)=>b[1]-a[1]);
-   return(failing?failing+" fail":"all pass")+(by.length?" · "+by.map(([label,count])=>label+" "+count).join(", "):"");
+   return(failing?failing+" fail":unknown?"none fail":"all pass")+(unknown?" · "+unknown+" unknown":"")+(by.length?" · "+by.map(([label,count])=>label+" "+count).join(", "):"");
  },
  csv:{head:[...tableOrder(),"why"],line:row=>[...tableOrder().map(key=>word(status(row,key))),allCauses(row).map(cause=>cause.label).join("; ")]}
 };
@@ -2583,9 +2609,9 @@ return{
  facets:FACETS,panels:PANELS,filterRows:marked,
  strip:{groups:layerGroups,card:layerCard,row:layerRow,mark:layerMark},
  table:TABLE,tableCell,groupCell,
- tiles:{leaf:(row,key)=>'class="tf-map-tile '+status(row,key)+'"',mark:(row,key)=>status(row,key)==="failed"?"tf-health-own-failed":""},
+ tiles:{leaf:(row,key)=>'class="tf-map-tile '+status(row,key)+'"',mark:(row,key)=>ownClass(row,key)},
  rings:RINGS,
- find:row=>({rank:-LAYERS.slice(1).filter(layer=>status(row,layer[0])==="failed").length,
+ find:row=>({rank:-LAYERS.slice(1).filter(layer=>notPassing(status(row,layer[0]))).length,
    badge:()=>'<span class="tf-health-find-marks">'+map.strip.order().map((key,position)=>'<i class="'+status(row,key)+(position?"":" first")+'" title="'+escapeHtml(layerByKey.get(key)[1])+'"></i>').join("")+"</span>"}),
  attach:page=>{map=page}
 };
@@ -3266,7 +3292,7 @@ EXPLORER_CSS = r"""/* The explorer's own layout: the list beside the shared filt
 #verification-explorer .tf-map-summary b{font-weight:650}
 #verification-explorer .tf-map-kinds{flex-wrap:wrap}
 #verification-explorer .tf-map-kind{flex:1 1 calc(25% - 2px);padding-left:.4rem;padding-right:.4rem}
-#verification-explorer .tf-map-sw.unknown{background:repeating-linear-gradient(45deg,var(--tf-hm-fail) 0 2px,transparent 2px 4px)}
+#verification-explorer .tf-map-sw.unknown{background:var(--tf-hm-unknown)}
 #verification-explorer .tf-ex-define{margin:0 0 .6rem;padding:.5rem .75rem;border:1px solid var(--tf-map-line);border-radius:10px;background:var(--tf-map-goal);font-size:.78rem}
 #verification-explorer .tf-ex-define[hidden]{display:none}
 #verification-explorer :is(.tf-ex-define,.tf-ex-define-body) p{margin:.15rem 0 0;max-width:80ch}
@@ -3279,7 +3305,8 @@ EXPLORER_CSS = r"""/* The explorer's own layout: the list beside the shared filt
 #verification-explorer .tf-ex-head code,#verification-explorer .tf-ex-object-head code,#verification-explorer .tf-ex-context code{padding:0 .3rem;border:0;border-radius:4px;background:var(--tf-map-feature);color:inherit;font-size:.68rem;overflow-wrap:anywhere}
 #verification-explorer .tf-ex-path{flex:1 1 12rem;min-width:0;font-size:.72rem;color:var(--pst-color-text-muted)}
 #verification-explorer .tf-ex-tally{font-size:.72rem;color:var(--pst-color-text-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
-#verification-explorer :is(.tf-ex-tally,.tf-map-summary) :is(.failed,.unknown){color:var(--tf-hm-fail-ink);font-weight:650}
+#verification-explorer :is(.tf-ex-tally,.tf-map-summary) .failed{color:var(--tf-hm-fail-ink);font-weight:650}
+#verification-explorer :is(.tf-ex-tally,.tf-map-summary) .unknown{color:var(--tf-hm-unknown-ink);font-weight:650}
 #verification-explorer :is(.tf-ex-tally,.tf-map-summary) .passed{color:var(--tf-hm-pass-ink);font-weight:650}
 #verification-explorer .tf-ex-open{font-size:.74rem;font-weight:600;white-space:nowrap}
 #verification-explorer .tf-ex-block{padding:.45rem .75rem .55rem;background:var(--pst-color-background)}
@@ -3296,7 +3323,8 @@ EXPLORER_CSS = r"""/* The explorer's own layout: the list beside the shared filt
 #verification-explorer .tf-ex-row{display:grid;grid-template-columns:1rem 7.5rem minmax(0,1fr) auto;align-items:baseline;gap:.05rem .5rem;padding:.28rem .4rem;border-radius:7px;font-size:.78rem}
 #verification-explorer .tf-ex-row:hover{background:var(--tf-map-goal)}
 #verification-explorer .tf-ex-mark{font-weight:800;text-align:center}
-#verification-explorer .tf-ex-mark:is(.failed,.unknown),#verification-explorer .tf-ex-row:is(.failed,.unknown) .tf-ex-state{color:var(--tf-hm-fail-ink)}
+#verification-explorer .tf-ex-mark.failed,#verification-explorer .tf-ex-row.failed .tf-ex-state{color:var(--tf-hm-fail-ink)}
+#verification-explorer .tf-ex-mark.unknown,#verification-explorer .tf-ex-row.unknown .tf-ex-state{color:var(--tf-hm-unknown-ink)}
 #verification-explorer .tf-ex-mark.passed,#verification-explorer .tf-ex-row.passed .tf-ex-state{color:var(--tf-hm-pass-ink)}
 #verification-explorer .tf-ex-mark.na,#verification-explorer .tf-ex-row.na .tf-ex-state{color:var(--pst-color-text-muted)}
 #verification-explorer .tf-ex-row.na .tf-ex-name{font-weight:550}

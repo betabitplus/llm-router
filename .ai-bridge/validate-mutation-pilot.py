@@ -6153,35 +6153,35 @@ def main() -> None:
     check(
         bool(health_rows)
         and all(
-            own_status(row, key) in {"passed", "failed", "na"}
+            own_status(row, key) in {"passed", "failed", "unknown", "na"}
             for row in health_rows.values()
             for key in health_layer_keys
         ),
-        "Verification Health Map gives every node an own PASS / FAIL / N/A status in every layer",
+        "Verification Health Map gives every node an own PASS / FAIL / UNKNOWN / N/A status in every layer, as every monitor does",
     )
     hidden_failures = [
         (row_id, key)
         for row_id, row in health_rows.items()
         for key in health_layer_keys
-        if canonical_status(row, key) == "failed"
+        if canonical_status(row, key) in {"failed", "unknown"}
         and not any(
-            own_status(item, source) == "failed"
+            own_status(item, source) in {"failed", "unknown"}
             for item in health_subtree(row)
             for source in (("assurance", "overall") if key == "assurance" else (key,))
         )
     ]
     check(
         not hidden_failures,
-        f"Health Map never hides a canonical FAIL: every failing branch contains an own failure mark {hidden_failures[:5]}",
+        f"Health Map never hides a canonical FAIL or UNKNOWN: every such branch contains an own mark that does not pass {hidden_failures[:5]}",
     )
     orphan_marks = []
     for row_id, row in health_rows.items():
         for key in health_layer_keys:
-            if own_status(row, key) != "failed":
+            if own_status(row, key) not in {"failed", "unknown"}:
                 continue
             current: dict[str, Any] | None = row
             while current:
-                if canonical_status(current, key) != "failed":
+                if canonical_status(current, key) not in {"failed", "unknown"}:
                     orphan_marks.append((row_id, key, current.get("id")))
                     break
                 current = health_rows.get(str(current.get("parent") or "")) if current.get("parent") else None
@@ -6208,9 +6208,20 @@ def main() -> None:
         and all(
             own_status(row, "assurance") == "na"
             for row in health_rows.values()
-            if row.get("level") in {"requirement", "treq"}
+            if row.get("level") == "treq"
+        )
+        # A Requirement's Technical support is its own check: the Technical requirements its profile requires are its
+        # target, so its Assurance mark is their verdict and its Overall includes it, as its Contract Evidence page says.
+        and all(
+            (own_status(row, "assurance") != "na")
+            == bool(((monitor_facts["contracts"].get(row["id"]) or {}).get("target") or {}).get("required_treqs"))
+            and (own_status(row, "assurance") in {"passed", "na"} or own_status(row, "overall") in {"failed", "unknown"})
+            and (((row.get("own") or {}).get("assurance") or {}).get("label") in {None, "Technical support", "Assurance"})
+            for row in health_rows.values()
+            if row.get("level") == "requirement"
         ),
-        "fault groups belong to contracts and Assurance support stays with the children that cause it",
+        "fault groups belong to contracts; a Requirement's Technical support is its own Assurance mark and counts in its "
+        "Overall, as on its Contract Evidence page, and a Technical requirement has none",
     )
     check(
         all(
@@ -6551,7 +6562,7 @@ def main() -> None:
         'id="tf-map-rings"' in health_page
         and "rings.draw=(frame,force)=>{" in health_page
         and "function ringBands(outer){" in health_page
-        and "const order=layerOrder(),keys=[...order.failing,...order.passing];" in health_page
+        and "const order=layerOrder(),inside=[...order.failing,...order.unknown],keys=[...inside,...order.passing];" in health_page
         and '"data-map-ring":item.key' in health_page
         and 'if(view.form==="rings")return ringSets[view.ring].thumb();' in health_page
         and 'ringList.forEach(rings=>rings.svg.toggleAttribute("hidden",!(view.form==="rings"&&rings===ringSets[view.ring])));' in health_page
@@ -6571,12 +6582,12 @@ def main() -> None:
             == {
                 row_id
                 for row_id, row in health_rows.items()
-                if ((row.get("own") or {}).get(key) or {}).get("status") == "failed"
+                if ((row.get("own") or {}).get(key) or {}).get("status") in {"failed", "unknown"}
             }
             for key in health_layer_keys[1:]
         )
         and all(cause.get("label") and cause.get("hint") is not None for causes in health_causes.values() for cause in causes),
-        "every red mark of every layer is explained by at least one named cause; the causes filter the map from the side panel and show in the hover card",
+        "every red or undecided mark of every layer is explained by at least one named cause; the causes filter the map from the side panel and show in the hover card",
     )
     contract_evidence_pages = sorted(HTML.glob("contract-evidence-*.html"))
     upper_map_pages = sorted(HTML.glob("assurance-goal-*.html")) + sorted(HTML.glob("assurance-feat-*.html"))
@@ -6731,7 +6742,7 @@ def main() -> None:
         and 'if(event.key==="f"||event.key==="F"){event.preventDefault();filters.setPanel(!filters.open,true);return}' in health_section
         and "const PANELS=Object.fromEntries(LAYERS.map(" in health_page
         and 'const view=viewOf(key),panel=o.panels[view.key]||(view.form==="table"?{...o.panels[view.projection],help:MAP_TABLE_HELP}:o.panels[view.projection]);' in health_page
-        and 'VERDICTS=[["failed","Fail"],["passed","Pass"],["na","N/A"]]' in health_page
+        and 'VERDICTS=[["failed","Fail"],["unknown","Unknown"],["passed","Pass"],["na","N/A"]]' in health_page
         and "FACETS[key]={label,options:VERDICTS," in health_page,
         "the Filters panel sits beside the view and follows it: health filters by verdict and by why a layer fails, a measure by what it measures",
     )
@@ -6837,7 +6848,7 @@ def main() -> None:
     check(
         set(health_model) == {"rows", "summary", "insights"}
         and all(not ({"value", "persistent_label", "kind"} & set(row)) for row in health_model.get("rows") or [])
-        and all(set(layer) == {"status", "failing", "applicable"} for layer in health_layers.values())
+        and all(set(layer) == {"status", "failing", "unknown", "applicable"} for layer in health_layers.values())
         and "tests" not in depth_model
         and [row.get("id") for row in depth_model.get("rows") or []] == [row.get("id") for row in health_model.get("rows") or []],
         "health and the measures receive the same tree as rows with the product first and carry only the facts the page reads",
