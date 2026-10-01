@@ -1,4 +1,130 @@
 {
+ "103e134c5bae2419": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=[])",
+     "self_adapter_getter": "None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=None), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060714Z-fe574c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version calls adapter.execute(request) and returns its result, whereas the changed version incorrectly returns the unexecuted adapter object itself.",
+    "response_sha256": "0aefd6c9b5fd4bdbc92c96124a6f5de9306a70413897a32925471c110ac1e2dc",
+    "sources": [
+     "                    return adapter.execute(request)",
+     "                return adapter"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id=\"req-1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", credential=ProviderCredential(key_id=1, env_var=\"KEY\", value=\"val\"), messages=())",
+     "self_adapter_getter": "None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=3, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060715Z-601da5",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version returns the result of executing the request with the adapter, whereas the changed version returns the adapter instance itself.",
+    "response_sha256": "cec581d46ba81f8cea5227ad33c38ca7b89fc18cd58749ccc1a76662bee38faf",
+    "sources": [
+     "return adapter.execute(request)",
+     "return adapter"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "any valid ProviderRequest",
+     "self_adapter_getter": "a getter returning an adapter whose execute(request) returns a ProviderResult",
+     "self_config": "any valid LLMRouterConfig"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060710Z-e876b1",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version returns the adapter object instead of calling adapter.execute(request), so it returns a different value and skips any exception the call would raise.",
+    "response_sha256": "d24d99ded953262dc850fdc315868be0fd734269a4912418e96258a859bda279",
+    "sources": [
+     "return adapter",
+     "return adapter.execute(request)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d1c47797fc4b3e60b352ea8f223d09263e8b13360ecf6d702ad52819225a74b7"
+ },
+ "1cb6c482c58e73ea": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini', credential=ProviderCredential(key_id=1, env_var='KEY', value='SECRET'), messages=[])",
+     "self_adapter_getter": "lambda p, c: None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=None, policy=None, default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=None), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060717Z-0ffcf5",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version wraps and raises the caught exception via `_provider_boundary_error`, whereas the changed version swallows it and unconditionally raises a generic `RuntimeError` at the end of the method.",
+    "response_sha256": "0ec3de68b6f5535d3b4eca217528891cc7462f61bf655af4e01bac28fd4834f0",
+    "sources": [
+     "            raise _provider_boundary_error(exc, request=request) from exc",
+     "        pass\n    msg = 'Provider retry loop ended without a result.'\n    raise RuntimeError(msg)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='GEMINI_API_KEY', value='test'), messages=[])",
+     "self_adapter_getter": "None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits()), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060719Z-07ffb9",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When adapter execution raises an exception, the original version raises the boundary error returned by _provider_boundary_error whereas the changed version suppresses it with pass and raises a RuntimeError.",
+    "response_sha256": "408d0f85965baae54c59de6dbd537dba6a7da73f76b7e88d61c7e0ce4c7a70cd",
+    "sources": [
+     "            raise _provider_boundary_error(exc, request=request) from exc",
+     "        pass",
+     "    raise RuntimeError(msg)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "any valid ProviderRequest, e.g. ProviderRequest(request_id='r', provider=Provider.GROQ, model=Model.LLAMA_8B, provider_model='m', credential=ProviderCredential(1,'E','v'), messages=())",
+     "self_adapter_getter": "lambda provider, config: <adapter whose execute raises ValueError('x')>",
+     "self_config": "LLMRouterConfig(...) with a retry_policy allowing a single attempt"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060716Z-813dbe",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "When the adapter raises, the original raises the translated _provider_boundary_error, but the changed version swallows it with pass and raises RuntimeError instead.",
+    "response_sha256": "fc808a70320f5175e13f17e7c6d1d6ab6ecf469ca79ef29e9b6afbc5c90836c0",
+    "sources": [
+     "raise _provider_boundary_error(exc, request=request) from exc",
+     "pass",
+     "msg = 'Provider retry loop ended without a result.'"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "4ac68605b8c63c096036efd74c2df02e57dbbbceda3bbd778200ccc3a14049a6"
+ },
  "1d8ccb53084de501": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -41,6 +167,58 @@
   },
   "prompt_sha256": "5be33c9fb539121d009b92af499c4ddc6f4d48f39b522e92449a8b99ac6377fd"
  },
+ "3c58e8e9e5eaec8a": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060720Z-acfb5c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The change merely negates the condition for executing a logging side effect, which does not affect the method's return value, the object's state, or the type of exception unconditionally raised immediately afterwards.",
+    "response_sha256": "546f04c2c4196132c97a2cc66f0a19518856d67a3da9cf4fd63090fd08e80eee",
+    "sources": [
+     "            if is_retryable_provider_error(exc):",
+     "        if not is_retryable_provider_error(exc):",
+     "            raise _provider_boundary_error(exc, request=request) from exc"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060722Z-3223fa",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The change only affects whether retry exhaustion is logged, leaving the return value, object state, and the type of the raised exception identical in both versions.",
+    "response_sha256": "22cc13c1710faea5508918efaf39341afb5e73be2741cb4c020cba71c1e25d26",
+    "sources": [
+     "        if not is_retryable_provider_error(exc):",
+     "        raise _provider_boundary_error(exc, request=request) from exc"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T060719Z-579f6a",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change inverts the condition guarding the log_retry_exhausted call, but that is only a logging side effect; the returned value and the raised exception type are identical in both versions.",
+    "response_sha256": "2987a2c8cbaeaf2ed36e09e25fa9be585ad3e71fd4f98de147d25086ba24a3dc",
+    "sources": [
+     "if not is_retryable_provider_error(exc):",
+     "if is_retryable_provider_error(exc):",
+     "raise _provider_boundary_error(exc, request=request) from exc"
+    ],
+    "verdict": "equivalent"
+   }
+  },
+  "prompt_sha256": "58be08f243336002966c94d1cf2611a49f2e8196928163de5ed7e7111fe15d8f"
+ },
  "4bcf2fc831eaf45c": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -54,6 +232,21 @@
     "response_sha256": "c8b9dfa74d7411e4b18474d95d42b9f0cade8af722ace623d6434a9946f343ea",
     "sources": [
      "        retrying = build_provider_retrying(\n            policy=self._config.retry_policy,\n            logger=logger,\n            context_getter=lambda: _retry_context(request),\n        )",
+     "    retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061852Z-e660a9",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting context_getter only affects the logging context supplied to the retry policy and does not alter the return value, object state, or raised exception types.",
+    "response_sha256": "0318eae70fa5d751303a23287ca4c4340de6bd017e6c6a642dcfbc3b45ba6d13",
+    "sources": [
+     "            context_getter=lambda: _retry_context(request),",
      "    retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
     ],
     "verdict": "equivalent"
@@ -159,6 +352,40 @@
  },
  "77d6a6e9eef042e8": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "status_code": "429"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060724Z-aa6e6b",
+    "confidence": 0.95,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version omits the status_code argument when the status code is in _RETRYABLE_STATUS_CODES, causing the returned RetryDecision to have a default status_code (likely None) rather than the input status_code.",
+    "response_sha256": "fb16a7f351383dd9ff2faadf21f9444a0fddbf5811b9c999471597480eead0a6",
+    "sources": [
+     "    if status_code in _RETRYABLE_STATUS_CODES:",
+     "        return RetryDecision(classification=RetryClassification.RETRYABLE, reason='retryable_status')"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "status_code": "429"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060727Z-43413f",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When status_code is in _RETRYABLE_STATUS_CODES, the original version sets status_code on the returned RetryDecision whereas the changed version omits it, causing status_code to default to None.",
+    "response_sha256": "b069422b0147cb94f74563e8b2c8455c85ae000fe623fecb7d99f99dbe628ed6",
+    "sources": [
+     "            status_code=status_code,",
+     "        return RetryDecision(classification=RetryClassification.RETRYABLE, reason='retryable_status')"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "status_code": "429"
@@ -175,9 +402,88 @@
      "return RetryDecision(classification=RetryClassification.RETRYABLE, reason='retryable_status')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "status_code": "429"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060723Z-25d567",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version omits status_code in the retryable_status branch, so for a code in _RETRYABLE_STATUS_CODES (e.g. 429) the decision's status_code is the default instead of 429.",
+    "response_sha256": "b2debe286ab465f6478191a01a9bd6682491b7d6e04fb19273599dea41728f6a",
+    "sources": [
+     "return RetryDecision(classification=RetryClassification.RETRYABLE, reason='retryable_status')",
+     "if status_code in _RETRYABLE_STATUS_CODES:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "66a54728807c302e4b9d17ceee75215d72e679f30ad82faa8feb234ab2d7862c"
+ },
+ "bc22a7f5ad518a96": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id=\"1\", provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model=\"test\", credential=ProviderCredential(key_id=1, env_var=\"KEY\", value=\"secret\"), messages=[])",
+     "self_adapter_getter": "None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_PRO, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits()), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060733Z-35f10e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version correctly returns the result of the adapter's execution, whereas the changed version incorrectly returns None on success.",
+    "response_sha256": "b96f04275f428082c49e9ae29613ef9c4baea17706c75caff45b6f9f9df4b910",
+    "sources": [
+     "return adapter.execute(request)",
+     "return None"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='GOOGLE_API_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
+     "self_adapter_getter": "None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits()), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060734Z-eddfbf",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original implementation executes the request via the adapter and returns the resulting ProviderResult or raises a boundary error, whereas the changed version returns None without ever calling the adapter.",
+    "response_sha256": "51f7d917d4f03dcbc47e0f241d5831bd76220cfddb6856944dd12965ef8513e3",
+    "sources": [
+     "                    return adapter.execute(request)",
+     "                return None"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "any valid ProviderRequest",
+     "self_adapter_getter": "lambda provider, config: type('A', (), {'execute': lambda self, req: 'RESULT'})()",
+     "self_config": "any valid LLMRouterConfig"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060729Z-1be284",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version returns None without calling adapter.execute, while the original returns the adapter's result or raises its error through the boundary.",
+    "response_sha256": "c12f0649493254cef86a3dfcf2c929a16004f76cc1ca9a37c8bee29defbdb486",
+    "sources": [
+     "return adapter.execute(request)",
+     "return None"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "548f02f7b0aa6c72cf829de5fba84a3097dbd8312c720781fcf4a249034f3467"
  },
  "d8f7199ce8dc26c9": {
   "answers": {
@@ -247,6 +553,70 @@
    }
   },
   "prompt_sha256": "7e0f570497a7ba264c84d34d23dbd999867c5ee0fe1fce083c6bcd760d76261f"
+ },
+ "dad9cc03506dec74": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='id1', provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model='m', credential=ProviderCredential(key_id=1, env_var='E', value='V'), messages=[])",
+     "self_adapter_getter": "None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_PRO, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=3, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060734Z-d21b0e",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version retrieves the correct provider-specific adapter using `self._adapter_for(request)`, whereas the changed version incorrectly assigns `adapter = self`, causing `adapter.execute(request)` to call `ProviderRouteExecutor.execute` with a `ProviderRequest` instead of the expected `ResolvedRequest`, resulting in a crash.",
+    "response_sha256": "708467d26ee650a4c6454a3c45e1fa890636d621d6499952ef05237ed8214d4c",
+    "sources": [
+     "        adapter = self._adapter_for(request)",
+     "    adapter = self",
+     "                    return adapter.execute(request)",
+     "    def execute(self, request: ResolvedRequest) -> LLMRouterResponse:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-1.5-flash', credential=ProviderCredential(key_id=1, env_var='GOOGLE_API_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),))",
+     "self_adapter_getter": "None",
+     "self_config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(), policy=RouterPolicyDefaults(), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits()), catalog=ProviderCatalog())"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060740Z-0a676e",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version assigns adapter to self instead of obtaining the provider adapter via self._adapter_for(request), causing adapter.execute to invoke ProviderRouteExecutor.execute rather than the provider adapter's execute method.",
+    "response_sha256": "b78c289be1557919fedcea08df41f76ffcebce19566b1452b0665735be9deb32",
+    "sources": [
+     "        adapter = self._adapter_for(request)",
+     "    adapter = self",
+     "                    return adapter.execute(request)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T060734Z-2eef6e",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [
+     "it answers distinct without an input"
+    ],
+    "reason": "The changed version uses self as the adapter, so it calls the executor's own execute on a ProviderRequest and never calls the adapter getter, whereas the original runs the adapter selected by the getter.",
+    "response_sha256": "60a82d554b892c5daf2d730d49db0f9ca55aef93245bd72aadb6f9d2e82be0d9",
+    "sources": [
+     "adapter = self",
+     "adapter = self._adapter_for(request)",
+     "return adapter.execute(request)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "180662c9ca55b44a16feb5a2aa1f6df44220c161574d7af6a712f7d358ef2b45"
  },
  "f0760cfe8c668b1a": {
   "answers": {

@@ -191,5 +191,78 @@
     "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
    ]
   }
+ ],
+ "eecdb1201e9ab7e6": [
+  {
+   "at": "2026-10-01T06:30:18.002910Z",
+   "call_id": "20261001T063002Z-53cadd",
+   "cause": "rules",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "104ba242c0570f4c9ea94d4e339af7f89adde23914ff87ee2a4e2b555020ffb3",
+   "reason": "it imports llm_router._internal.capabilities.tools",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolChoice",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-10-01T06:30:37.903066Z",
+   "call_id": "20261001T063024Z-694dc7",
+   "cause": "grounding",
+   "context_gaps": [],
+   "effort": "high",
+   "grounding": [
+    "llm_router has no ToolChoice (it lives in llm_router._internal.capabilities.tools)",
+    "llm_router has no ToolRegistry (it lives in llm_router._internal.capabilities.tools)",
+    "llm_router has no normalize_tool_choice (it lives in llm_router._internal.capabilities.tools)"
+   ],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "bab542fb84301e1a586e368ee215a0fa8bb064d02a07a1f72f4e2db71a5a12b0",
+   "reason": "it does not fit the project's code as written: llm_router has no ToolChoice (it lives in llm_router._internal.capabilities.tools) | llm_router has no ToolRegistry (it lives in llm_router._internal.capabilities.tools) | llm_router has no normalize_tool_choice (it lives in llm_router._internal.capabilities.tools)",
+   "sources": [
+    "llm_router._internal.capabilities.tools.ToolChoice",
+    "llm_router._internal.capabilities.tools.ToolRegistry",
+    "llm_router._internal.capabilities.tools.normalize_tool_choice"
+   ]
+  },
+  {
+   "at": "2026-10-01T06:31:52.271892Z",
+   "call_id": "20261001T063038Z-b5fab4",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router.LLMRouter",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "81295822807203c937d9d5701fc7530ab407cbcf6d97e1778f63c7d4d1dadfb7",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ]
+  }
  ]
 }

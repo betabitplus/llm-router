@@ -63,6 +63,29 @@
    ]
   }
  ],
+ "9587fa3b6bf28237": [
+  {
+   "at": "2026-10-01T06:30:34.089081Z",
+   "call_id": "20261001T062918Z-2179c4",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "low",
+   "grounding": [],
+   "level": 1,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "f269579ad4a5deba5cb12c5842752306fb37ba413fdcacc154082d1041d9ed0b",
+   "reason": "",
+   "sources": [
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.retry.run_retry_worker"
+   ]
+  }
+ ],
  "SM-908D5413": [
   {
    "at": "2026-09-29T17:27:59.741236Z",

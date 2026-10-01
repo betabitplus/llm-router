@@ -713,19 +713,19 @@
     "verdict": "distinct"
    },
    "claude-cli:claude-sonnet-5-5@low": {
-    "arguments": {},
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 1), policy=RouterPolicyDefaults(None, None, False, False, False, 1, ProviderLimits(1.0, 60.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 60.0, 1.0, 1)), catalog=ProviderCatalog(providers={Provider.GROQ: ProviderSpec(provider=Provider.GROQ)}, provider_base_urls={}, models={Model.LLAMA_8B: {Provider.GROQ: 'x'}}))"
+    },
     "backend": "claude-cli",
-    "call_id": "20260929T111544Z-757f4a",
+    "call_id": "20261001T060403Z-aeb7af",
     "confidence": 0.96,
     "model": "claude-sonnet-5-5",
-    "problems": [
-     "it answers distinct without an input"
-    ],
-    "reason": "The tool-round check changed from >= 1 to > 1, so a otherwise-valid config with default_max_tool_rounds == 1 passes the original but raises ConfigurationError in the changed version.",
-    "response_sha256": "9c7c09c96271f08a7e81a3e2b1abacc5a10f14ea9f942723b807efe98c16716b",
+    "problems": [],
+    "reason": "With default_max_tool_rounds == 1 the original passes the check (>= 1) while the changed version raises ConfigurationError (> 1), though the message still says \"at least 1\".",
+    "response_sha256": "c3b75e7b3ff0a551505d51a2595f398dad3912f5da27f2ff94c177d934901ded",
     "sources": [
-     "condition=config.default_max_tool_rounds >= 1,",
-     "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
+     "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')",
+     "condition=config.default_max_tool_rounds >= 1,"
     ],
     "verdict": "distinct"
    }

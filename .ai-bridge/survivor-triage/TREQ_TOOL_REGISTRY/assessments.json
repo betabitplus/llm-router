@@ -161,14 +161,14 @@
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T085358Z-8b4431",
+    "call_id": "20261001T061905Z-6b9134",
     "confidence": 0.99,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The change simply omits a shallow copy of the args mapping when instantiating the returned ToolStep on the success path, which doesn't alter the equality of the return value, the registry's state, or any raised exceptions.",
-    "response_sha256": "e198335dc22addab7a677e8d267ebc02ce0662d78df1c335ab0314f65d764230",
+    "reason": "Omitting the shallow copy dict() does not change behavior because dictionary unpacking (**call.args) prevents the callable from mutating the original arguments, resulting in equal ToolStep return values.",
+    "response_sha256": "247cad79270932e9a8c1f43c73bdf50213a13f0fa898d15355893ad9130c6fb7",
     "sources": [
-     "        return ToolStep(\n            tool_name=call.name,\n            args=dict(call.args),\n            result=result,\n            call_id=call.id,\n        )",
+     "            args=dict(call.args),",
      "    return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)"
     ],
     "verdict": "equivalent"
@@ -176,47 +176,29 @@
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T085358Z-ee2b09",
-    "confidence": 0.95,
+    "call_id": "20261001T061906Z-7ec439",
+    "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "Because call.args is already a mapping for any valid tool execution, passing call.args directly produces an equal ToolStep return value to passing dict(call.args) while leaving object state and exception handling unchanged.",
-    "response_sha256": "57b105ee6c0169cf45c27ae0eb747d3a46c72d381a2d1ff99a8f9ac71c95df72",
+    "reason": "Constructing ToolStep with call.args directly instead of a shallow copy dict(call.args) returns an equivalent ToolStep with identical field values without altering call, self, or exception handling.",
+    "response_sha256": "c89d8ad0be29c3d3632279662a282b9f64b6d08229b011ae6a3b5f8c4f8285e7",
     "sources": [
      "            args=dict(call.args),",
      "    return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)"
     ],
     "verdict": "equivalent"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "call": "ToolCall(name=\"echo\", args={\"value\": 1}, id=\"call-1\")"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T234315Z-22339e",
-    "confidence": 0.65,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "`dict(call.args)` always builds a brand-new dict object, so in the original `result.args is call.args` is always False and later external mutation of the dict the caller passed in never leaks into the already-returned ToolStep; the changed code stores `call.args` itself, so `result.args is call.args` is always True and any later mutation of that shared mapping (or its immutability, if ToolCall freezes it) is now visible through the previously returned ToolStep, which is an observable difference in the state of the returned object.",
-    "response_sha256": "230db4adfb9ac57f2a9a2aaae4d78e900809639a73c36a1674bc9da5fd31d514",
-    "sources": [
-     "result = definition.callable(**call.args)",
-     "return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)",
-     "args=dict(call.args),"
-    ],
-    "verdict": "distinct"
-   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "call": "ToolCall(name='t', args={'a': 1}, id='1')"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T195643Z-5c843c",
-    "confidence": 0.6,
+    "call_id": "20261001T061904Z-1c5590",
+    "confidence": 0.55,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The original copies args into the ToolStep with dict(call.args), while the changed version aliases call.args, so step.args is call.args only in the changed version.",
-    "response_sha256": "3c1872a6a73f41708d3ac9f889bdb321913fc3bbece5651fb9588e28f83ceccd",
+    "reason": "The original gives ToolStep a fresh copy via dict(call.args), but the change passes call.args itself, so step.args aliases the caller's mapping (identity and mutation behaviour differ, and a non-dict Mapping would stay that type), unless ToolCall or ToolStep copy args themselves.",
+    "response_sha256": "d52fcf1874fa8625dbd395e5b04d0ad74a4d15b3c94d699a746eaaed4ec1f74c",
     "sources": [
      "args=dict(call.args),\n            result=result,",
      "return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)"
@@ -224,7 +206,7 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "b6d8404f021d50cba03b6a12b4a967172a75d94b041d1212123cb9628d3232b1"
+  "prompt_sha256": "f35ddc839911ec36990b5a803c8ef35eb654ade2c32ae0f3c79c758128a1a5c0"
  },
  "e9c1165894dd60d7": {
   "answers": {
@@ -276,75 +258,53 @@
  "ebec939d12750322": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "call": "ToolCall(name=\"test\", args=None, id=\"1\")"
-    },
+    "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T085358Z-9a4b83",
-    "confidence": 1,
+    "call_id": "20261001T061901Z-7036fe",
+    "confidence": 0.95,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When call.args is not a mapping (like None), **call.args raises an exception, but dict(call.args) in the exception handler also raises a TypeError, causing the original version to raise a different exception type than the changed version which successfully raises ToolExecutionError.",
-    "response_sha256": "9201094cee2926f9a0adca95ee1e5cbb1256bebe61ce4d340b00b58a294e5726",
+    "reason": "Both versions raise an exception of the exact same type (ToolExecutionError) when definition.callable fails, because the modification only changes whether call.args is copied before being attached to the exception, which does not affect the exception's type.",
+    "response_sha256": "27d2fb6deb18264880955211fcf632ff07cbe10088113ce4d11d764d2ed65e65",
     "sources": [
-     "        except Exception as exc:",
-     "            raise ToolExecutionError(",
-     "                tool_name=call.name,",
-     "                args=dict(call.args),",
-     "                cause=exc,",
-     "            ) from exc"
+     "        except Exception as exc:\n            raise ToolExecutionError(\n                tool_name=call.name,\n                args=dict(call.args),\n                cause=exc,\n            ) from exc",
+     "    except Exception as exc:\n        raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc"
     ],
-    "verdict": "distinct"
+    "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T085358Z-317ba6",
-    "confidence": 0.98,
+    "call_id": "20261001T061902Z-3f853c",
+    "confidence": 0.95,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "Both versions return identical ToolStep instances when execution succeeds and raise an exception of type ToolExecutionError when execution fails, leaving the immutable ToolRegistry state unchanged.",
-    "response_sha256": "02b89142d064c6709c6a9b3178daf702656e0ef24e849b1250bc606548403478",
+    "reason": "Both versions raise the same type of exception, ToolExecutionError, when execution fails, leaving self and call unchanged and returning identical ToolStep instances on success.",
+    "response_sha256": "89837fe43b09942238791dc6a17415ff458e0f764af308bc607ae1b59329c805",
     "sources": [
-     "        raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
      "                args=dict(call.args),",
-     "    return ToolStep(tool_name=call.name, args=dict(call.args), result=result, call_id=call.id)"
-    ],
-    "verdict": "equivalent"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {},
-    "backend": "claude-cli",
-    "call_id": "20260928T234315Z-18b7e8",
-    "confidence": 0.86,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "The only change is passing `args=call.args` instead of `args=dict(call.args)` into ToolExecutionError; for any ToolCall built from literals (a plain dict of args), `dict(call.args)` yields a dict with identical content and type to `call.args` itself, so the returned ToolStep, the raised exception's type (ToolExecutionError), and all observable state are unchanged between versions.",
-    "response_sha256": "3339c9c59ebc706f1611fff342874739a1093888a58e9a3c8c72effe3486ca6c",
-    "sources": [
-     "raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
-     "raise ToolExecutionError(\n                tool_name=call.name,\n                args=dict(call.args),\n                cause=exc,\n            ) from exc"
+     "        raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc"
     ],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "call": "ToolCall(name='t', args=MappingProxyType({'a': 1}), id='1')"
+     "call": "ToolCall(name='fail_tool', args={'x': 1}, id='c1')"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T195646Z-ecc5ec",
-    "confidence": 0.55,
+    "call_id": "20261001T061858Z-f11b01",
+    "confidence": 0.5,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "On failure the original passes a dict copy of call.args to ToolExecutionError, while the changed version passes call.args itself, so the stored args differ in identity and possibly type (and aliasing if the callable mutates it).",
-    "response_sha256": "80555fc29b6a27803153e530a43e6678912498f67b0e6aa7b411cc7db75b66eb",
+    "reason": "On a tool failure the original passes a copy dict(call.args) to ToolExecutionError while the change passes call.args itself, so the error's args is the same object as call.args, and has the caller's mapping type, if ToolExecutionError doesn't copy it.",
+    "response_sha256": "bdd67b5157684705e5781d17390f353802a3a5a5f147a2474817fb0ae0c9eccf",
     "sources": [
      "raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
-     "args=dict(call.args),"
+     "args=dict(call.args),\n                cause=exc,"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ce5e0e74e18bde0523ec8f5db943ea559eb4bbc6793c207d84694109c58cf50a"
+  "prompt_sha256": "4e5b9144f576b5a24470d314baf0ae0cd4d2c9e46789f5eba8b4587c6f094657"
  }
 }

@@ -34,7 +34,12 @@ threshold passes a distinct mutant, for mutants exchangeable with the calibratio
 caught. The first step is a symbolic search over a typed harness of the original and the mutant,
 bounded by the Test Plan's number of paths, with a time limit only as a safety net. The harness
 observes a function by its return value, a method by its return value and its object's state
-afterwards, an initializer by the object it builds, and an exception by its type. The second
+afterwards, an initializer by the object it builds, and an exception by its type; a function and a
+method also by what they leave in an argument that can change, as CrossHair's diffbehavior compares
+them (amended 2026-10-01: a question that left this out made an assessor call a mutant equivalent
+that a pin proves distinct through the argument it changes). A target that reads the environment
+(environment variables, files, the locale, the clock, randomness, the network) is not judged: the
+harness cannot vary what it reads, and its survivors go to the verdict (amended 2026-10-01). The second
 step asks every assessor the Test Plan lists about the parameters as the code declares them,
 never the search's payloads, and shows how the project's types the target takes or names are
 built: distinct with an input, equivalent, or unsure, each with a confidence. An input from any
@@ -51,7 +56,9 @@ symbolic search left unsure and a mutation pin proves distinct (amended 2026-09-
 single assessors called survivors equivalent that the hand-made pairs never made them call). An assessor may call at most the
 false-equivalent rate of all distinct pairs equivalent. The assessors' calibration answers are
 frozen and replayed by the qualification. A change of assessor, model, prompt or pairs leaves the ensemble
-uncalibrated until it is calibrated again. An assessor may list several models in order and
+uncalibrated until it is calibrated again. An answer counts only for the question it answered:
+when a pair's question changes, every model answers the new one, and the floors are measured on
+the answers to the questions as they are (amended 2026-10-01). An assessor may list several models in order and
 answers through its first model that can (amended 2026-09-28): a quota runs out every few days,
 and models are replaced often. A model counts for its assessor once it answered every
 calibration pair. Each combination of usable models, one per assessor, gets its own threshold

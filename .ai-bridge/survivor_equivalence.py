@@ -198,11 +198,86 @@ def __tf_observe(value, depth=0):
     return ("value", type(value).__name__, _re.sub(r" at 0x[0-9a-fA-F]+", "", repr(value)))
 '''
 
+# What a call leaves in its arguments that can change: only a harness whose target takes one carries
+# it, so the harness of any other target, and every result kept for it, stays as it was.
+ARGUMENT_OBSERVER = '''
 
-def harness_for(module_source: str, qualname: str) -> dict:
+def __tf_after(values):
+    """What a call left in its arguments that can change: behaviour as CrossHair's diffbehavior
+    counts it. A value that cannot change (a number, a text, a tuple, an enum member, a frozen
+    dataclass) says nothing and is left out."""
+    import dataclasses as _dataclasses
+    import enum as _enum
+    def changeable(value):
+        if value is None or isinstance(value, (int, float, complex, str, bytes, bool, tuple, frozenset, range, _enum.Enum)):
+            return False
+        if _dataclasses.is_dataclass(value) and not isinstance(value, type):
+            return not value.__dataclass_params__.frozen
+        return not callable(value)
+    return {name: __tf_observe(value) for name, value in values.items() if changeable(value)}
+
+
+def __tf_outcome(result, after):
+    return __tf_observe((result, after)) if after else __tf_observe(result)
+'''
+
+
+# What a target may read besides its parameters: the harness cannot vary it, so a target that reads
+# it is not judged here (its survivors go to the verdict model with the whole context).
+ENVIRONMENT_NAMES = frozenset({
+    "os.environ", "os.getenv", "getenv", "os.getcwd", "os.path.expanduser", "os.path.expandvars", "open", "input",
+    "time.time", "time.time_ns", "time.monotonic", "time.perf_counter", "time.localtime", "datetime.now",
+    "datetime.utcnow", "datetime.today", "date.today", "datetime.datetime.now", "datetime.date.today", "Path.home", "Path.cwd",
+})
+ENVIRONMENT_MODULES = frozenset({"locale", "random", "secrets", "uuid", "socket", "subprocess", "shutil", "tempfile", "platform", "getpass"})
+FILE_METHODS = frozenset({"read_text", "write_text", "read_bytes", "write_bytes", "exists", "is_file", "is_dir", "iterdir", "glob", "rglob", "stat", "unlink", "mkdir", "touch"})
+# Parameter types a call cannot change; the project's frozen dataclasses and enums come from its caller.
+IMMUTABLE_TYPES = frozenset({"int", "float", "complex", "str", "bytes", "bool", "None", "tuple", "frozenset", "Literal", "type", "range", "Callable"})
+
+
+def changeable_annotation(annotation: str, immutable: frozenset[str] = frozenset()) -> bool:
+    """Whether a parameter of this type can come back changed from a call: any part of the union
+    that is not a number, a text, a tuple, a frozen set, a callable or one of ``immutable``."""
+    for part in (item.strip() for item in annotation.split("|")):
+        base = part.split("[", 1)[0].strip().rpartition(".")[2]
+        if base not in IMMUTABLE_TYPES and base not in immutable:
+            return True
+    return False
+
+
+def environment_reads(tree: ast.Module, node, parents: list) -> list[str]:
+    """What the target reads besides its parameters, in its own body and in the functions of its
+    module (and methods of its class) it calls, followed a few calls deep."""
+    functions = {item.name: item for item in tree.body if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    methods = {item.name: item for item in parents[0].body if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef))} if parents else {}
+    found, seen, pending = set(), set(), [(node, 0)]
+    while pending:
+        current, depth = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        for item in ast.walk(current):
+            if isinstance(item, (ast.Attribute, ast.Name)):
+                dotted = ast.unparse(item)
+                if dotted in ENVIRONMENT_NAMES or dotted.split(".", 1)[0] in ENVIRONMENT_MODULES:
+                    found.add(dotted)
+            if isinstance(item, ast.Call):
+                called = item.func
+                if isinstance(called, ast.Attribute) and called.attr in FILE_METHODS:
+                    found.add(f".{called.attr}()")
+                if depth < 3 and isinstance(called, ast.Name) and called.id in functions:
+                    pending.append((functions[called.id], depth + 1))
+                if depth < 3 and isinstance(called, ast.Attribute) and ast.unparse(called.value) in {"self", "cls"} and called.attr in methods:
+                    pending.append((methods[called.attr], depth + 1))
+    return sorted(found)
+
+
+def harness_for(module_source: str, qualname: str, immutable: frozenset[str] = frozenset()) -> dict:
     """A typed harness for the target, appended to a copy of its module: one function with plain
-    parameters that calls the target and returns what can be observed of it. Returns
-    ``{"code", "parameters", "shape", "owner", "name"}``, or ``{"reason"}`` when none can be built."""
+    parameters that calls the target and returns what can be observed of it: what it returns and
+    what it leaves in its arguments that can change. Returns ``{"code", "parameters", "shape",
+    "owner", "name", "changeable"}``, or ``{"reason"}`` when none can be built or the target reads
+    the environment. ``immutable`` names the project's types a call cannot change."""
     tree = ast.parse(module_source)
     node, parents = _find(tree, qualname)
     if node is None or isinstance(node, ast.ClassDef):
@@ -216,19 +291,30 @@ def harness_for(module_source: str, qualname: str) -> dict:
     parameters = _parameters(node)
     if parameters is None:
         return {"reason": "a parameter of the target has no type or is variadic"}
+    environment = environment_reads(tree, node, parents)
+    if environment:
+        return {"reason": f"the target reads the environment ({', '.join(environment[:3])}), which the harness cannot vary"}
     decorators = _decorator_names(node)
     call_args = ", ".join(name if kind == "positional" else f"{name}={name}" for name, _annotation, kind in parameters)
+    changeable = [name for name, annotation, _kind in parameters if changeable_annotation(annotation, immutable)]
+    after = "{" + ", ".join(f"{name!r}: {name}" for name in changeable) + "}"
     signature = [(name, annotation) for name, annotation, _kind in parameters]
     # The annotations as written: what an assessor is asked about, while the search may substitute plain values.
     declared = _written_annotations([*node.args.posonlyargs, *node.args.args, *node.args.kwonlyargs])
     if not parents:
-        body = f"    return __tf_observe({node.name}({call_args}))"
+        body = (
+            f"    __tf_result = {node.name}({call_args})\n    return __tf_outcome(__tf_result, __tf_after({after}))" if changeable
+            else f"    return __tf_observe({node.name}({call_args}))"
+        )
         shape, owner = "function", ""
     else:
         cls = parents[0]
         owner = cls.name
         if "staticmethod" in decorators or "classmethod" in decorators:
-            body = f"    return __tf_observe({owner}.{node.name}({call_args}))"
+            body = (
+                f"    __tf_result = {owner}.{node.name}({call_args})\n    return __tf_outcome(__tf_result, __tf_after({after}))" if changeable
+                else f"    return __tf_observe({owner}.{node.name}({call_args}))"
+            )
             shape = "function"
         else:
             if _is_dataclass(cls):
@@ -250,7 +336,10 @@ def harness_for(module_source: str, qualname: str) -> dict:
                 body = f"    __tf_self = {built}\n    return __tf_observe((__tf_self, str(__tf_self)))"
                 shape = "initializer"
             else:
-                body = f"    __tf_self = {built}\n    __tf_result = __tf_self.{node.name}({call_args})\n    return __tf_observe((__tf_result, __tf_self))"
+                body = (
+                    f"    __tf_self = {built}\n    __tf_result = __tf_self.{node.name}({call_args})\n"
+                    + (f"    return __tf_outcome((__tf_result, __tf_self), __tf_after({after}))" if changeable else "    return __tf_observe((__tf_result, __tf_self))")
+                )
                 shape = "method"
     header = f"def {HARNESS}(" + ", ".join(f"{name}: {annotation}" for name, annotation in signature) + "):"
     # Only finite numbers are searched: NaN and infinity tell comparisons apart that no caller feeds.
@@ -258,10 +347,15 @@ def harness_for(module_source: str, qualname: str) -> dict:
         "    if not __tf_finite((" + "".join(f"{name}, " for name, _annotation in signature) + ")):\n"
         "        raise ValueError('the harness searches finite numbers only')\n"
     ) if signature else ""
-    code = OBSERVER + "\n\n" + header + "\n" + guard + body + "\n"
+    if shape == "initializer":
+        changeable = []
+    code = OBSERVER + (ARGUMENT_OBSERVER if changeable else "") + "\n\n" + header + "\n" + guard + body + "\n"
     return {
         "code": code, "parameters": signature, "shape": shape, "owner": owner, "name": node.name,
         "declared": [(name, declared.get(name, annotation)) for name, annotation in signature],
+        # The target's own parameters whose type lets a call change them: the harness observes them
+        # after the call and the question names them.
+        "changeable": changeable,
     }
 
 
@@ -891,11 +985,12 @@ def judge_survivor(
     symbolic_cache: dict | None = None,
     python: str | list[str] = sys.executable,
     package: str | None = None,
+    immutable: frozenset[str] = frozenset(),
 ) -> dict:
     """Decide what can be decided about one survivor: a confirmed witness from the symbolic search or
     from an assessor makes it distinct; otherwise a calibrated, unanimous equivalent labels it likely
     equivalent, and anything else leaves it unsure. Nothing here makes it caught or equivalent."""
-    harness = harness_for(original_source, qualname)
+    harness = harness_for(original_source, qualname, immutable)
     if "reason" in harness:
         return {"status": "not-applicable", "reason": harness["reason"]}
     original_file = scratch / f"tf_judge_original_{token}.py"
@@ -984,6 +1079,7 @@ def triage(request: dict) -> dict:
         judged = judge_survivor(
             sources[path], rebuilt["source"], str(record.get("qualname")),
             scratch=scratch, token="r" + re.sub(r"\W", "_", fingerprint), seconds=float(request.get("seconds") or 20), paths=request.get("paths"),
+            immutable=frozenset(request.get("immutable") or ()),
             # One model per assessor, the ones that answered this survivor; the request's members otherwise.
             answers=(request.get("answers") or {}).get(fingerprint),
             members=list((request.get("members_by") or {}).get(fingerprint) or request.get("members") or []),
@@ -1136,6 +1232,9 @@ def assessor_prompt(*, target: str, original: str, mutant: str, harness: dict, c
     state = " and the state of its object afterwards" if harness.get("shape") == "method" else (
         ", the object it builds and its text" if harness.get("shape") == "initializer" else ""
     )
+    # What a call can leave changed in its arguments is behaviour too, as CrossHair's diffbehavior counts it.
+    if harness.get("changeable"):
+        state += ", what it leaves in " + ", ".join(harness["changeable"])
     return ASSESSOR_TEMPLATE.format(
         context=context + "\n" if context else "",
         target=target,

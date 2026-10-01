@@ -136,6 +136,23 @@
      "if _tool_limit_reached(state=next_tool_state, result=result):\n        _log_tool_round_limit(request=provider_request, state=next_tool_state)\n        return _ResultStep(state=state, response=build_public_response(result, tool_calls=result.tool_calls, tool_trace=next_tool_state.steps))"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T060403Z-c10a94",
+    "confidence": 0.4,
+    "model": "claude-sonnet-5-5",
+    "problems": [
+     "its source \u00abresponse=build_public_response(result, output_text=\"\", tool_calls=result.tool_c\u2026\u00bb is not in the question"
+    ],
+    "reason": "The change drops output_text=\"\" in the tool-limit branch, so the default None may fall back to result.output_text, but build_public_response isn't shown and may blank it anyway.",
+    "response_sha256": "810490679c0b5d12e73cad56b2744144299c047fcf1e795451ccaa8bbe3b254a",
+    "sources": [
+     "response=build_public_response(result, output_text=\"\", tool_calls=result.tool_calls, tool_trace=next_tool_state.steps)",
+     "return _ResultStep(state=state, response=build_public_response(result, tool_calls=result.tool_calls, tool_trace=next_tool_state.steps))"
+    ],
+    "verdict": "unsure"
    }
   },
   "prompt_sha256": "9d26981a398755a6d9d42c7196ff64b65be5dc79b8e62a01a15eba1fc875f89b"

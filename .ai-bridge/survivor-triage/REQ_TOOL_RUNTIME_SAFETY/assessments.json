@@ -5,16 +5,36 @@
     "arguments": {
      "registry": "ToolRegistry()",
      "state": "ToolLoopState(max_rounds=0, completed_rounds=1)",
-     "tool_calls": "()"
+     "tool_calls": "[]"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260930T140926Z-d1d932",
+    "call_id": "20261001T061830Z-3a1735",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When `state.can_execute_tools()` is false, the changed version incorrectly assigns `state.completed_rounds` to the `max_rounds` parameter of the returned `ToolLoopState` instead of preserving `state.max_rounds`.",
-    "response_sha256": "9c1182835b41582c2e03a46d4682066725d410d22a6debcb5690e0d79fe05fa8",
+    "reason": "When state.can_execute_tools() returns false, the changed version incorrectly sets the returned state's max_rounds to state.completed_rounds instead of state.max_rounds.",
+    "response_sha256": "6068811c21fbece61c7c71ff8eee8716eb4a67962e0249d2fb08c24a40764de8",
     "sources": [
+     "            max_rounds=state.max_rounds,",
+     "        return ToolLoopState(max_rounds=state.completed_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=2)",
+     "tool_calls": "()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061834Z-2fbb66",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When state.can_execute_tools() is false and state.completed_rounds differs from state.max_rounds, the changed version incorrectly sets max_rounds to state.completed_rounds instead of preserving state.max_rounds.",
+    "response_sha256": "c61094c08cfdeddfde6ad876ee561728fab7d43e91f015ae487a71c990091195",
+    "sources": [
+     "    if not state.can_execute_tools():",
      "            max_rounds=state.max_rounds,",
      "        return ToolLoopState(max_rounds=state.completed_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
     ],
@@ -23,16 +43,16 @@
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "registry": "ToolRegistry()",
-     "state": "ToolLoopState(max_rounds=1, completed_rounds=2)",
+     "state": "ToolLoopState(max_rounds=5, completed_rounds=5)",
      "tool_calls": "[]"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T140926Z-166935",
+    "call_id": "20261001T061834Z-c9a055",
     "confidence": 0.6,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When tools cannot execute and completed_rounds exceeds max_rounds, the changed version returns max_rounds=completed_rounds, but the original preserves state.max_rounds.",
-    "response_sha256": "e71c995f3da12d1d364d54386b3e3f68d8d1a6862d0905ddb95ae11f632f66d3",
+    "reason": "The early-return branch sets max_rounds to completed_rounds instead of max_rounds, so any non-executable state with completed_rounds != max_rounds gives a different result (the example I gave has them equal, so use completed_rounds=2, max_rounds=1 if allowed).",
+    "response_sha256": "2de3007fa1beedd64c3c0baa5788a0d2b999832e37f3c7772cb313c9e94d7556",
     "sources": [
      "return ToolLoopState(max_rounds=state.completed_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)",
      "max_rounds=state.max_rounds,"
@@ -40,7 +60,7 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "51ba53198dd5fb977ca47c00031e70ac8e68d4d948e56c9a1288316c9d2603ab"
+  "prompt_sha256": "2d1b72d965c7f1971335f2aa31a0fa710ce836326f6973f39261f9b6ef5a4c7a"
  },
  "4180d032448ab8db": {
   "answers": {
@@ -95,6 +115,21 @@
      "_log_tool_called(request=request, state=state, tool_name=call.name)"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {},
+    "backend": "claude-cli",
+    "call_id": "20261001T060636Z-322ffb",
+    "confidence": 0.6,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change from state.can_execute_tools() to a plain truthiness check only changes whether _log_tool_called runs when execution is not allowed, which is a logging side effect and not the return value or exception type.",
+    "response_sha256": "90f65cff9ab3f5ec594af77c0f5f82ce0da15800334f48fca18fc0f2525886c9",
+    "sources": [
+     "if state:",
+     "if state.can_execute_tools():"
+    ],
+    "verdict": "equivalent"
    }
   },
   "prompt_sha256": "7ae2187952947011321bef63435506cf55d6930c021d464adb01106e608a0971"
@@ -239,6 +274,23 @@
     ],
     "verdict": "equivalent"
    },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061834Z-f65035",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions always return the exact same next_state object returned by run_tool_round without altering it or raising an exception, as _log_tool_completed only emits observability logs.",
+    "response_sha256": "de3d66b9ed2bf3026f6605be2b20ead57724cbe96c413048ca3449f645da87a0",
+    "sources": [
+     "    for step in next_state.steps[len(state.steps) :]:",
+     "    for step in next_state.steps[:]:",
+     "        _log_tool_completed(request=request, state=state, tool_name=step.tool_name)",
+     "    return next_state"
+    ],
+    "verdict": "equivalent"
+   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "registry": "ToolRegistry(tools={<that tool's name>: ToolDefinition(...)})",
@@ -267,51 +319,91 @@
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260930T140913Z-27025a",
-    "confidence": 1,
+    "call_id": "20261001T061834Z-02e036",
+    "confidence": 0.95,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "Changing `steps` from a eagerly evaluated tuple to a lazily evaluated generator delays the execution of `registry.execute` until `*steps` is unpacked; however, since evaluating the preceding arguments like `state.completed_rounds + 1` has no side effects, this shift in evaluation order does not alter the function's return value or exceptions.",
-    "response_sha256": "77c8979a7595bcfe390068f802ae207dde94f809225c81f4594862d5209c30d3",
+    "reason": "Replacing the eager tuple comprehension for `steps` with a generator expression slightly delays `registry.execute()` until it's consumed by the unpacking `(*state.steps, *steps)`. However, since the preceding argument evaluation (`state.completed_rounds + 1`) is side-effect-free and exception-free for valid types, the final returned state and execution behavior remain strictly identical.",
+    "response_sha256": "d3996c2676cee7b2e963e5b607262d5b6e4bf6d95cf37533207765659535e063",
+    "sources": [
+     "steps = tuple(registry.execute(call) for call in parsed_calls)",
+     "steps = (registry.execute(call) for call in parsed_calls)",
+     "steps=(*state.steps, *steps),"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061834Z-3375ca",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Unpacking the generator expression directly into the steps tuple produces the exact same tuple of executed tool steps in the same order as pre-collecting them into an intermediate tuple.",
+    "response_sha256": "ffee691255947d1a532c9c2850c9211ce1d79ede35f4be74a5732851fe45054d",
     "sources": [
      "    steps = tuple(registry.execute(call) for call in parsed_calls)",
-     "        steps=(*state.steps, *steps),"
+     "    steps = (registry.execute(call) for call in parsed_calls)"
     ],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5-5@low": {
-    "arguments": {},
+    "arguments": {
+     "registry": "ToolRegistry(tools={})",
+     "state": "ToolLoopState(max_rounds=1, steps=None)",
+     "tool_calls": "[{'name': 'missing', 'arguments': {}}]"
+    },
     "backend": "claude-cli",
-    "call_id": "20260930T140926Z-d25e4e",
-    "confidence": 0.96,
+    "call_id": "20261001T061834Z-82d1e0",
+    "confidence": 0.55,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The generator is fully consumed by the `*steps` unpacking while the constructor arguments are built, so execution order, results and exceptions match the tuple version.",
-    "response_sha256": "bdd7512ceb08d3777cab4ca01617350078f5c045bfda00c7779139d1b1fb011b",
+    "reason": "The original runs registry.execute eagerly before unpacking state.steps, while the changed version unpacks state.steps first, so with non-iterable steps the exception type (or tool side effects) differs.",
+    "response_sha256": "0867d18f852d56b8f50d839a8ab7fab401cfad3f45c8ffd099f168f317a91962",
     "sources": [
+     "steps = tuple(registry.execute(call) for call in parsed_calls)",
      "steps = (registry.execute(call) for call in parsed_calls)",
-     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds + 1, steps=(*state.steps, *steps), outstanding_tool_calls=())"
+     "steps=(*state.steps, *steps),"
     ],
-    "verdict": "equivalent"
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "6324af47261c9c10b0f850f8334b0d76d4ad51dcc889ece8f3109ad9407cfcce"
+  "prompt_sha256": "033cb373df0fe52615cbdfd2a0e1909dd37d13a6775033364f3889c226bebf8e"
  },
  "b286d88b39b3a8e6": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "registry": "ToolRegistry()",
-     "state": "ToolLoopState(max_rounds=0, completed_rounds=0)",
-     "tool_calls": "({'name': 'test'},)"
+     "state": "ToolLoopState(max_rounds=0)",
+     "tool_calls": "[{\"name\": \"my_tool\", \"arguments\": {}}]"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260930T140913Z-1c3b1a",
-    "confidence": 1,
+    "call_id": "20261001T061834Z-7559b2",
+    "confidence": 0.95,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When tools cannot be executed, the changed version omits passing parsed_calls to outstanding_tool_calls in ToolLoopState, causing it to fall back to its default instead of retaining the requested tool calls.",
-    "response_sha256": "19aaba7282ac45a241ee1e09b1359eb77e8e5172e0101a41cc7a4f10eb28287f",
+    "reason": "The changed version omits the outstanding_tool_calls parameter in the early return branch, defaulting to an empty tuple instead of preserving the parsed tool calls.",
+    "response_sha256": "44c74c00d9ff1751bfe66ffce5a3f3af77b89f0accf5f40bb9d8cca7fc490829",
+    "sources": [
+     "    if not state.can_execute_tools():\n        return ToolLoopState(\n            max_rounds=state.max_rounds,\n            completed_rounds=state.completed_rounds,\n            steps=state.steps,\n            outstanding_tool_calls=parsed_calls,\n        )",
+     "    if not state.can_execute_tools():\n        return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=1)",
+     "tool_calls": "[{'name': 'test', 'arguments': {}}]"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061834Z-8e304b",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When state.can_execute_tools() is false, the original version preserves parsed tool calls in outstanding_tool_calls, whereas the changed version omits the argument and falls back to the default empty tuple.",
+    "response_sha256": "629967e149db975cf1090bfa3a2ef37d9db49a2743d27e39b9e9606a4fb6b8ab",
     "sources": [
      "            outstanding_tool_calls=parsed_calls,",
      "        return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps)"
@@ -321,16 +413,16 @@
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "registry": "ToolRegistry()",
-     "state": "ToolLoopState(max_rounds=0)",
-     "tool_calls": "[{\"name\": \"x\", \"arguments\": {}}]"
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=1)",
+     "tool_calls": "[{'name': 'x', 'arguments': {}}]"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T140926Z-6302fd",
-    "confidence": 0.85,
+    "call_id": "20261001T061815Z-400961",
+    "confidence": 0.72,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When tools cannot execute and tool_calls is non-empty, the original returns the parsed calls as outstanding_tool_calls, while the changed version drops them and uses the field default.",
-    "response_sha256": "5303660919e53c62374286f41fdc004257114c82a6eb34e3334825d08441328f",
+    "reason": "When tools cannot execute, the original stores parsed_calls in outstanding_tool_calls while the changed version omits it, so it falls back to the default (likely empty), which differs for non-empty tool_calls.",
+    "response_sha256": "38172512758ea12d992918080b7478993d357dd7dbd64cacb9e3bfd89a22376d",
     "sources": [
      "outstanding_tool_calls=parsed_calls,",
      "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps)"
@@ -338,23 +430,42 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "d2f2a3a620e195965a56d28a3b50ba110617144bb80daad057e301338a88bcfc"
+  "prompt_sha256": "cb08be5f382a275b014f13fd758bce396986001bb38a91daecb50e32febb7d27"
  },
  "b93510947e39b6d5": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "registry": "ToolRegistry()",
-     "state": "ToolLoopState(max_rounds=0, completed_rounds=1)",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=2)",
      "tool_calls": "()"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260930T140913Z-8fea8f",
+    "call_id": "20261001T061815Z-641e42",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version incorrectly assigns `state.max_rounds` to `completed_rounds` instead of `state.completed_rounds` when tools cannot be executed, which changes the behavior when they are unequal.",
-    "response_sha256": "9fbeb6b907462da7559f70bbc755e651622ccd80e8cb02f4253fc622a04050e9",
+    "reason": "When `not state.can_execute_tools()` is true (such as when completed_rounds > max_rounds), the original version preserves `state.completed_rounds`, whereas the changed version incorrectly replaces it with `state.max_rounds`.",
+    "response_sha256": "882417fe113ea4be033adbfd5ba29cedd62fd9913a053849aceaad20dbe77d3b",
+    "sources": [
+     "            completed_rounds=state.completed_rounds,",
+     "        return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=2)",
+     "tool_calls": "()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061815Z-7d2731",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When state.can_execute_tools() returns False on a state where completed_rounds exceeds max_rounds, the original version retains state.completed_rounds while the changed version sets completed_rounds to state.max_rounds.",
+    "response_sha256": "edd2b224296b86aa27b6512a056b6587651e5d72dadb6902b3638e5a968fcafa",
     "sources": [
      "            completed_rounds=state.completed_rounds,",
      "        return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
@@ -364,16 +475,16 @@
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "registry": "ToolRegistry()",
-     "state": "ToolLoopState(max_rounds=2, completed_rounds=3)",
+     "state": "ToolLoopState(max_rounds=3, completed_rounds=5)",
      "tool_calls": "[]"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T140913Z-def2cf",
-    "confidence": 0.4,
+    "call_id": "20261001T061834Z-79c866",
+    "confidence": 0.6,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When execution is blocked, the changed version sets completed_rounds to max_rounds instead of keeping state.completed_rounds, so any blocked state whose completed_rounds differs from max_rounds gives a different result, though I can't see can_execute_tools or any validation.",
-    "response_sha256": "bce7278c6ab368b40c2b97d29443199527a9b196f53a0100de16168b4921653c",
+    "reason": "When execution is blocked, the original keeps state.completed_rounds and the changed version returns state.max_rounds, so they differ when completed_rounds != max_rounds, e.g. 5 vs 3, if the state is constructible.",
+    "response_sha256": "cb4b9e0733bdecbf67a0ac73dc79922edcfae0eccb4244e42f3560f6e7e64ff4",
     "sources": [
      "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)",
      "completed_rounds=state.completed_rounds,"
@@ -381,7 +492,7 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "928b4ef75f26c3eab281599ba15744523a03ea4d3845829445ec7de813b316cd"
+  "prompt_sha256": "3478daf93cc8a7fd5f4630c4d4711ab4a92acdbdabf3b1eeacef1d88734cf9a4"
  },
  "c7d2d7e9975406e2": {
   "answers": {
@@ -389,19 +500,39 @@
     "arguments": {
      "registry": "ToolRegistry()",
      "state": "ToolLoopState(max_rounds=0, completed_rounds=1)",
-     "tool_calls": "[None]"
+     "tool_calls": "[]"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260930T140913Z-8c714a",
+    "call_id": "20261001T061830Z-cd51df",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version eagerly evaluates the parsed calls into a tuple, raising an exception immediately for invalid inputs, while the changed version creates a lazy generator and avoids the exception if the state does not allow executing tools.",
-    "response_sha256": "56f8b81ba0d30ab39968383e060ddb89c89bd881ed221822ea58a8c0f2fec782",
+    "reason": "The original version eagerly evaluates `parsed_calls` into a tuple, whereas the changed version creates a generator expression, meaning that when `state.can_execute_tools()` is false, the returned `ToolLoopState` will have a generator instead of a tuple for `outstanding_tool_calls`.",
+    "response_sha256": "07339aecd951408d2abc034a7c00fbd0f61fd796d0f486cae5751dc6cb5ac467",
     "sources": [
      "    parsed_calls = tuple(parse_tool_call(call) for call in tool_calls)",
+     "            outstanding_tool_calls=parsed_calls,",
      "    parsed_calls = (parse_tool_call(call) for call in tool_calls)",
      "        return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "state": "ToolLoopState(max_rounds=0, completed_rounds=0)",
+     "tool_calls": "()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061815Z-bd6640",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When state cannot execute tools, the changed version sets outstanding_tool_calls to a generator expression instead of a tuple, resulting in a different return value.",
+    "response_sha256": "99a46ca2bc2c2251890de6b56bb4ecca21b3d065d6354cd4281591c9a50bbda1",
+    "sources": [
+     "    parsed_calls = tuple(parse_tool_call(call) for call in tool_calls)",
+     "    parsed_calls = (parse_tool_call(call) for call in tool_calls)"
     ],
     "verdict": "distinct"
    },
@@ -409,15 +540,15 @@
     "arguments": {
      "registry": "ToolRegistry()",
      "state": "ToolLoopState(max_rounds=0)",
-     "tool_calls": "[123]"
+     "tool_calls": "[{}]"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T140913Z-cd0a3c",
-    "confidence": 0.8,
+    "call_id": "20261001T061830Z-1795f8",
+    "confidence": 0.9,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "With execution blocked, the original parses eagerly and raises on an invalid call, while the changed version stores an unconsumed generator and returns without raising (unless the constructor consumes it).",
-    "response_sha256": "772899e77336763e797e321b120c973870a4341edbad82f969309e0fdaa7568e",
+    "reason": "The changed version makes parsed_calls a lazy generator, so in the blocked path it never parses the calls and returns a generator in outstanding_tool_calls. The original eagerly parses into a tuple and raises on an invalid call.",
+    "response_sha256": "1f71374594784e348b3a0f6c61d1690a20bdcedfa63e8eb746349093d8f8201b",
     "sources": [
      "parsed_calls = (parse_tool_call(call) for call in tool_calls)",
      "parsed_calls = tuple(parse_tool_call(call) for call in tool_calls)",
@@ -426,7 +557,7 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "03f70f4e9d7842973c42addf1d5d2fa8736a58634e86774db32948733d02844d"
+  "prompt_sha256": "163c1ba182b55421f96df99a2bfff2b29fecb96ceb295f8d445833b7ca81f2ac"
  },
  "cc2237e2e7228b57": {
   "answers": {
@@ -502,12 +633,31 @@
      "tool_calls": "()"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260930T140913Z-052484",
+    "call_id": "20261001T061815Z-fd27f1",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When `can_execute_tools()` evaluates to false, the changed version omits `completed_rounds` when instantiating the new state, resetting it to its default value rather than preserving the existing count.",
-    "response_sha256": "383b3fa64f032f6994687a3c4f99f8fdda1edf70d79740dd69b3bee4efb6dc7f",
+    "reason": "The changed version omits `completed_rounds=state.completed_rounds` when returning a new `ToolLoopState` if tools cannot be executed, resetting `completed_rounds` to its default value instead of preserving it.",
+    "response_sha256": "08f7ee808b81f5032aff7c01fe5fa54d8754fb0de7efe2ec0e1a4f34d2126032",
+    "sources": [
+     "        return ToolLoopState(\n            max_rounds=state.max_rounds,\n            completed_rounds=state.completed_rounds,\n            steps=state.steps,\n            outstanding_tool_calls=parsed_calls,\n        )",
+     "        return ToolLoopState(max_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=1)",
+     "tool_calls": "()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061834Z-90ac36",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When state cannot execute tools, the changed version omits completed_rounds when constructing ToolLoopState, resetting it to the default value instead of preserving state.completed_rounds.",
+    "response_sha256": "5e4565aaf0b2f7bfc819ff43e53015cabefe01b8e2957fd5612f421f21c62487",
     "sources": [
      "            completed_rounds=state.completed_rounds,",
      "        return ToolLoopState(max_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
@@ -521,20 +671,20 @@
      "tool_calls": "[]"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T140926Z-87253c",
+    "call_id": "20261001T061834Z-ac9b48",
     "confidence": 0.85,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version drops completed_rounds in the early-return branch, so a state with completed_rounds=1 at its limit comes back with the default (likely 0) instead of 1.",
-    "response_sha256": "40b3e32c365e477beb3f468331d8d62bef744ac7f86c5f8a3735f840fb806606",
+    "reason": "In the non-executing branch the changed version drops completed_rounds=state.completed_rounds, so the result resets to the default (likely 0) instead of preserving 1.",
+    "response_sha256": "6aa232aaf4b8e23aecf140b18984cdd10591c503fe3f7e2e3b8eeba70064d617",
     "sources": [
-     "return ToolLoopState(max_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)",
-     "completed_rounds=state.completed_rounds,"
+     "completed_rounds=state.completed_rounds,",
+     "return ToolLoopState(max_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "f6ae1acd57462e5b964695f33f5cfdd40351bbc8161a7438081551dcef430d9f"
+  "prompt_sha256": "785eca35b9bd55d15765cca59cd162727da6d5a2eb509838c6a085aac21d7574"
  },
  "db62c1957a5a14e0": {
   "answers": {
@@ -714,26 +864,43 @@
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260930T140926Z-822420",
+    "call_id": "20261001T061815Z-2eafaf",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The extra parentheses around the generator expressions are functionally identical, and omitting `outstanding_tool_calls=()` in the return statement has no effect because it falls back to the dataclass's default value.",
-    "response_sha256": "d24b998111c868496749ef1af31a0b3197e3c30b209f9c9c8b3d790762662bd4",
+    "reason": "The modified version behaves identically to the original, simply omitting the explicit `outstanding_tool_calls=()` argument to rely on its default empty tuple value, and adding redundant parentheses to the generator expressions.",
+    "response_sha256": "840f146d7731030d228b63754a432b680be2a8dac638563507563f53c446ee0e",
     "sources": [
-     "        outstanding_tool_calls=(),"
+     "        outstanding_tool_calls=(),",
+     "    return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds + 1, steps=(*state.steps, *steps))",
+     "    parsed_calls = tuple((parse_tool_call(call) for call in tool_calls))"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061834Z-85c045",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Omitting outstanding_tool_calls relies on the default empty tuple of ToolLoopState, and parenthesizing the generator expressions does not change behavior.",
+    "response_sha256": "1526899eef576370c328e76c709abb9c0c7a6743a10a2391ae086d8b5b12f7e4",
+    "sources": [
+     "        outstanding_tool_calls=(),",
+     "    return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds + 1, steps=(*state.steps, *steps))"
     ],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260930T140926Z-38752f",
-    "confidence": 0.93,
+    "call_id": "20261001T061815Z-e2e4ad",
+    "confidence": 0.9,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version omits outstanding_tool_calls=() in the final return, but the tuple-typed field's default is almost certainly the empty tuple, so the results match.",
-    "response_sha256": "b390b2f1e61e7861a18383688feff92e5a9b3a63ea31fc0d5deb576a0eacc4b8",
+    "reason": "The only change drops the explicit outstanding_tool_calls=() in the executing branch, and that field's default is almost certainly the empty tuple, so the returned state is the same.",
+    "response_sha256": "199ae418c37110c4c46d6250bc26cbda976975880b1bd1275641cc70c9e93ae4",
     "sources": [
      "outstanding_tool_calls=(),",
      "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds + 1, steps=(*state.steps, *steps))"
@@ -741,24 +908,44 @@
     "verdict": "equivalent"
    }
   },
-  "prompt_sha256": "f5a86445d2ffaae4dd16b631a2b5d782a60e219d88bca9691bd1db3299db74c0"
+  "prompt_sha256": "86d87420cb055c48d979b7787838fc53894ee6051a2a7e68598617260a14eb12"
  },
  "f7f884d8946a1724": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
      "registry": "ToolRegistry()",
-     "state": "ToolLoopState(max_rounds=0, completed_rounds=0, steps=(1,))",
+     "state": "ToolLoopState(max_rounds=0, completed_rounds=0, steps=(\"a\",))",
      "tool_calls": "()"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260930T140913Z-b3074f",
+    "call_id": "20261001T061834Z-b9c31d",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When state.can_execute_tools() is false, the changed version omits the steps argument in the returned ToolLoopState, thereby losing any existing steps.",
-    "response_sha256": "234a4583b781cbe39289120c53acb589c65e82058b039d9d06d918719ef11635",
+    "reason": "When state.can_execute_tools() evaluates to false, the changed version fails to pass steps=state.steps to the new ToolLoopState, causing any existing steps in the input state to be discarded and reset to the default value.",
+    "response_sha256": "24c9cf3d93ea67dac48b0ed03b92bc08a37878e9cf225f3bbcb60010ce2c846e",
     "sources": [
+     "        return ToolLoopState(\n            max_rounds=state.max_rounds,\n            completed_rounds=state.completed_rounds,\n            steps=state.steps,\n            outstanding_tool_calls=parsed_calls,\n        )",
+     "        return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, outstanding_tool_calls=parsed_calls)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "registry": "ToolRegistry()",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=1, steps=(1,))",
+     "tool_calls": "()"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T061815Z-61be9d",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When state.can_execute_tools() returns False, the changed version omits steps=state.steps when constructing the return ToolLoopState, resetting existing steps to the default empty tuple.",
+    "response_sha256": "e69fbc5546dd1bd36c9329687c089fbd7dc3d46e3c97d4f25edc27e2f911acdf",
+    "sources": [
+     "    if not state.can_execute_tools():",
      "            steps=state.steps,",
      "        return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, outstanding_tool_calls=parsed_calls)"
     ],
@@ -767,23 +954,23 @@
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "registry": "ToolRegistry()",
-     "state": "ToolLoopState(max_rounds=1, completed_rounds=1, steps=(ToolStep(call=ToolCall(id='1', name='t', arguments={}), result='x'),))",
+     "state": "ToolLoopState(max_rounds=1, completed_rounds=1, steps=(<a ToolStep instance>,))",
      "tool_calls": "[]"
     },
     "backend": "claude-cli",
-    "call_id": "20260930T140926Z-33ab2c",
-    "confidence": 0.72,
+    "call_id": "20261001T061834Z-44e836",
+    "confidence": 0.8,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When execution is not allowed, the changed version omits steps=state.steps, so a state with existing steps loses them (default is presumably empty) while the original preserves them.",
-    "response_sha256": "f33f661f18f090ebbca01ab002adc53a821b0395829b945fcc5b37d3f6f9e4ca",
+    "reason": "When tools cannot execute and state.steps is non-empty, the original keeps those steps in the returned state, while the changed version drops them and uses the default for steps.",
+    "response_sha256": "369f97491dcb6989433ddcaa8787c42e3daa92d4eba54ff14d335166bea601a6",
     "sources": [
-     "completed_rounds=state.completed_rounds,\n            steps=state.steps,\n            outstanding_tool_calls=parsed_calls,",
-     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, outstanding_tool_calls=parsed_calls)"
+     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, outstanding_tool_calls=parsed_calls)",
+     "steps=state.steps,"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "3c3385ff6f361e947fd8c69f728abd29294e12661c74c0d57da8d8253b998e08"
+  "prompt_sha256": "ef757d6260c8020c5004db92ab0c39ad8263827c822b53fc81c7f4d75e8dad90"
  }
 }

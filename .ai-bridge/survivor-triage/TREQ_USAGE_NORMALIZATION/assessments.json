@@ -211,59 +211,42 @@
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T085540Z-526bc2",
+    "call_id": "20261001T061907Z-916d71",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When total_tokens is 0 but both input_tokens and output_tokens are 0, the changed version executes the assignment setting total_tokens to 0 + 0 = 0, which leaves its value identical to the original version.",
-    "response_sha256": "812c6c74d258663950b9fad4fa00d14a99de05a1fc4ab980a5dd924e125140bd",
+    "reason": "If total_tokens is 0 and both input and output tokens are 0, the original version skips the block and leaves total_tokens as 0, while the new version calculates 0 + 0, which also results in 0, meaning both versions always yield identical results.",
+    "response_sha256": "f404c117dff8f0305717773ec6f55df70362d4292bf00515e2ca27c1ec42cca3",
     "sources": [
      "    if total_tokens == 0 and (input_tokens or output_tokens):",
-     "    if total_tokens == 0:"
+     "        total_tokens = input_tokens + output_tokens"
     ],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T085540Z-d567a6",
+    "call_id": "20261001T061912Z-59923d",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When total_tokens is 0 and both input_tokens and output_tokens are 0, total_tokens remains 0 in both versions because 0 + 0 equals 0, making the additional condition redundant since non-negative token counts produce the exact same sum in all cases.",
-    "response_sha256": "99814776e4283f13dd9d285fe763ff48955be7ef3ee1162c4434e8a9ed8e99c0",
+    "reason": "When total_tokens is 0 and both input_tokens and output_tokens are 0, total_tokens evaluates to 0 in both versions, making the additional condition check redundant.",
+    "response_sha256": "7c5146615149810b70651f3f33484c58fcac2d4f45dfba1c7e36b469d969305b",
     "sources": [
      "    if total_tokens == 0 and (input_tokens or output_tokens):",
-     "    if total_tokens == 0:",
-     "        total_tokens = input_tokens + output_tokens"
-    ],
-    "verdict": "equivalent"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {},
-    "backend": "claude-cli",
-    "call_id": "20260928T234505Z-cc4aee",
-    "confidence": 0.9,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "Since _first_int always returns a non-negative int, input_tokens and output_tokens are both >=0, so \"(input_tokens or output_tokens)\" is False exactly when both are 0, in which case input_tokens+output_tokens==0 anyway, making the original's guard redundant and both versions always compute the same total_tokens.",
-    "response_sha256": "81bbf1b6d521e1c65c000c676d4635f5fd9e1363609a729954ccdce3952d4dbf",
-    "sources": [
-     "if total_tokens == 0 and (input_tokens or output_tokens):",
-     "if total_tokens == 0:",
-     "total_tokens = input_tokens + output_tokens"
+     "    if total_tokens == 0:"
     ],
     "verdict": "equivalent"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260930T195643Z-9be66e",
+    "call_id": "20261001T061906Z-8fcb71",
     "confidence": 0.96,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When total is 0 and both input and output are 0, the changed version sets total to 0+0 = 0, the same as the original leaving it at 0; in every other case the two behave identically.",
-    "response_sha256": "9fc088eca4bbd4fe3070dd58ee144a7e13a4d9166dee77000ab661cdc6a9589b",
+    "reason": "When input and output tokens are both 0, the original leaves total at 0 and the change sets it to 0+0, so the results match in every case.",
+    "response_sha256": "77aa9e33ef0b1efbef4ca5a35b9f47cf1a43410d3347a3ac7f6e685a7a57017b",
     "sources": [
      "if total_tokens == 0 and (input_tokens or output_tokens):",
      "if total_tokens == 0:",
@@ -272,7 +255,7 @@
     "verdict": "equivalent"
    }
   },
-  "prompt_sha256": "29f7e569c55b363e1d8d27dcd617f801674d72939a91a1cb77ec887432ad53b8"
+  "prompt_sha256": "fa6000aac009eaff30c6fc4ae6ec1cc0f8cc2443e2fcb0f11f6c06a6270aabe5"
  },
  "f3d4b39e06f3f013": {
   "answers": {

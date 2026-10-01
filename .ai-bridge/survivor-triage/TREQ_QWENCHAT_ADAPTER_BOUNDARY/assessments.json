@@ -4,12 +4,12 @@
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T083539Z-bd190c",
+    "call_id": "20261001T061857Z-61b708",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The `dict.update()` method natively accepts any mapping or iterable of key-value pairs (the exact same input types as the `dict()` constructor), so passing `request.kwargs` directly behaves identically to wrapping it in `dict()` first.",
-    "response_sha256": "c197e5726ea797800f12ee79ede94020a5bd32ecb17422717cf2c4f2365bba9a",
+    "reason": "The updated version avoids creating an unnecessary temporary dictionary, but both dict() and dict.update() accept the same mapping or iterable of key-value pairs and apply them to the payload in exactly the same way.",
+    "response_sha256": "452e42ac2ee9df6265894603386f2f2a503c485ea80f7b4c80a18913e39b3f02",
     "sources": [
      "payload.update(dict(request.kwargs))",
      "payload.update(request.kwargs)"
@@ -19,157 +19,118 @@
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260929T083539Z-ed7056",
+    "call_id": "20261001T061857Z-810e28",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "Passing request.kwargs directly to payload.update is equivalent to wrapping it in dict first because dict.update already accepts any mapping or key-value pair iterable.",
-    "response_sha256": "42c82833899d87f5c7eaeb502bdb65480b4828ecaa28b4d8e61d8010c7a1f50a",
+    "reason": "Updating a dictionary directly with request.kwargs produces the exact same payload and raises the same exception types as updating it with dict(request.kwargs).",
+    "response_sha256": "0ffe30f46df5353dc68c07fd78db9d4b7e947c630e25a4ff6e6aaca3695ee1e7",
     "sources": [
      "        payload.update(dict(request.kwargs))",
      "    payload.update(request.kwargs)"
     ],
     "verdict": "equivalent"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "request": "N/A",
-     "self_base_url": "\"http://x\"",
-     "self_timeout_seconds": "600.0",
-     "uploader": "None"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T233003Z-3c84ab",
-    "confidence": 0.9,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "Removing the dict() wrapper only changes how payload.update() consumes request.kwargs; since kwargs is typed as Mapping[str, Any], dict.update(mapping) and dict.update(dict(mapping)) merge identical key/value pairs into payload with no observable difference for any legitimate Mapping instance.",
-    "response_sha256": "27300057cd7ab51a7fdabfdfbab4bc6d8e7a7dae6b6f283d3792a76dc0b69589",
-    "sources": [
-     "payload.update(dict(request.kwargs))",
-     "payload.update(request.kwargs)"
-    ],
-    "verdict": "equivalent"
-   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260930T195645Z-b78709",
+    "call_id": "20261001T061854Z-ed5de0",
     "confidence": 0.93,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The only change is dropping the dict() copy in payload.update(request.kwargs), which gives the same result for any Mapping kwargs.",
-    "response_sha256": "cc6f67f5a5e4ec3619e996401cfcdea16fa3caa1b54cccb5ad0d7a155b3d2633",
+    "reason": "The only change is dropping the dict() copy around request.kwargs in payload.update, which merges identically and raises the same TypeError for invalid values.",
+    "response_sha256": "13887155df24a3cc640e211e1d2e42197c130b016fb59dfb63f8ea78a7943f42",
     "sources": [
-     "payload.update(dict(request.kwargs))",
-     "payload.update(request.kwargs)"
+     "payload.update(request.kwargs)",
+     "payload.update(dict(request.kwargs))"
     ],
     "verdict": "equivalent"
    }
   },
-  "prompt_sha256": "de3d3cb0cc5874b9aaa1c54a423db995014af2f37c50ac078585dd31dd8f39f7"
+  "prompt_sha256": "44658d0322aa2056cee3223c7900bea587c1f55b991f4c352e9e3d010e1d8395"
  },
  "14f4d9793d873316": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id=\"a\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"m\", credential=ProviderCredential(key_id=1, env_var=\"A\", value=\"B\"), messages=(), tool_choice=ToolChoice(kind=\"auto\"))",
-     "self_base_url": "\"http://example.com\"",
-     "self_timeout_seconds": "60.0",
+     "request": "ProviderRequest(request_id='id', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='m', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=[], tool_choice=ToolChoice(kind='auto'))",
+     "self_base_url": "'http://a.b'",
+     "self_timeout_seconds": "1.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-73bf21",
+    "call_id": "20261001T060743Z-3bee23",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version fails to include the tool choice payload in the dictionary, whereas the original version correctly assigns it to the \"tool_choice\" key when a tool choice is provided.",
-    "response_sha256": "305f371ad6011a856b8e9e97b2249cdb2e20e4e4ec96788e92ab3ea6a057a230",
+    "reason": "When request.tool_choice is provided, the original method includes it in the returned payload while the changed method omits it.",
+    "response_sha256": "c6a9ae927792f336c0b536183dbc0336ba47fa99632a6c301bb8e4281b25fb77",
     "sources": [
-     "        if request.tool_choice is not None:\n            payload[\"tool_choice\"] = tool_choice_payload(request)",
-     "    if request.tool_choice is not None:\n        pass"
+     "if request.tool_choice is not None:",
+     "            payload[\"tool_choice\"] = tool_choice_payload(request)",
+     "        pass"
     ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='secret'), messages=[NormalizedMessage(role='user', parts=(), meta={})], tool_choice=ToolChoice(kind='auto'))",
-     "self_base_url": "'http://localhost'",
+     "request": "ProviderRequest(request_id='req1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), tool_choice=ToolChoice(kind='auto'), kwargs={})",
+     "self_base_url": "'https://example.com'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-369d41",
+    "call_id": "20261001T060744Z-e25008",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When request.tool_choice is not None, the original version assigns payload['tool_choice'] using tool_choice_payload(request), whereas the changed version executes pass and leaves tool_choice unset.",
-    "response_sha256": "7e77ecd541d24902149f98340ecf214a70ed463f1f9f2295644100acc148eab6",
+    "reason": "When request.tool_choice is not None and request.kwargs does not override tool_choice, the original version sets the tool_choice key in the payload while the changed version omits it.",
+    "response_sha256": "1699538b2515340727ecc466a3c3ed0dfdde664338964d507f534663ea443037",
     "sources": [
-     "        if request.tool_choice is not None:",
-     "            payload[\"tool_choice\"] = tool_choice_payload(request)"
-    ],
-    "verdict": "distinct"
-   },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='X', value='v'), messages=(), temperature=None, seed=None, schema=None, tool_registry=None, tool_choice=ToolChoice(kind='auto'), kwargs={})",
-     "self_base_url": "'http://localhost'",
-     "self_timeout_seconds": "600.0",
-     "uploader": "None"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T213154Z-82da66",
-    "confidence": 0.97,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "When request.tool_choice is not None, the original sets payload['tool_choice'] = tool_choice_payload(request), while the changed version replaces this assignment with a no-op 'pass', so the resulting payload dict differs (missing 'tool_choice' key) for any request with a non-None tool_choice.",
-    "response_sha256": "cbd4d2fa1ac2adb1af41037394ed80686bd68a5d885a39e0f3610fd975c971c5",
-    "sources": [
-     "if request.tool_choice is not None:\n            payload[\"tool_choice\"] = tool_choice_payload(request)",
-     "if request.tool_choice is not None:\n        pass"
+     "            payload[\"tool_choice\"] = tool_choice_payload(request)",
+     "        pass"
     ],
     "verdict": "distinct"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_choice=ToolChoice(kind='auto'), kwargs={})",
-     "self_base_url": "'http://localhost'",
+     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_choice=ToolChoice(kind='auto'), kwargs={})",
+     "self_base_url": "'http://localhost:8000'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T111625Z-97a56a",
-    "confidence": 0.93,
+    "call_id": "20261001T060741Z-d2d167",
+    "confidence": 0.96,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When request.tool_choice is not None, the original adds payload[\"tool_choice\"], but the changed version replaces that with pass, so the returned payload lacks the key.",
-    "response_sha256": "d2a1b1d410a56aea618a2bf77c0d7fc04f4bd36d376b7911d42fae49ce4991d2",
+    "reason": "With a non-None tool_choice and no kwargs override, the original adds payload[\"tool_choice\"], while the changed version replaces that with pass and omits the key.",
+    "response_sha256": "a5ab1e62809ed1b950c586380888d5abe3b2b93d92b0de764e59523c8024583a",
     "sources": [
      "payload[\"tool_choice\"] = tool_choice_payload(request)",
-     "if request.tool_choice is not None:\n        pass"
+     "if request.tool_choice is not None:\n            pass"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "296750c5e7ee8df07b64bf3e7a1cee903bdd819b3618317581cae51786ba3d42"
+  "prompt_sha256": "d85f2c8712667bf151f794bcf233bcddceec91e5ccc2a89e5e6779958a38164c"
  },
  "2038c0b46cff816b": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id=\"\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"\", credential=ProviderCredential(key_id=0, env_var=\"\", value=\"\"), messages=[], kwargs={})",
-     "self_base_url": "\"\"",
-     "self_timeout_seconds": "0.0",
+     "request": "ProviderRequest(request_id='id', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='model', credential=ProviderCredential(key_id=1, env_var='KEY', value='VAL'), messages=[])",
+     "self_base_url": "'https://api.qwen.ai'",
+     "self_timeout_seconds": "60.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-019d21",
+    "call_id": "20261001T060747Z-e54fdd",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version sets 'stream' to False in the payload dictionary while the changed version sets it to True, resulting in different returned dictionaries when request.kwargs does not override the 'stream' key.",
-    "response_sha256": "64593ae2319e2750ff949e9637d18eebdbf8dbcb8c3ba59c3b44b44bfdd484a3",
+    "reason": "The two versions initialize the 'stream' key in the payload to different boolean values (False vs True), which results in different returned dictionaries when 'stream' is not overridden via request.kwargs.",
+    "response_sha256": "bdfcec41d947737d17547dc91297670c239754ce5f0aa35c34c0a556c2d2eed5",
     "sources": [
      "        payload: dict[str, Any] = {\n            \"model\": request.provider_model,\n            \"messages\": messages,\n            \"stream\": False,\n        }",
      "    payload: dict[str, Any] = {'model': request.provider_model, 'messages': messages, 'stream': True}"
@@ -178,108 +139,83 @@
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), kwargs={})",
-     "self_base_url": "'https://example.com'",
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='secret'), messages=())",
+     "self_base_url": "'https://api.qwen.ai'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-a91fd2",
+    "call_id": "20261001T060752Z-9775cc",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The original version sets stream to False in the payload while the changed version sets stream to True.",
-    "response_sha256": "9effda4f713b60369019ca0e31825d0ce936a7c77b697864365a9236fd042129",
+    "reason": "The original build_payload sets stream to False in the payload dictionary, whereas the changed version sets stream to True.",
+    "response_sha256": "ac6dd18355dc86c5b906044c0c75cc9aefbe2dbe917c0c85aa9957c027478c06",
     "sources": [
      "            \"stream\": False,",
      "    payload: dict[str, Any] = {'model': request.provider_model, 'messages': messages, 'stream': True}"
     ],
     "verdict": "distinct"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "request": "ProviderRequest(request_id=\"r1\", provider=Provider.QWENCHAT, model=Model.QWEN_VL_32B, provider_model=\"qwen-vl-32b\", credential=ProviderCredential(key_id=1, env_var=\"QWEN_KEY\", value=\"secret\"), messages=(NormalizedMessage(role=\"user\", parts=(), meta={}),))",
-     "self_base_url": "\"http://localhost\"",
-     "self_timeout_seconds": "600.0",
-     "uploader": "None"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T213154Z-05d93a",
-    "confidence": 0.95,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "The only functional change is the literal for the 'stream' key, from False to True, and since request.kwargs is empty here it is never overwritten, so build_payload returns a dict differing in payload['stream'] (False vs True) for this identical input.",
-    "response_sha256": "4120dc05c810203bdb59261399b818f01d9e26f01afbe5532b857ac4470c33c2",
-    "sources": [
-     "\"stream\": False,",
-     "'stream': True}"
-    ],
-    "verdict": "distinct"
-   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(), kwargs={})",
+     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(), kwargs={})",
      "self_base_url": "'http://localhost'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T111626Z-625235",
-    "confidence": 0.97,
+    "call_id": "20261001T060745Z-2291fa",
+    "confidence": 0.96,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version sets payload['stream'] to True instead of False, so the returned dict differs whenever request.kwargs doesn't override 'stream'.",
-    "response_sha256": "e308941f15581ef358662c67bb567c32e6b9698703ad5b4f6001231dafd5b3d2",
+    "reason": "The original returns a payload with \"stream\": False and the changed version returns \"stream\": True, which differs whenever kwargs does not override \"stream\".",
+    "response_sha256": "f2f6a87ff6c8ba06dce783a12a50a70b6389b2ba6307e0afc0e246d6d83a37e1",
     "sources": [
      "\"stream\": False,",
-     "'stream': True"
+     "'stream': True}"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "00364af114ac80242a3904fdd76092919b759cc0323863d2331fe93c0b53dcfd"
+  "prompt_sha256": "271b32643dc00fbc663aad78a9f6a5933cde8205392ad38c5d3f53b652b495e4"
  },
  "40231175bc1ce35e": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='id', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max-latest', credential=ProviderCredential(key_id=1, env_var='VAR', value='val'), messages=[], tool_registry=ToolRegistry(tools={'t': ToolDefinition(name='t', description=None, parameters={}, descriptor={'name': 't'})}))",
-     "self_base_url": "'http://example.com'",
-     "self_timeout_seconds": "60.0",
+     "request": "ProviderRequest(request_id=\"\", provider=Provider.QWENCHAT, model=Model.QWEN_VL_3B, provider_model=\"\", credential=ProviderCredential(key_id=0, env_var=\"\", value=\"\"), messages=[], tool_registry=ToolRegistry(tools={\"t\": ToolDefinition(name=\"t\", description=None, parameters={}, descriptor={\"a\": \"b\"})}))",
+     "self_base_url": "\"\"",
+     "self_timeout_seconds": "0.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-7d7915",
+    "call_id": "20261001T060756Z-d8dbb1",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version populates the 'tools' key in the payload when a tool registry with tools is present, whereas the changed version omits this step entirely and skips it with 'pass'.",
-    "response_sha256": "0d847661ef8f622e0a22633d0b252c2b8040a407e99d16ea814f14af692ee9a0",
+    "reason": "The changed version removes the assignment of `payload['tools']`, so providing a request with a populated `tool_registry` yields a payload containing the tools in the original version but missing them in the changed version.",
+    "response_sha256": "85db46ea7bd47b77a574f06205dadc0c0d69f7d61e587b79e89ce2320f5583d2",
     "sources": [
-     "        if request.tool_registry is not None and request.tool_registry.tools:",
-     "            payload[\"tools\"] = [",
-     "                dict(definition.descriptor)",
-     "                for definition in request.tool_registry.tools.values()",
-     "            ]",
-     "    if request.tool_registry is not None and request.tool_registry.tools:",
-     "        pass"
+     "        if request.tool_registry is not None and request.tool_registry.tools:\n            payload[\"tools\"] = [\n                dict(definition.descriptor)\n                for definition in request.tool_registry.tools.values()\n            ]",
+     "    if request.tool_registry is not None and request.tool_registry.tools:\n        pass"
     ],
     "verdict": "distinct"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.GEMINI_FLASH, provider_model='qwen', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=(), kwargs={}, tool_registry=ToolRegistry(tools={'tool1': ToolDefinition(name='tool1', description=None, parameters={}, descriptor={'type': 'function'})}))",
-     "self_base_url": "'https://example.com'",
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='secret'), messages=[], tool_registry=ToolRegistry(tools={'dummy': ToolDefinition(name='dummy', description=None, parameters={}, descriptor={'type': 'function'})}))",
+     "self_base_url": "'http://localhost:8000'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-ac895a",
+    "call_id": "20261001T060801Z-227d1d",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When request.tool_registry contains tools, the original version populates payload['tools'] with the tool descriptors while the changed version executes pass and omits the 'tools' key from the payload.",
-    "response_sha256": "439af11c1b0a11cd17eaa2af661bfd560b81bb018f0f7e22441af05c1db387a5",
+    "reason": "When request.tool_registry contains tools, the original build_payload populates the 'tools' key in the payload dictionary, whereas the changed version executes pass and omits it.",
+    "response_sha256": "0182edda04f3e3f1f50d5d0c0f611ff3c5600a38f648a13a3915cff2f2ede582",
     "sources": [
      "            payload[\"tools\"] = [",
      "                dict(definition.descriptor)",
@@ -289,41 +225,20 @@
     ],
     "verdict": "distinct"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_VL_32B, provider_model='qwen-vl-32b', credential=ProviderCredential(key_id=1, env_var='QWEN_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_registry=ToolRegistry(tools={'foo': ToolDefinition(name='foo', description=None, parameters={}, descriptor={'type': 'function', 'function': {'name': 'foo', 'parameters': {}}})}))",
-     "self_base_url": "'https://qwen.example.com'",
-     "self_timeout_seconds": "600.0",
-     "uploader": "None"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T213154Z-e55c15",
-    "confidence": 0.97,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "When request.tool_registry has tools, the original sets payload[\\\"tools\\\"] to the list of descriptors, while the changed version's `pass` means the key is never added, so build_payload returns dicts that differ in the presence of the 'tools' key for identical inputs.",
-    "response_sha256": "2043ff60347cbd618e51a47e25793040b93594082f6251245f13a8dce86a2154",
-    "sources": [
-     "if request.tool_registry is not None and request.tool_registry.tools:",
-     "payload[\"tools\"] = [ dict(definition.descriptor) for definition in request.tool_registry.tools.values() ]",
-     "if request.tool_registry is not None and request.tool_registry.tools: pass"
-    ],
-    "verdict": "distinct"
-   },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_registry=ToolRegistry(tools={'t': ToolDefinition(name='t', description=None, parameters={}, descriptor={'type': 'function', 'function': {'name': 't'}})}))",
-     "self_base_url": "'http://localhost:8000'",
+     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_registry=ToolRegistry(tools={'t': ToolDefinition(name='t', description=None, parameters={}, descriptor={'type': 'function'})}))",
+     "self_base_url": "'http://localhost'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T111626Z-c30b78",
-    "confidence": 0.96,
+    "call_id": "20261001T060753Z-2021e5",
+    "confidence": 0.95,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version replaces the assignment of payload[\"tools\"] with pass, so a request with a non-empty tool registry (and no \"tools\" in kwargs) yields a payload lacking \"tools\", unlike the original.",
-    "response_sha256": "a680dfd583e9da8ff67059d770eba0b5e1b331574ee997402a668982240fa45a",
+    "reason": "The changed version replaces the tools assignment with pass, so a request with a non-empty tool registry no longer gets a \"tools\" key in the payload.",
+    "response_sha256": "ce8e513f3b97264ae29b78f1e0478f7496288f5d21c55dffc702bab5f6dd215e",
     "sources": [
      "if request.tool_registry is not None and request.tool_registry.tools:\n        pass",
      "payload[\"tools\"] = [\n                dict(definition.descriptor)\n                for definition in request.tool_registry.tools.values()\n            ]"
@@ -331,49 +246,89 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "71c373b78ec648953a2d6a12d43413d42919ecd70262671d9ac9b101faac53db"
+  "prompt_sha256": "e71d55cba94a0667677e74e9ae60c2240c1858948c4b4682b0629400c9f11062"
  },
  "7a62ad64f09cc0a0": {
   "answers": {
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_VL_32B, provider_model='qwen-vl-32b', credential=ProviderCredential(key_id=1, env_var='QWEN_KEY', value='secret'), messages=[NormalizedMessage(role='user', parts=(), meta={})], temperature=None, seed=None, schema=None, tool_registry=ToolRegistry(tools={}), tool_choice=None, kwargs={}, route_index=None)",
+     "request": "ProviderRequest(request_id=\"1\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"qwen-max-latest\", credential=ProviderCredential(key_id=1, env_var=\"K\", value=\"V\"), messages=[], tool_registry=None, tool_choice=ToolChoice(kind=\"auto\"))",
+     "self_base_url": "\"http://example.com\"",
+     "self_timeout_seconds": "60.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060802Z-50be2a",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When a request has a tool_choice but no tool_registry, the original version populates the tool_choice in the payload, whereas the changed version does not because it incorrectly checks tool_registry instead of tool_choice.",
+    "response_sha256": "6e04151a158f68356d17024296eb11f9b9b4a382e6dddbd3ef5077afd44ba8c0",
+    "sources": [
+     "        if request.tool_choice is not None:",
+     "    if request.tool_registry is not None:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), tool_choice=ToolChoice(kind='auto'), tool_registry=None)",
+     "self_base_url": "'https://example.com'",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060805Z-0e0461",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When request.tool_choice is provided and request.tool_registry is None, the original version sets payload['tool_choice'] whereas the changed version checks request.tool_registry and skips setting it.",
+    "response_sha256": "3ec8d406f3d5bdbb9035166b9a7e569cfb014b5d2133f4356cc2b31e670983d6",
+    "sources": [
+     "        if request.tool_choice is not None:",
+     "    if request.tool_registry is not None:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(), tool_registry=ToolRegistry(), tool_choice=None)",
      "self_base_url": "'http://localhost'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T233003Z-04ffe7",
-    "confidence": 0.9,
-    "model": "claude-sonnet-5",
+    "call_id": "20261001T060802Z-6803f0",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed code gates the tool_choice payload on `request.tool_registry is not None` instead of `request.tool_choice is not None`; with an empty-but-non-None ToolRegistry and tool_choice=None, the original omits the 'tool_choice' key while the changed version calls tool_choice_payload(request) and adds it, producing a different payload dict (or a different exception if that helper rejects None).",
-    "response_sha256": "95d84b3a66a7d6a6ff55a6fb4c4afcc1a2034f40a509386819914bb7a9b99da4",
+    "reason": "The changed version guards tool_choice on tool_registry being non-None instead of tool_choice being non-None, so with a registry present and tool_choice None it adds a tool_choice key, or raises, where the original omits it.",
+    "response_sha256": "8f311667948e4a602a15d45a6d04c469f95ecf6462e67d226984336a773859a2",
     "sources": [
-     "if request.tool_choice is not None:\n            payload[\"tool_choice\"] = tool_choice_payload(request)",
-     "if request.tool_registry is not None:\n        payload['tool_choice'] = tool_choice_payload(request)"
+     "if request.tool_registry is not None:\n        payload['tool_choice'] = tool_choice_payload(request)",
+     "if request.tool_choice is not None:\n            payload[\"tool_choice\"] = tool_choice_payload(request)"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "36b0dc44076ef1349a4952e2a6362c63dcf9ff96f0e9defe41186c1116f1cf6b"
+  "prompt_sha256": "6858c745ac8a639b1b9a4cc89d212a0f597773b2c98489b52d5434a23deccfe1"
  },
  "7f08bc96d2f666c5": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=[], kwargs={'a': 1})",
-     "self_base_url": "'http://localhost'",
-     "self_timeout_seconds": "600.0",
+     "request": "ProviderRequest(request_id=\"\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"\", credential=ProviderCredential(key_id=0, env_var=\"\", value=\"\"), messages=[], kwargs={\"foo\": \"bar\"})",
+     "self_base_url": "\"\"",
+     "self_timeout_seconds": "0.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-4b947a",
+    "call_id": "20261001T060808Z-9ed989",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version includes kwargs from the request in the output payload by calling payload.update, while the changed version drops them by replacing that line with a pass statement.",
-    "response_sha256": "98cefeeb745b5fae2d7460c11c49e5428f739e29a41dbd8415755fd9e30b19bd",
+    "reason": "The original version adds the request kwargs to the payload, whereas the changed version replaces this step with `pass` and ignores them.",
+    "response_sha256": "1a6d6a48760de09573d5517b64c14112e707e12796757c535d7ad5522703f317",
     "sources": [
      "        payload.update(dict(request.kwargs))",
      "    pass"
@@ -382,58 +337,35 @@
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(), kwargs={'extra': 1})",
-     "self_base_url": "'http://localhost'",
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='secret'), messages=[], kwargs={'custom': 'value'})",
+     "self_base_url": "'https://example.com'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T213154Z-df49c7",
+    "call_id": "20261001T060809Z-3886e6",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The original build_payload updates the payload with request.kwargs, whereas the changed version replaces this update with pass and leaves request.kwargs out of the payload.",
-    "response_sha256": "202c98086fa2c9d42b9a222305bedb44285f0bd8aff5de178992bbd36b31c9e6",
+    "reason": "The original version incorporates request.kwargs into the returned payload via payload.update(dict(request.kwargs)), while the changed version replaces this update with pass and omits request.kwargs.",
+    "response_sha256": "09d5a9668c263ed530ee3fe6fcc41501f0713dc4c3d6c56c9eed2066c13e300c",
     "sources": [
      "        payload.update(dict(request.kwargs))",
      "    pass"
     ],
     "verdict": "distinct"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='X', value='y'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), kwargs={'extra_field': 'value'})",
-     "self_base_url": "\"http://localhost\"",
-     "self_timeout_seconds": "600.0",
-     "uploader": "None"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T213154Z-538027",
-    "confidence": 0.97,
-    "model": "claude-sonnet-5",
-    "problems": [],
-    "reason": "The changed version replaces `payload.update(dict(request.kwargs))` with `pass`, so any non-empty request.kwargs (e.g. {'extra_field': 'value'}) is merged into the returned payload in the original but silently dropped in the changed version.",
-    "response_sha256": "aa2391d1b57ef86d050ce71b6b027950fc561eb9a66050e1a3bf1bd742610a18",
-    "sources": [
-     "payload.update(dict(request.kwargs))",
-     "pass"
-    ],
-    "verdict": "distinct"
-   },
    "claude-cli:claude-sonnet-5-5@low": {
-    "arguments": {
-     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(), kwargs={'top_p': 0.5})",
-     "self_base_url": "'http://localhost'",
-     "self_timeout_seconds": "600.0",
-     "uploader": "None"
-    },
+    "arguments": {},
     "backend": "claude-cli",
-    "call_id": "20260929T111626Z-c15dae",
-    "confidence": 0.93,
+    "call_id": "20261001T060806Z-336cf0",
+    "confidence": 0.97,
     "model": "claude-sonnet-5-5",
-    "problems": [],
-    "reason": "The changed version replaces payload.update(dict(request.kwargs)) with pass, so any non-empty request.kwargs is merged into the payload by the original but ignored by the changed version.",
-    "response_sha256": "725aa8bb12afb39e579a613923d51ac934774729ecd27e40a269105fb73b0124",
+    "problems": [
+     "it answers distinct without an input"
+    ],
+    "reason": "The changed version replaces payload.update(dict(request.kwargs)) with pass, so any non-empty request.kwargs (e.g. {\"top_p\": 0.5}) appears in the original's payload but not in the changed one's.",
+    "response_sha256": "cbd83ce1ad8d69507eccd4857018cb9d5e44d80c88535f1e9fa446a73d7f5a30",
     "sources": [
      "payload.update(dict(request.kwargs))",
      "pass"
@@ -441,7 +373,7 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ebb9dc53097eb2b5abf6206afdfa8eae26bba116424c10d8158422104780d43a"
+  "prompt_sha256": "5fec0c0eb97d60cb1b8bc99a368dfa8ff23ba18b42a024e7c233a6eb5e27b841"
  },
  "7ff18671bd521f50": {
   "answers": {
@@ -558,20 +490,56 @@
  },
  "8fddc8d6682ad36b": {
   "answers": {
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_VL_32B, provider_model='qwen-vl-32b', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret-value'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), temperature='not-a-number', seed=None, schema=None, tool_registry=None, tool_choice=None, kwargs={}, route_index=None)",
-     "self_base_url": "\"https://example.com\"",
+     "request": "ProviderRequest(request_id=\"a\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"model\", credential=ProviderCredential(key_id=0, env_var=\"ENV\", value=\"key\"), messages=(), temperature=1)",
+     "self_base_url": "\"http://localhost\"",
+     "self_timeout_seconds": "10.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060811Z-573c70",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When `temperature` is provided as an integer, the original version coerces it to a float, whereas the changed version preserves the integer type in the payload dictionary, which alters the resulting JSON serialization.",
+    "response_sha256": "30d1983acaf28a2d5353e9f0197c2120a2d7731174cbebb5c5e8e6c2fa100154",
+    "sources": [
+     "        if request.temperature is not None:\n            payload[\"temperature\"] = float(request.temperature)",
+     "    if request.temperature is not None:\n        payload['temperature'] = request.temperature"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060812Z-54f36a",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Because request.temperature is typed as float | None and calling float() on a float value is an identity operation, removing the float conversion leaves the returned payload and adapter state unchanged.",
+    "response_sha256": "45113d6e2d30ee63dd3f90bca7e6c5bd757c57517f04ffd69d78a79100476aad",
+    "sources": [
+     "        if request.temperature is not None:",
+     "            payload[\"temperature\"] = float(request.temperature)",
+     "        payload['temperature'] = request.temperature"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(), temperature=1)",
+     "self_base_url": "'http://localhost'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T233003Z-b4afb0",
-    "confidence": 0.88,
-    "model": "claude-sonnet-5",
+    "call_id": "20261001T060810Z-91a0f0",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The original coerces temperature with float(request.temperature), so a non-numeric temperature like the string 'not-a-number' raises ValueError inside build_payload, while the changed version assigns request.temperature straight into the payload with no conversion, so it returns normally with payload['temperature'] == 'not-a-number' and no exception.",
-    "response_sha256": "8578a52fc1b4885efcf69156d75d7e1615aab28b1e2c7c39c1ef1bcb06602d50",
+    "reason": "The original converts temperature with float(), so an int temperature of 1 gives 1.0, while the changed version stores 1 unchanged, so the payload value's type and JSON form differ (and a non-numeric temperature raises ValueError only in the original).",
+    "response_sha256": "78ee7ec02091ce6fea60d3f8f1b55649ce2ccddd7cc86680feb453139f93452b",
     "sources": [
      "payload[\"temperature\"] = float(request.temperature)",
      "payload['temperature'] = request.temperature"
@@ -579,32 +547,75 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "d2763128461f312f1291a172eecbdb2736c7f127493220180985599ec3b95f0a"
+  "prompt_sha256": "4e5ffba750f95d487c697c912f5e771c1926fdb4d5f805bee84af9e0ac580554"
  },
  "9d019d63a7b5816c": {
   "answers": {
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.DEEPSEEK_V3, provider_model='qwen-model', credential=ProviderCredential(key_id=1, env_var='QWEN_KEY', value='secret'), messages=(), temperature=None, seed=None, schema=None, tool_registry=None, tool_choice=None, kwargs={}, route_index=None)",
-     "self_base_url": "'http://localhost:8000'",
+     "request": "ProviderRequest(request_id=\"1\", provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model=\"qwen-max\", credential=ProviderCredential(key_id=1, env_var=\"KEY\", value=\"val\"), messages=[])",
+     "self_base_url": "\"http://local\"",
+     "self_timeout_seconds": "10.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060816Z-2f8841",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When request.tool_choice is None, the changed version unconditionally evaluates tool_choice_payload and adds 'tool_choice' to the payload (or crashes), whereas the original version omits it entirely.",
+    "response_sha256": "7fb995fed992b193f2cc8e4b6ae84eacce5a695d3a9a0eebb91ffbb5afb554f5",
+    "sources": [
+     "        if request.tool_choice is not None:",
+     "            payload[\"tool_choice\"] = tool_choice_payload(request)",
+     "    if True:",
+     "        payload['tool_choice'] = tool_choice_payload(request)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='test-key'), messages=(), tool_choice=None, kwargs={})",
+     "self_base_url": "'http://localhost'",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060818Z-e22b0c",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When request.tool_choice is None, the original version does not add tool_choice to the payload, whereas the changed version unconditionally executes payload['tool_choice'] = tool_choice_payload(request).",
+    "response_sha256": "2b49f1978b3be8ed7abdd9e9ac95c2b9c3dddd399e92a21bc9948adbf98d4fbe",
+    "sources": [
+     "if request.tool_choice is not None:",
+     "if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), tool_choice=None, kwargs={})",
+     "self_base_url": "'http://localhost'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T233756Z-a82ef7",
-    "confidence": 0.85,
-    "model": "claude-sonnet-5",
+    "call_id": "20261001T060815Z-4ec94f",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The original only calls tool_choice_payload(request) when request.tool_choice is not None, but the changed version replaced that guard with `if True`, so it unconditionally calls tool_choice_payload(request) even when tool_choice is None, which will raise an AttributeError inside qwenchat_tool_choice_payload when it tries to read attributes off a None tool_choice, whereas the original simply omits the 'tool_choice' key and returns normally.",
-    "response_sha256": "b1e74da16f83a75f3a540427b8b5e0eb1ba9e9f9b46dfc4e53ab8274b66ef9de",
+    "reason": "With tool_choice=None the original omits the \"tool_choice\" key, while the changed version always calls tool_choice_payload and sets the key (or raises).",
+    "response_sha256": "7b469a710ba087d82bb3b5435227fe48e8491801bb0d907967d5a055e05e60f0",
     "sources": [
-     "if request.tool_choice is not None:\n            payload[\"tool_choice\"] = tool_choice_payload(request)",
-     "if True:\n        payload['tool_choice'] = tool_choice_payload(request)"
+     "if True:",
+     "payload['tool_choice'] = tool_choice_payload(request)",
+     "if request.tool_choice is not None:"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "6cec0fe9628de6d7123f93d74d52ad711189a61ba393a2dac5d571ab3cf96341"
+  "prompt_sha256": "6235f494de57a65c9d5bd5b3eb31784d0408302166c823327e2c83f436c26aac"
  },
  "aeeb7e44dc927403": {
   "answers": {
@@ -676,20 +687,51 @@
  },
  "b2c437a6ff46e0ea": {
   "answers": {
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060822Z-4ea0bf",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Since `request.seed` is typed as `int | None`, it is already an integer when it is not `None`, making the explicit `int()` cast redundant and leaving the behavior unchanged.",
+    "response_sha256": "b51b16b06da1630c5e95a0bda885c1eb0b09fc6c707b71a1f31884397560247e",
+    "sources": [
+     "        if request.seed is not None:\n            payload[\"seed\"] = int(request.seed)",
+     "    if request.seed is not None:\n        payload['seed'] = request.seed"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060823Z-534b55",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When request.seed is not None, it is an int, so converting it with int() evaluates to request.seed itself, producing identical payloads in both versions.",
+    "response_sha256": "7abf5ce0c91a0c59125d13624221e8c562769f868642524586f695440db313f2",
+    "sources": [
+     "        if request.seed is not None:",
+     "            payload[\"seed\"] = int(request.seed)",
+     "        payload['seed'] = request.seed"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_API_KEY', value='secret'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), temperature=None, seed=3.7, schema=None, tool_registry=None, tool_choice=None, kwargs={}, route_index=None)",
-     "self_base_url": "'https://example.com'",
+     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(NormalizedMessage(role='user', parts=(), meta={}),), seed=3.7)",
+     "self_base_url": "'http://localhost'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T233003Z-d476d0",
+    "call_id": "20261001T060818Z-ac0064",
     "confidence": 0.9,
-    "model": "claude-sonnet-5",
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When request.seed is a non-integer (e.g. 3.7), the original does payload['seed'] = int(request.seed) producing 3, while the changed version does payload['seed'] = request.seed keeping 3.7, so the returned payload dicts differ.",
-    "response_sha256": "ac0ba29e11b467598492059fa1f2217cb92e1e26f44f958d67b5d49711971aec",
+    "reason": "The original coerces the seed with int(), so a non-int seed such as 3.7 (or True) becomes 3 (or 1), while the changed version passes it through unchanged as 3.7.",
+    "response_sha256": "ff2f556defa1c92cd27812d3143e68362dc4774c1507ec6ff359c9d3affe1a46",
     "sources": [
      "payload[\"seed\"] = int(request.seed)",
      "payload['seed'] = request.seed"
@@ -697,24 +739,64 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "780313acd34d97a37d07993f3353399f90cfd3fe03ce1248e5b6d06b451f5a5a"
+  "prompt_sha256": "13b5ac2b92d42765e35754c2378fcccd9ff4abfa342640d1788cc76b0e0e6904"
  },
  "b4ed2e3d119cad14": {
   "answers": {
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "request": "ProviderRequest(request_id='r1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='QWEN_KEY', value='secret'), messages=(), temperature=None, seed=None, schema=None, tool_registry=ToolRegistry(tools={}), tool_choice=None, kwargs={}, route_index=None)",
+     "request": "ProviderRequest(request_id='', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='', credential=ProviderCredential(key_id=0, env_var='', value=''), messages=[], tool_registry=ToolRegistry(tools={}))",
+     "self_base_url": "\"\"",
+     "self_timeout_seconds": "0.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060824Z-251198",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "If the request's tool registry is provided but contains no tools (an empty dictionary), the original version omits the 'tools' key from the payload, whereas the changed version includes it as an empty list.",
+    "response_sha256": "5e131eda21d1a7758c08ac069083c9d8d4ea60751bda66379c88dc3f430d6b87",
+    "sources": [
+     "        if request.tool_registry is not None and request.tool_registry.tools:\n            payload[\"tools\"] = [",
+     "    if request.tool_registry is not None:\n        payload['tools'] = [dict(definition.descriptor) for definition in request.tool_registry.tools.values()]"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='req-1', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen-max', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=(), tool_registry=ToolRegistry(tools={}))",
+     "self_base_url": "'http://localhost:8000'",
+     "self_timeout_seconds": "600.0",
+     "uploader": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060827Z-d5e01d",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When request.tool_registry has no tools, the original version omits the 'tools' key from the payload while the changed version sets it to an empty list.",
+    "response_sha256": "20e78923b08d63654fbd16348d585ad577fd484609668a87dd315751d20cd636",
+    "sources": [
+     "        if request.tool_registry is not None and request.tool_registry.tools:",
+     "    if request.tool_registry is not None:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r', provider=Provider.QWENCHAT, model=Model.QWEN_MAX_LATEST, provider_model='qwen', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=(), tool_registry=ToolRegistry(tools={}), kwargs={})",
      "self_base_url": "'http://localhost'",
      "self_timeout_seconds": "600.0",
      "uploader": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T233003Z-59c81a",
+    "call_id": "20261001T060823Z-ee5fd7",
     "confidence": 0.95,
-    "model": "claude-sonnet-5",
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When tool_registry is an empty ToolRegistry(tools={}), the original guards with 'request.tool_registry is not None and request.tool_registry.tools' and omits the 'tools' key, while the changed version only checks 'request.tool_registry is not None' and inserts 'tools': [] into the payload, producing a different returned dict.",
-    "response_sha256": "00f87c678dfedca7b228ca24ddf1dba7f4198ba5bdd311611acf9eb2529c865c",
+    "reason": "With a ToolRegistry whose tools mapping is empty, the original omits the 'tools' key while the changed version sets payload['tools'] = [].",
+    "response_sha256": "863ea6d811174a20725937e4fb314dc80499076790ce784a20bd22be17655a6f",
     "sources": [
      "if request.tool_registry is not None and request.tool_registry.tools:",
      "if request.tool_registry is not None:"
@@ -722,7 +804,7 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "614967a55a7667fa6e03aecac733698692edf3ee4b4327c8e9edb2ba9fe1fb4f"
+  "prompt_sha256": "24bc3f2f6eabdf308209be22b4fe2edcc49680a203ae1825c63c3e0343d82574"
  },
  "cb633e63a453812c": {
   "answers": {

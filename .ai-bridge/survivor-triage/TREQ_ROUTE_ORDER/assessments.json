@@ -408,6 +408,25 @@
      "if options.shuffle_fallbacks:"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "options": "RouteOrderOptions(round_robin_start=False, shuffle_fallbacks=True, min_routes_for_fallback_shuffle=10, request_index=0, max_attempts=None, shuffler=<object whose shuffle(lst) calls lst.reverse()>)",
+     "plan": "RoutePlan(routes=(r0, r1, r2))  # three ExpandedRoute objects with route_index 0, 1, 2"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T061857Z-c8ae7b",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops the minimum-route-count guard, so with shuffle_fallbacks=True and fewer routes than min_routes_for_fallback_shuffle it shuffles, and a reversing shuffler gives [r0,r2,r1] where the original keeps [r0,r1,r2].",
+    "response_sha256": "5b57e560613f34e68d7ffa8ad06f4764eff72be90ee2ff5a92c14c5085ffb863",
+    "sources": [
+     "and len(routes) >= options.min_routes_for_fallback_shuffle",
+     "if options.shuffle_fallbacks:",
+     "options.shuffle_fallbacks"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "dc5d8468d74aadb8dd7696b05706464b8d6151d70127a3171dfa6af3e72f60f8"

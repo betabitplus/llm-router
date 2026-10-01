@@ -193,39 +193,40 @@
  "7a912b65bb0be9c6": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-5f269b",
+   "call_id": "20261001T062733Z-3f4052",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant puts the caller's own call.args object into the ToolStep instead of a shallow copy. The recorded argument values and the result stay the same, so only identity or later-mutation checks can tell the versions apart. No requirement asks for the trace step to hold an independent copy of the arguments.",
-   "response_sha256": "18b109e256e597a684cb1e55501b2824f56c50c155ab68761fa8843d297267bd",
+   "reason": "Since the callable receives **call.args, its call and result are unchanged, and the returned step's args still equal the call's args. The only difference is that step.args now points to the caller's mapping (identity, mutation after the call, or a non-dict type). The requirement asks only that arguments and results are preserved, not for a defensive copy, so the difference is real but outside any requirement.",
+   "response_sha256": "d1fedd27f47a404f5cfa40b37d255f67e8ad53bf2a7c347977619cfad3870977",
    "sources": [
     "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
+    "execute registered callables consistently",
     "return ToolStep(tool_name=call.name, args=call.args, result=result, call_id=call.id)",
-    "args=dict(call.args),"
+    "            args=dict(call.args),"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "7341d321504fc16441427bfcd096b83983524b6c236ad56f4eb60a80b03e6a0e",
+  "prompt_sha256": "03c0126349dd9efba3b14663f7a658803261e69dff29d2fca17e21b1ad38a355",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-9b4e77",
+   "call_id": "20261001T064421Z-b05490",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "7341d321504fc16441427bfcd096b83983524b6c236ad56f4eb60a80b03e6a0e",
-   "reason": "The mutated version aliases the argument mapping into the returned trace step instead of creating a shallow copy, making them distinguishable by object identity. However, this is an implementation detail that does not affect whether the execution preserves arguments and results as the requirement asks.",
-   "response_sha256": "3a7411930fa987d858605d032a2e269e162bf85353922dbda34a3e78d47f78d9",
+   "prompt_sha256": "03c0126349dd9efba3b14663f7a658803261e69dff29d2fca17e21b1ad38a355",
+   "reason": "Whether the public trace step receives a shallow copy of the tool arguments or a direct reference is an implementation detail regarding memory aliasing. Both versions preserve the arguments during execution as requested, and the requirement does not mandate defensive copying.",
+   "response_sha256": "5cacfaedc13fd3abc6116d7ad9ffb8ac565f024a6534327d65c6b68a22678bf3",
    "sources": [
-    "execution preserves arguments/results",
+    "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
     "args=dict(call.args),",
-    "args=call.args"
+    "args=call.args,"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -353,39 +354,39 @@
  "ebec939d12750322": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-645ac8",
+   "call_id": "20261001T062733Z-dba480",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The only change is on the failure path: the mutant hands ToolExecutionError the original call.args object instead of a dict copy. The keys and values stay the same, and the successful ToolStep is unchanged. No requirement asks whether the error's args is a fresh dict or the original object; both candidate inputs that would have told the versions apart were refuted.",
-   "response_sha256": "ab74d95bcc9e7778bef143294b6806dc46a2a1f2126594950959ff8cdf85514f",
+   "reason": "The only difference is on the failure path: the error gets `call.args` itself instead of a fresh dict copy. Unless ToolExecutionError copies it anyway, that changes the identity, and possibly the mapping type, of the args attached to the error, but not their values. The requirement asks only that execution keep arguments and results and that registered callables run the same way, and it says nothing about copying args on errors.",
+   "response_sha256": "caf6167d46f1a26f19e896ac53f71bb6f95d91a9284fbc517de7bb5ca04fbc06",
    "sources": [
     "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
     "raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
-    "args=dict(call.args),",
-    "execute registered callables consistently"
+    "args=dict(call.args),"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "5bcf53aaf07b82f6f7ae54084d92a75dc328ad4400eaa65d5bcb5b99260c71ac",
+  "prompt_sha256": "487c212db1520a170b3392eed62cc10724c01366e82fe98caf543f334f010a85",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-e391c8",
+   "call_id": "20261001T064421Z-ec1a3b",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "5bcf53aaf07b82f6f7ae54084d92a75dc328ad4400eaa65d5bcb5b99260c71ac",
-   "reason": "The change only alters whether the arguments attached to a ToolExecutionError are a shallow copy of the tool call arguments or the original reference. This is an internal implementation detail of error propagation that does not affect the orchestration contract or execution consistency.",
-   "response_sha256": "9831d1d1e50a373849ac19f53611ce0dedaa18b388d287845c46d25d44e4564a",
+   "prompt_sha256": "487c212db1520a170b3392eed62cc10724c01366e82fe98caf543f334f010a85",
+   "reason": "The mutant passes the tool arguments directly to `ToolExecutionError` instead of creating a shallow dictionary copy. This distinction in how the exception payload is constructed is an implementation detail that does not violate the requirement for execution to preserve arguments and results.",
+   "response_sha256": "5471baf7021f0db0491f777a7ce8d888a02c9eb69a97d9fb9ed6911073dbe1ca",
    "sources": [
-    "execute registered callables consistently.",
-    "args=dict(call.args),"
+    "execution preserves arguments/results.",
+    "args=dict(call.args),",
+    "args=call.args,"
    ],
    "test_focus": "",
    "verdict": "irrelevant"

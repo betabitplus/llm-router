@@ -388,36 +388,36 @@
  "4bcf2fc831eaf45c": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141739Z-69849c",
+   "call_id": "20261001T062621Z-3c45e3",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Removing context_getter only strips request context from the retry-attempt log records. Classification still goes through is_retryable_provider_error, and results and boundary errors are unchanged. The logs do differ, but no requirement given here asks for retry log context.",
-   "response_sha256": "f441af074dfb26228d6ad8277f3c105146cc584011ea9cd54beac175702a8ce7",
+   "reason": "Removing context_getter only drops the request context from the log entries written during intermediate retries. The retry/no-retry classification, return values and raised boundary errors stay the same. The logs do differ, but REQ_PROVIDER_RETRY and its classification criteria say nothing about retry log context.",
+   "response_sha256": "0749a344a62364bfa2cfe435391f3156cea7caea16031f5307e67f1b9a2c75d9",
    "sources": [
     "Retry classification shall use explicit status and exception semantics rather than message substrings.",
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)",
-    "context_getter=lambda: _retry_context(request),"
+    "context_getter=lambda: _retry_context(request),",
+    "retrying = build_provider_retrying(policy=self._config.retry_policy, logger=logger)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "44e751f2f139a7185fb5f63769ddb5b423779d8ce57760e112b94816269b7f44",
+  "prompt_sha256": "fbfd213d93c63510895818a70c7e283f32ea76489404a1dd8482621cc27842b8",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141803Z-d99824",
+   "call_id": "20261001T064333Z-7861c6",
    "confirmed": false,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "44e751f2f139a7185fb5f63769ddb5b423779d8ce57760e112b94816269b7f44",
-   "reason": "The mutant drops the `context_getter` argument, which removes request context from intermediate retry logs. While this changes the log output, it does not affect whether temporary failures are retried or how their semantics are classified, which is all the requirement specifies.",
-   "response_sha256": "deeb4c54475270ccc86b0416dae657804bb20cd1e8a307e4ac9894f5dd1c2137",
+   "prompt_sha256": "fbfd213d93c63510895818a70c7e283f32ea76489404a1dd8482621cc27842b8",
+   "reason": "Removing the `context_getter` argument changes the data included in intermediate retry logs, meaning the versions are not strictly equivalent. However, because this change only affects logging context and does not alter the retry classification or execution logic specified by the requirement, it is irrelevant.",
+   "response_sha256": "65a1f01dc876c02592bb1b3c90e7d8c0d38467e702c1ba1bd5846e40431dee84",
    "sources": [
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "context_getter=lambda: _retry_context(request),"

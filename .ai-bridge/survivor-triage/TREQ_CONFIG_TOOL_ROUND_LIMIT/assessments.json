@@ -51,6 +51,23 @@
      "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(1.0, 2.0, 3), policy=RouterPolicyDefaults(None, None, False, False, False, 1, ProviderLimits(1.0, 60.0, 1.0, 1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(1.0, 60.0, 1.0, 1)), catalog=ProviderCatalog(providers={Provider.GOOGLE: ProviderSpec(provider=Provider.GOOGLE)}, provider_base_urls=<base URLs for every provider in _PROVIDERS_REQUIRING_BASE_URL>, models={Model.GEMINI_FLASH: {Provider.GOOGLE: 'gemini-flash'}}))"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060657Z-4048ee",
+    "confidence": 0.96,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The tool-round check changed from >= 1 to > 1, so a config with default_max_tool_rounds == 1 passes the original but raises ConfigurationError in the changed version.",
+    "response_sha256": "a53e2c5fcbe99e868eb80b7b67f577a04eefb988eaed544456edac20df53424f",
+    "sources": [
+     "_require(condition=config.default_max_tool_rounds > 1, message='default max tool rounds must be at least 1.')",
+     "condition=config.default_max_tool_rounds >= 1,"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "ebeccbe7f3f66e6fa273b0453420769b2a91928ea7100c261bb556c83eb9c453"
@@ -105,6 +122,23 @@
     "sources": [
      "_require(\n        condition=config.default_max_tool_rounds >= 1,\n        message=\"default max tool rounds must be at least 1.\",\n    )",
      "_require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "A valid LLMRouterConfig (all other fields valid) whose defaults have default_max_tool_rounds=1"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060701Z-8c74eb",
+    "confidence": 0.95,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With default_max_tool_rounds == 1 the original passes (>= 1) but the changed version raises ConfigurationError (>= 2).",
+    "response_sha256": "739f262be0b01ca95abdfd9635d0e033c8389a5720068f62b82e5980ac378721",
+    "sources": [
+     "_require(condition=config.default_max_tool_rounds >= 2, message='default max tool rounds must be at least 1.')",
+     "condition=config.default_max_tool_rounds >= 1,"
     ],
     "verdict": "distinct"
    }

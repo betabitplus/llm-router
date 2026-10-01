@@ -2,68 +2,46 @@
  "be0c42b2c0522019": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {
-     "value": "Image.Image()"
-    },
+    "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260928T214344Z-f527c8",
+    "call_id": "20261001T060403Z-626a24",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version removes the call to _validate_image, meaning it will no longer raise a ValueError for invalid Image objects, instead returning an ImageMedia object.",
-    "response_sha256": "cca1e9374177406e4e7fe66e2e9af3a331ada6b0a24357c6398bc0f4feb5fc8c",
-    "sources": [
-     "    if isinstance(value, Image.Image):",
-     "        _validate_image(value)",
-     "    if isinstance(value, Image.Image):",
-     "        pass"
-    ],
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {},
-    "backend": "antigravity-cli",
-    "call_id": "20260928T214344Z-8724a6",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "None of the allowable input types is an instance of Image.Image, so the modified image validation branch is unreachable and both versions raise TypeError.",
-    "response_sha256": "d1e57d63fe94601207d405181bb046e0ed5989a5423355c43c8636feddc6f899",
+    "reason": "The changed version omits _validate_image(value) which can raise a ValueError for invalid images, but without the implementation of _validate_image it is impossible to construct a specific input that tells the versions apart.",
+    "response_sha256": "2c4f464f90bbe84e3d16563c68ce778da3248b7719e945e311dd3c10a7bbc5ad",
     "sources": [
      "    if isinstance(value, Image.Image):",
      "        _validate_image(value)"
     ],
-    "verdict": "equivalent"
+    "verdict": "unsure"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {
-     "value": "Image.new('RGB', (0, 0))"
-    },
-    "backend": "claude-cli",
-    "call_id": "20260928T223308Z-43e4e1",
-    "confidence": 0.65,
-    "model": "claude-sonnet-5",
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060403Z-1ab593",
+    "confidence": 0.9,
+    "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The changed version replaces the call `_validate_image(value)` with `pass`, so any Pillow Image that `_validate_image` would reject (e.g. a degenerate image such as one with zero width/height) raises ValueError in the original but is silently converted to an ImageMedia in the changed version.",
-    "response_sha256": "15e080c94a9f14f97461b213edd253a0ec8f09a2e3b1f242c1a86a60a3dfce3f",
+    "reason": "The change removes the call to `_validate_image(value)`, but distinguishing the versions requires an invalid `Image.Image` which cannot be constructed using literals and the project's dataclasses, so no counterexample can be formed within the specified input constraints.",
+    "response_sha256": "01b8acf3ef79afd1a895157970769f1be8ad5fc06654bfa8012567fd6f681d0e",
     "sources": [
-     "_validate_image(value)",
-     "pass",
-     "if isinstance(value, Image.Image):"
+     "        _validate_image(value)",
+     "        pass"
     ],
-    "verdict": "distinct"
+    "verdict": "unsure"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "value": "Image.new('1', (0, 0))"
+     "value": "Image.new('CMYK', (1, 1))"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T111544Z-d480bb",
-    "confidence": 0.7,
+    "call_id": "20261001T060403Z-c4f383",
+    "confidence": 0.6,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The change removes the _validate_image(value) call, so an image that the validator rejects with ValueError raises in the original but returns an ImageMedia in the changed version.",
-    "response_sha256": "9f34fc8c4949ab41f8ae6ba888465552fccd2ed9d4c0dd4764e56b8de0ccf084",
+    "reason": "The changed version drops the _validate_image call, so a Pillow image that the validator rejects raises ValueError in the original but returns an ImageMedia in the changed version; the CMYK input is a guess at what it rejects.",
+    "response_sha256": "f2aeca8adfe4735199cc654ad10339017a227d151aa579ef44ce1a7bb1cd9327",
     "sources": [
      "_validate_image(value)",
      "pass"
@@ -71,6 +49,6 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "f1c5cea8abbc109eb4b6d5d3dfeb08479a50a38df21e8f12b6360c36c1a8b465"
+  "prompt_sha256": "32149ba782508d7fa87e03f25622ea5dd6dd888c9b8ae5664d780db616aecb0b"
  }
 }

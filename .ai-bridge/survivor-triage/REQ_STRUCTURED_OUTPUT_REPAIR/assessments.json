@@ -139,6 +139,24 @@
      "Validate structured output or report that no schema is active."
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "note": "Other parameters are ordinary valid instances. config.structured_output_max_attempts=1 makes the changed version raise, while the original returns a response.",
+     "plan": "_ExecutionPlan(schema=None, tool_registry=None, tool_choice=None, max_tool_rounds=1)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060403Z-1277a1",
+    "confidence": 0.85,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original branches on validated.valid, while the change branches on validated.value, so a valid result with a falsy value (such as no active schema, where value is None) returns a response in the original but goes to repair or raises in the changed version.",
+    "response_sha256": "c1c751259db0f4b692db1b86d9552f5b4cd13aa8f331a80092596cb7ab59f441",
+    "sources": [
+     "if validated.valid:",
+     "if validated.value:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "e105f3a2a0318ff1e7e1ad73c375dadc03c38676ccf6eeb9e6c5a5f4ae4ff32b"
@@ -291,6 +309,27 @@
      "structured_data=validated.valid"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=<object schema>, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest with a schema, e.g. an object schema",
+     "result": "ProviderResult with output_text='{\"a\": 1}' that validates against the schema",
+     "state": "_ExecutionLoopState with structured_attempts=0"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060403Z-4cb373",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "On a valid result the original passes the parsed value (validated.value) as structured_data, while the changed version passes the boolean validated.valid, so the responses differ.",
+    "response_sha256": "5255dd16594b9ad60e2856501c41c8eaeab7d522ba9d609a5114e513295fa5b1",
+    "sources": [
+     "structured_data=validated.value,",
+     "structured_data=validated.valid"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "c4b51a42db4e817dbab410bf6d3e93b87196cff0994f7228fc9c221d538b5761"
@@ -436,6 +475,27 @@
      "return _ResultStep(state=state, response=build_public_response(result, structured_data=validated.value))"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(...) with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=<valid SchemaSpec>, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(...) any valid request",
+     "result": "ProviderResult(...) whose output_text validates against the schema",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(steps=(<one ToolStep>,), ...), tool_choice=None, tool_registry=None, schema=<SchemaSpec>, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060403Z-7cee53",
+    "confidence": 0.8,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops tool_trace=state.tool_state.steps on the valid path, so the response's tool trace is empty when state has tool steps, while the original passes them through.",
+    "response_sha256": "c342f4873d33320c6b89ad04525355cf5dd2ab83a0c3d44f1dadce36c90e8a95",
+    "sources": [
+     "tool_trace=state.tool_state.steps,",
+     "response=build_public_response(result, structured_data=validated.value)"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "2b98b65db569a293fa20262a17e7e8ede88815b775b91ab691ab4ee67943400c"
@@ -502,6 +562,27 @@
     "sources": [
      "response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),",
      "return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "config": "LLMRouterConfig(...) with structured_output_max_attempts=3",
+     "plan": "_ExecutionPlan(schema=that SchemaSpec, tool_registry=None, tool_choice=None, max_tool_rounds=1)",
+     "provider_request": "ProviderRequest(... schema=SchemaSpec for an object with a string field)",
+     "result": "ProviderResult(data={}, provider=Provider.GROQ, model=Model.LLAMA_8B, provider_model='m', output_text='{\"a\": \"x\"}')",
+     "state": "_ExecutionLoopState(messages=(), tool_state=ToolLoopState(...), tool_choice=None, tool_registry=None, schema=that SchemaSpec, structured_attempts=0)"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060403Z-692465",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "On the valid path the changed version no longer passes structured_data=validated.value, so the response's structured data is None instead of the parsed value.",
+    "response_sha256": "e256276ef58527a97e8292948a59e9d3c063d7c69550d907e88f78a375d92088",
+    "sources": [
+     "return _ResultStep(state=state, response=build_public_response(result, tool_trace=state.tool_state.steps))",
+     "structured_data=validated.value,"
     ],
     "verdict": "distinct"
    }

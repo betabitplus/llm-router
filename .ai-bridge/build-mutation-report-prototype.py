@@ -5326,6 +5326,11 @@ def semantic_proposal_set(contract_id,target):
     return payload,proposals
 
 
+# What only a semantic survivor's judgement and drafts read, never its test runs: when only these
+# changed, the retained test runs stand and the judgement is redone.
+SEMANTIC_JUDGEMENT_INPUTS=frozenset({"judgement_sha256","drafts_sha256","equivalence_sha256"})
+
+
 def semantic_binding(contract_id,plan,test_rows,contexts,judgement=None):
     """Everything a retained cascade result depends on; any change makes it stale."""
     folder=SEMANTIC.PROPOSAL_ROOT/contract_id
@@ -5361,7 +5366,7 @@ ASSESSMENT_PROMPTS=KeptResults(
   ROOT/"test-results/survivor-judgement/assessor-questions.json",
   lambda:sha256_text(stable_json({
     "equivalence":IMPL_FAULTS.code_digest(ROOT/".ai-bridge/survivor_equivalence.py"),
-    "builder":sha256_text("\n".join(inspect.getsource(function) for function in (_semantic_assessment_prompt,_rule_assessment_prompt))),
+    "builder":sha256_text("\n".join(inspect.getsource(function) for function in (_semantic_assessment_prompt,_rule_assessment_prompt,assessor_harness,project_immutable_types))),
     "tried":[SURVIVOR_TRIED,RULE_SURVIVOR_TRIED],
     "product":{str(path.relative_to(ROOT)):sha256_file(path) for path in sorted(ROOT.glob("src/**/*.py")) if "__pycache__" not in path.parts},
   })),
@@ -5379,7 +5384,7 @@ def semantic_assessment_prompt(_contract_id,proposal,_need):
 def _semantic_assessment_prompt(proposal):
     path,qualname=proposal["target"].split("::",1)
     source=(ROOT/path).read_text()
-    harness=EQ.harness_for(source,qualname)
+    harness=assessor_harness(source,qualname)
     if "reason" in harness:
         return None
     mutated=SEMANTIC.apply_replacement(source,qualname,proposal["replacement"]) or source
@@ -5414,6 +5419,7 @@ def semantic_judgement_request(contract_id,proposals,needs,policy=None,state=Non
             answers[proposal["id"]]=given
     return {
       "seconds":policy["judgement"]["symbolic_seconds"],"paths":policy["judgement"]["symbolic_paths"],"members":state["members"],
+      "immutable":sorted(project_immutable_types()),
       "members_by":{proposal_id:assessor_members(policy,state,given) for proposal_id,given in answers.items()},
       "threshold":state["threshold"],"calibrated":state["calibrated"],"answers":answers,
     }
@@ -5752,8 +5758,8 @@ def refresh_semantic_mutants(contract_ids=None):
         # Where only the judgement or the drafts changed since the retained run, its test runs stand.
         same_runs=(
           results_pair(retained.get("results"),proposals) and retained.get("time_limits")==time_limits
-          and {key:value for key,value in (retained.get("binding") or {}).items() if key not in {"judgement_sha256","drafts_sha256"}}
-          ==  {key:value for key,value in binding.items() if key not in {"judgement_sha256","drafts_sha256"}}
+          and {key:value for key,value in (retained.get("binding") or {}).items() if key not in SEMANTIC_JUDGEMENT_INPUTS}
+          ==  {key:value for key,value in binding.items() if key not in SEMANTIC_JUDGEMENT_INPUTS}
         )
         request={
           "root":str(ROOT),"contract_id":contract_id,"tests":tests,
@@ -5908,6 +5914,7 @@ def assessor_calibration_state(policy=None):
       record.get("members")==keys and record.get("prompt_sha256")==assessor_prompt_sha256()
       and record.get("pairs_sha256")==EQ.calibration_sha256(EQUIVALENCE_PAIRS_DIR)
       and record.get("alpha")==policy["judgement"]["alpha"]
+      and record.get("pair_prompts")=={pair_id:sha256_text(prompt) for pair_id,prompt in sorted(calibration_prompts(EQ.calibration_payload(EQUIVALENCE_PAIRS_DIR)).items())}
     )
     reason=""
     if not record:
@@ -5928,6 +5935,40 @@ def assessor_calibration_state(policy=None):
       "members":configurations[0] if configurations else [models[0]["key"] for models in MODELS.assessor_seats(policy["assessors"]).values()],
       "reason":reason,"record_sha256":sha256_file(path),
     }
+
+
+@functools.cache
+def project_immutable_types():
+    """The project's types a call cannot change: its frozen dataclasses, enums, named tuples and
+    NewTypes of a number or a text. The assessors' question names an argument only when its type
+    lets a call change it (survivor_equivalence.changeable_annotation)."""
+    found=set()
+    for path in sorted((ROOT/"src").rglob("*.py")):
+        for node in ast.walk(ast.parse(path.read_text())):
+            if isinstance(node,ast.ClassDef):
+                frozen=any("frozen=True" in ast.unparse(decorator) for decorator in node.decorator_list)
+                based={ast.unparse(base).rpartition(".")[2] for base in node.bases}
+                if frozen or based&{"Enum","StrEnum","IntEnum","Flag","IntFlag","NamedTuple"}:
+                    found.add(node.name)
+            elif isinstance(node,ast.Assign) and isinstance(node.value,ast.Call) and ast.unparse(node.value.func).rpartition(".")[2]=="NewType":
+                arguments=node.value.args
+                if len(arguments)==2 and not EQ.changeable_annotation(ast.unparse(arguments[1])):
+                    found.update(target.id for target in node.targets if isinstance(target,ast.Name))
+    return frozenset(found)
+
+
+def assessor_harness(source,qualname):
+    """The harness an assessor's question is built on, with the project's types a call cannot change."""
+    return EQ.harness_for(source,qualname,project_immutable_types())
+
+
+def calibration_prompts(payload):
+    """Each labelled pair's question as it is asked now: an answer counts only for the question it answered."""
+    prompts={}
+    for pair in payload["pairs"]:
+        original_source,mutant_source=EQ.pair_sources(EQUIVALENCE_PAIRS_DIR,pair)
+        prompts[pair["id"]]=assessor_calibration_prompt(pair,original_source,mutant_source,assessor_harness(original_source,pair["target"]))
+    return prompts
 
 
 def assessor_calibration_prompt(pair,original_source,mutant_source,harness):
@@ -6068,6 +6109,7 @@ def observed_calibration_pairs():
     campaign=json.loads(IMPL_FAULT_CAMPAIGN_PATH.read_text()) if IMPL_FAULT_CAMPAIGN_PATH.exists() else {}
     cache=load_symbolic_cache()
     pairs=[]
+    jobs=[]
     for folder in sorted(path for path in VERDICTS_DIR.iterdir() if path.is_dir()) if VERDICTS_DIR.is_dir() else []:
         contract_id=folder.name
         report_path=ROOT/str((((campaign.get("contracts") or {}).get(contract_id) or {}).get("run") or {}).get("report_path") or "")
@@ -6082,10 +6124,15 @@ def observed_calibration_pairs():
             prompt=rule_assessment_prompt(contract_id,record,needs.get(contract_id) or {})
             if prompt is not None:
                 candidates.append((key,record,pin,prompt))
-        if not candidates:
-            continue
-        # The triage's own search without answers, from its cache: what it tells apart never reaches an assessor.
-        result=run_triage(triage_request(contract_id,[record for _key,record,_pin,_prompt in candidates],{},needs,policy,{"members":[],"threshold":None,"calibrated":False},cache))
+        if candidates:
+            jobs.append((contract_id,candidates))
+    # The triage's own search without answers, from its cache: what it tells apart never reaches an
+    # assessor. The contracts are searched at once, as the triage searches them.
+    requests=[
+      triage_request(contract_id,[record for _key,record,_pin,_prompt in candidates],{},needs,policy,{"members":[],"threshold":None,"calibrated":False},cache)
+      for contract_id,candidates in jobs
+    ]
+    for (contract_id,candidates),result in zip(jobs,parallel_map(run_triage,requests,SEMANTIC_WORKERS),strict=True):
         cache.update(result.get("symbolic_cache") or {})
         searched={str(row["fingerprint"]):row for row in result["rows"]}
         for key,_record,pin,prompt in candidates:
@@ -6122,13 +6169,22 @@ def calibration_pass(policy,ask):
     prompt_sha=assessor_prompt_sha256()
     pairs_sha=EQ.calibration_sha256(EQUIVALENCE_PAIRS_DIR)
     answers=(record.get("answers") or {}) if record.get("prompt_sha256")==prompt_sha and record.get("pairs_sha256")==pairs_sha else {}
-    asked=MODELS.calibration_search(policy["assessors"],set(record.get("below_floors") or []) if answers else set())
-    for pair_answers in answers.values():
+    payload=EQ.calibration_payload(EQUIVALENCE_PAIRS_DIR)
+    prompts=calibration_prompts(payload)
+    pair_prompts={pair_id:sha256_text(prompt) for pair_id,prompt in sorted(prompts.items())}
+    # A model below the floors on the questions as they were is asked again once a question changed:
+    # its floors are measured on the answers to the questions as they are.
+    asked=MODELS.calibration_search(policy["assessors"],set(record.get("below_floors") or []) if answers and record.get("pair_prompts")==pair_prompts else set())
+    for pair_id,pair_answers in answers.items():
         for key,answer in list(pair_answers.items()):
             response_path=ASSESSOR_CALIBRATION_DIR/"responses"/f"{answer.get('call_id')}.json"
-            if response_path.is_file():
-                pair_answers[key]=assessor_answer(json.loads(response_path.read_text()))
-    payload=EQ.calibration_payload(EQUIVALENCE_PAIRS_DIR)
+            response=json.loads(response_path.read_text()) if response_path.is_file() else None
+            if response is not None and str(response.get("prompt") or "")!=prompts.get(pair_id):
+                # It answered another question than the pair's current one.
+                pair_answers.pop(key)
+                continue
+            if response is not None:
+                pair_answers[key]=assessor_answer(response)
     unanswered=[pair for pair in payload["pairs"] if any(row["key"] in asked and row["key"] not in (answers.get(pair["id"]) or {}) for row in policy["assessors"])]
     observed=[]
     for pair in observed_calibration_pairs():
@@ -6149,8 +6205,7 @@ def calibration_pass(policy,ask):
         # Every missing answer is an independent question, so all of them are asked at once.
         labelled=[]
         for pair in unanswered:
-            original_source,mutant_source=EQ.pair_sources(EQUIVALENCE_PAIRS_DIR,pair)
-            prompt=assessor_calibration_prompt(pair,original_source,mutant_source,EQ.harness_for(original_source,pair["target"]))
+            prompt=prompts[pair["id"]]
             labelled.extend((pair,row,prompt) for row in policy["assessors"] if row["key"] in asked and owes_answer(answers.get(pair["id"]),row["key"]))
         results=run.call_many([
           {"role":assessor_model_role(row),"purpose":"assessor-calibration","contract_id":"CALIBRATION","subject":pair["id"],
@@ -6176,6 +6231,7 @@ def calibration_pass(policy,ask):
     finally:
         # Answers already paid for are kept even when the run stops early.
         record=assessor_calibration_record(payload,answers,policy["assessors"],policy,prompt_sha,pairs_sha,[{key:value for key,value in pair.items() if key!="prompt"} for pair in observed])
+        record["pair_prompts"]=pair_prompts
         ASSESSOR_CALIBRATION_DIR.mkdir(parents=True,exist_ok=True)
         path.write_text(json.dumps(record,indent=1,sort_keys=True)+"\n")
     summary=run.summary()
@@ -7942,7 +7998,7 @@ def rule_assessment_prompt(_contract_id,record,_need):
 def _rule_assessment_prompt(record):
     source=Path(record["file_path"]).read_text()
     rebuilt=EQ.rule_mutant_source(source,record)
-    harness=EQ.harness_for(source,str(record.get("qualname") or ""))
+    harness=assessor_harness(source,str(record.get("qualname") or ""))
     if "reason" in rebuilt or "reason" in harness:
         return None
     owner=str(record.get("qualname") or "").rpartition(".")[0]
@@ -7965,6 +8021,7 @@ def triage_request(contract_id,records,assessments,needs,policy,state,cache):
             answers[str(record.get("fingerprint"))]=given
     return {
       "survivors":records,"seconds":policy["judgement"]["symbolic_seconds"],"paths":policy["judgement"]["symbolic_paths"],"members":state["members"],
+      "immutable":sorted(project_immutable_types()),
       "members_by":{fingerprint:assessor_members(policy,state,given) for fingerprint,given in answers.items()},
       "threshold":state["threshold"],"calibrated":state["calibrated"],"answers":answers,"symbolic_cache":cache,
     }

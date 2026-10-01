@@ -1132,6 +1132,7 @@ def run_cascade(root: Path, contract_id: str, proposals: list[dict], tests: list
                         threshold=judgement.get("threshold"),
                         calibrated=bool(judgement.get("calibrated")), symbolic_cache=symbolic_cache,
                         package=equivalence().project_package(proposal["target"].split("::", 1)[0]),
+                        immutable=frozenset(judgement.get("immutable") or ()),
                     )
                     row["judgement"] = judged
                     if judged.get("status") == "found":

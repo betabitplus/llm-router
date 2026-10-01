@@ -316,6 +316,26 @@
      "if limits.cooldown_after_failures > 1 and bucket.failure_count >= limits.cooldown_after_failures:"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "key_id": "0",
+     "limits": "ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=1)",
+     "now": "100.0",
+     "provider": "Provider.GROQ"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060828Z-88eee0",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With cooldown_after_failures=1, the original opens a cooldown and resets failure_count to 0, while the changed version leaves failure_count at 1 and sets no cooldown.",
+    "response_sha256": "a99f7a7617752334ea0b99d772a9966e1e10985358527cffd6e1b4ec5541791c",
+    "sources": [
+     "limits.cooldown_after_failures > 0",
+     "limits.cooldown_after_failures > 1 and bucket.failure_count >= limits.cooldown_after_failures"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "dfa816eb6aa3c528164dabeb5733c351682d84307dfe0649d4ae14868644c08f"

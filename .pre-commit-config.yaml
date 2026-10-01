@@ -461,6 +461,7 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
-        args: [tests, -n, auto, -m, "not slow", -q, --no-cov]
+        # The network is blocked as in CI and the retained run, so every run of a test sees the same.
+        args: [tests, -n, auto, -m, "not slow", -q, --no-cov, --record-mode=none, --block-network, '--allowed-hosts=localhost,127\.0\.0\.1']
         files: ^(src/|tests/|examples/)
         stages: [pre-push]

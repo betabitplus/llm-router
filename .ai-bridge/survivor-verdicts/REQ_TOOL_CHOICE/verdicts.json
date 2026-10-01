@@ -189,41 +189,25 @@
  "b9226947eece89d0": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000228Z-373bcd",
+   "call_id": "20261001T062428Z-c186a9",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only how malformed input is handled: a non-string, non-mapping value such as [] becomes an empty raw choice instead of raising TypeError. REQ_TOOL_CHOICE only covers honoring the supported named and \"required\" choice forms, and none of its criteria mention rejecting unsupported input types.",
-   "response_sha256": "1c0471d569e943be1e1ba6a66ee1954662265f3225a1450125992cb81864a8cc",
+   "reason": "The mutant only changes what happens with unsupported input types such as lists: they now fail with ValueError from dict() instead of TypeError, and a list of pairs may even be accepted. Strings, mappings, None, \"auto\", \"none\" and \"required\" behave exactly as before. REQ_TOOL_CHOICE and its criteria cover only the supported named-choice forms and the \"required\" choice, not how other input types are rejected.",
+   "response_sha256": "37cd3dfee98794c66ce2970345611cb9bafa26a2d90eeebdfbed49184ac81276",
    "sources": [
     "Both supported public named-choice input forms normalize to the same selected registered tool.",
+    "if isinstance(choice, Mapping):",
     "if True:",
-    "msg = 'tool_choice must be a string, mapping, or None.'"
+    "msg = \"tool_choice must be a string, mapping, or None.\""
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conditional",
-  "prompt_sha256": "c8ce13e467b1cab0439e9bbd70c1460da51129fd6d78a9e58c4138734f60b8f3",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T092035Z-c892d3",
-   "confirmed": true,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "c8ce13e467b1cab0439e9bbd70c1460da51129fd6d78a9e58c4138734f60b8f3",
-   "reason": "The mutant changes how invalid input types, such as lists, are handled by attempting to coerce them to a dictionary instead of immediately raising a TypeError. This difference is irrelevant because the requirement only specifies the behavior for valid explicit named tools and required choices, and does not mandate specific type validation or error handling for unsupported inputs.",
-   "response_sha256": "8e5ce1e1bc02842c9068e3b78eeafc0a2edcb9b48a6cd59cd8f42058b3a39dfc",
-   "sources": [
-    "When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool.",
-    "if isinstance(choice, Mapping):",
-    "if True:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "7d4407c570a4e784aa0db6138903ea6e152b201e35ff9b7bd4b9f22f2425f4ca"
  },
  "e6293e4c0f29961b": {
   "answer": {
@@ -283,43 +267,58 @@
  "eecdb1201e9ab7e6": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000228Z-230106",
+   "call_id": "20261001T062428Z-2c63ed",
    "confirmed": true,
-   "level": "implementation",
+   "effort": "xhigh",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes behaviour for mappings that name no tool: it now raises KeyError instead of returning a raw choice with name=None. Named choices are still checked and selected the same way, and the \"required\" string branch is unchanged. No criterion of this requirement covers raw mappings that carry no tool name.",
-   "response_sha256": "08e9b9cfd2424d880e9ab4b2a50d7b53ceb8271e0ebce8e2ad6e8a0756615fff",
+   "reason": "The mutant checks the registry for every mapping choice, even one with no tool name, so any nameless mapping now raises KeyError. A caller who uses the public mapping form to require a call without naming a tool gets a crash instead of a provider request for one of the registered tools.",
+   "response_sha256": "660d828702e99caf98011b8005bb9f2d2ba1e9d51ca323ae71c18420402a21f3",
    "sources": [
-    "Both supported public named-choice input forms normalize to the same selected registered tool.",
+    "When the caller requires a tool call without naming one, a supported provider route shall ask the provider to call one of the registered tools.",
     "The public \"required\" choice normalizes to a required call, and each distinct provider translation asks for a call to any registered tool.",
-    "if name is not None:",
-    "if True:"
+    "if True:\n            _require_tool_exists(name, registry=registry)",
+    "if name is not None:\n            _require_tool_exists(name, registry=registry)"
    ],
-   "test_focus": "",
-   "verdict": "irrelevant"
+   "test_focus": "Normalizing a mapping with no tool name, such as {} or a provider-style \"any\"/\"required\" mapping, must return ToolChoice(kind=\"raw\", name=None, raw=<copy>) and must not raise KeyError, even with an empty registry.",
+   "verdict": "pin"
   },
   "operator": "conditional",
-  "prompt_sha256": "73865655dd1ed22644a729b8f178ba80c78d1506fa3319ff5a784810237b8151",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T092117Z-9efa3f",
-   "confirmed": true,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "73865655dd1ed22644a729b8f178ba80c78d1506fa3319ff5a784810237b8151",
-   "reason": "The requirement mandates that explicitly selected named tools and the 'required' choice are honored, but it does not specify how raw mapping choices lacking a tool name (like an empty dictionary) should be handled. Therefore, crashing on a nameless mapping does not violate this requirement.",
-   "response_sha256": "347b23225057b947f87574ee31f43759dd47b99e25564855ff6573a061ac3d3d",
+  "pin": {
+   "adopted_at": "2026-10-01T06:31:52.273562Z",
+   "answer_sha256": "8ab261db4097de83aeb77bd3e89d75f1dd4e6a38c72c2b85348b49d828457d12",
+   "call_id": "20261001T063038Z-b5fab4",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "1c4f1991cc04ff735a12895a3a46c3005dcd7d06d6286d2b0135c7ec99328fbc",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_req_tool_choice_eecdb1201e9ab7e6.py",
+   "response_sha256": "9003df0d1a6b837b3a34e8b93c32af1fe85b1ef270cb67b3ef760121b37ba29b",
+   "source": "draft author with tools",
    "sources": [
-    "Requirement REQ_TOOL_CHOICE (Explicit tool choice is honored): When the caller explicitly selects a named tool",
-    "When the caller requires a tool call without naming one, a supported provider route shall ask the provider to call one of the registered tools.",
-    "Both supported public named-choice input forms normalize to the same selected registered tool.",
-    "if name is not None:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.google_generate_path",
+    "tests.llm_router.support.workers.retry.google_success_response",
+    "tests.llm_router.support.workers.tool_failure.google_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_google_genai_sdk"
+   ]
+  },
+  "prompt_sha256": "8cb7793555ce964f5a6b70f02e87cdab66c017adaf58b59c4496433002f2a29a"
  },
  "f08c4067a011bd9a": {
   "answer": {

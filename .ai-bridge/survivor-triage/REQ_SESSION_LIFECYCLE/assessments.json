@@ -1,4 +1,69 @@
 {
+ "b38d6c310d61d789": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "assistant_meta": "{\"a\": 1}",
+     "assistant_text": "\"world\"",
+     "self_system": "None",
+     "user_content": "\"hello\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060403Z-858476",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version removes the `meta` argument from the `ChatMessage` constructor for the assistant's message, causing any provided `assistant_meta` to be discarded rather than stored in the session history.",
+    "response_sha256": "5b39cbb2c8a783bcb2dfefeebe207bfeab47a5b8ab7c981087bd08254186d3bc",
+    "sources": [
+     "            meta=deepcopy({} if assistant_meta is None else assistant_meta),",
+     "    assistant_message = ChatMessage(role='assistant', parts=(assistant_text,))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "assistant_meta": "{'key': 'value'}",
+     "assistant_text": "'hi'",
+     "self_system": "None",
+     "user_content": "'hello'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060403Z-f3c9d5",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version does not pass assistant_meta to ChatMessage, causing assistant metadata to be omitted from the stored message in history.",
+    "response_sha256": "d06137508bb6e4b6772fb1f33f7cf2d461c787c5de366c732b70005aa59bffa5",
+    "sources": [
+     "            meta=deepcopy({} if assistant_meta is None else assistant_meta),",
+     "    assistant_message = ChatMessage(role='assistant', parts=(assistant_text,))"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "assistant_meta": "{'a': 1}",
+     "assistant_text": "'ok'",
+     "self_system": "None",
+     "user_content": "'hi'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060403Z-0ec045",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version drops assistant_meta, so a non-empty meta is stored in history by the original but lost in the changed version.",
+    "response_sha256": "30b06ee4ea9f8e156cbb90a7ecb1a2d5545146826e16312af5269b3d6d12f91a",
+    "sources": [
+     "meta=deepcopy({} if assistant_meta is None else assistant_meta),",
+     "assistant_message = ChatMessage(role='assistant', parts=(assistant_text,))"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "64392cfecdc6650b9bae2a74aafc92f9b1aa5115856ef41fb7868dda038464e6"
+ },
  "cfdaa730a0d7b1f8": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {

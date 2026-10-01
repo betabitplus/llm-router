@@ -921,6 +921,9 @@ class Run:
         self.exhausted: set[tuple[str, str, str]] = set()
         self.quota_resets: dict[tuple[str, str, str], str] = {}
         self.agy_original: dict[str, str] = {}
+        # Accounts agm could not move agy to in this run: agm reported the switch done, yet agy's
+        # credential store kept the account it had (2026-10-01, two of five accounts).
+        self.unswitchable: set[tuple[str, str]] = set()
         # Claude sign-ins whose windows had no room left in this run.
         self.full_profiles: dict[str, set[str]] = {}
 
@@ -1081,16 +1084,24 @@ class Run:
         floor = 100 * float(self.budget.get("agy_quota_floor", 0.0))
         if backend.profile in snapshot and self.quota_left(name, backend.profile, model) > floor:
             return ""
-        best = max(sorted(snapshot), key=lambda alias: self.quota_left(name, alias, model))
-        if self.quota_left(name, best, model) <= floor:
+        # The account with the most left first; one agm cannot move agy to is passed over for the next.
+        candidates = [
+            alias for alias in sorted(sorted(snapshot), key=lambda alias: -self.quota_left(name, alias, model))
+            if self.quota_left(name, alias, model) > floor
+        ]
+        if not candidates:
             resets = sorted(at for (owner, _alias, family), at in self.quota_resets.items() if owner == name and family == quota_family(model))
             if resets:
                 return f"no Antigravity account has {quota_family(model)} quota left; the first one refused resets at {resets[0]}"
             return f"no Antigravity account has more than the {floor:.0f}% of its {quota_family(model)} quota the Test Plan keeps free"
-        if not self.accounts(name).switch(best):
-            return "agm could not move agy to an account with quota left"
-        backend.profile = best
-        return ""
+        for alias in candidates:
+            if (name, alias) in self.unswitchable:
+                continue
+            if self.accounts(name).switch(alias):
+                backend.profile = alias
+                return ""
+            self.unswitchable.add((name, alias))
+        return "agm could not move agy to an account with quota left"
 
     def restore_accounts(self) -> None:
         """Put agy back on the account it used before the run."""

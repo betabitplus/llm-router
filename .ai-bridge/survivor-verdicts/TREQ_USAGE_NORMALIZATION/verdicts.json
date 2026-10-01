@@ -168,14 +168,14 @@
  "8bdbc9dc44639ca0": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-f556bf",
+   "call_id": "20261001T062733Z-594998",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The versions differ only when total_tokens is 0 and both input_tokens and output_tokens are falsy, which for integers from _first_int means both are 0. The mutant then sets total_tokens = 0 + 0 = 0, the same as the original, so the normalized UsageStats cannot differ.",
-   "response_sha256": "a47e950fbaec29b7fff193327fac4ad75e1e2fad176ec855cdbf5b0e5971cc98",
+   "reason": "The versions take different paths only when the total is 0 and both input and output counts are 0. There the original keeps total_tokens at 0 and the mutant computes 0 + 0 = 0, so the usage model is the same for every input.",
+   "response_sha256": "19899bc296cbcbed16a258c73025a1873835227d3854d3ec323f2e20f2c18dd9",
    "sources": [
     "Provider-specific usage mappings and objects shall normalize into the common usage statistics model with a consistent total token count.",
     "if total_tokens == 0 and (input_tokens or output_tokens):",
@@ -186,22 +186,22 @@
    "verdict": "equivalent"
   },
   "operator": "condition",
-  "prompt_sha256": "0598e1ac6f9628008dd2387ca4ac608ba84fb8be5becf48e999b8529b4dcef34",
+  "prompt_sha256": "54ff386a1cdfa73ffc744be84d8205de0cd2796f131d9516928b90e36f7b674a",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-5ed113",
+   "call_id": "20261001T064421Z-2fe3de",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "0598e1ac6f9628008dd2387ca4ac608ba84fb8be5becf48e999b8529b4dcef34",
-   "reason": "The condition '(input_tokens or output_tokens)' only prevents the assignment when both input and output token counts are 0. When they are both 0, the mutant simply assigns 0 + 0, resulting in 0, which is functionally identical to the original version's behavior of leaving the value unchanged.",
-   "response_sha256": "70943e84a27c588f8b68280f86bd4c2b517d32604fe4da9c7bf59f241e215f8e",
+   "prompt_sha256": "54ff386a1cdfa73ffc744be84d8205de0cd2796f131d9516928b90e36f7b674a",
+   "reason": "When total_tokens is 0 and both input and output tokens are 0, the original logic skips the assignment while the mutated code evaluates 0 + 0, which also results in 0. Because both versions ultimately yield identical values for every case, they are functionally identical and fully equivalent.",
+   "response_sha256": "1b65e87605f7b93daf92dcb7a05de39c874f0cb365af5aca6e634df9c93c3e03",
    "sources": [
+    "Every supported usage shape produces the stable common usage model with a consistent total token count.",
     "if total_tokens == 0 and (input_tokens or output_tokens):",
-    "if total_tokens == 0:",
-    "Every supported usage shape produces the stable common usage model with a consistent total token count."
+    "if total_tokens == 0:"
    ],
    "test_focus": "",
    "verdict": "equivalent"

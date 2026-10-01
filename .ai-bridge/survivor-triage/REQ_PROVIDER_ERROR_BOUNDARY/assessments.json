@@ -3,55 +3,37 @@
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "exc": "Exception()",
-     "request": "ProviderRequest(request_id='req_1', provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model='gemini-pro', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=[])"
+     "exc": "ValueError()",
+     "request": "ProviderRequest(request_id='id', provider=Provider.GOOGLE, model=Model.GEMINI_PRO, provider_model='pm', credential=ProviderCredential(key_id=0, env_var='E', value='v'), messages=[])"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T212621Z-7684c9",
+    "call_id": "20261001T060403Z-ccd544",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When exc is not an instance of LLMRouterError, the original version returns a ProviderError object, while the new version returns None.",
-    "response_sha256": "dcdccfba1d3343a2e69e6bba945476e6550a8be2e347a3b2a7f5a3418fa48692",
-    "sources": [
-     "return ProviderError(exc, request.provider, request.model)",
-     "return None"
-    ],
-    "verdict": "distinct"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "exc": "Exception('test')",
-     "request": "ProviderRequest(request_id='req1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='KEY', value='val'), messages=[])"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T212627Z-4be94c",
-    "confidence": 1,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "When exc is not an instance of LLMRouterError, the original version returns a ProviderError while the changed version returns None.",
-    "response_sha256": "df9572a120ca1ff66c3860b10a497c3132a434d3e253e45d14476b69d99484e3",
+    "reason": "When exc is not an LLMRouterError, the original function returns a ProviderError object, whereas the changed function returns None.",
+    "response_sha256": "1c77d87405d85fbd9ee40ef9e7518a98d20f39f346fcad2d39510e7c1f7e50b8",
     "sources": [
      "    return ProviderError(exc, request.provider, request.model)",
      "    return None"
     ],
     "verdict": "distinct"
    },
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "exc": "ValueError(\"boom\")",
-     "request": "ProviderRequest(request_id=\"r1\", provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model=\"gemini-flash\", credential=ProviderCredential(key_id=1, env_var=\"KEY\", value=\"v\"), messages=())"
+     "exc": "Exception()",
+     "request": "ProviderRequest(request_id='req_1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='gemini-flash', credential=ProviderCredential(key_id=1, env_var='API_KEY', value='key'), messages=[])"
     },
-    "backend": "claude-cli",
-    "call_id": "20260928T212612Z-72a2b5",
-    "confidence": 0.98,
-    "model": "claude-sonnet-5",
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060403Z-bdd59e",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When exc is not an LLMRouterError, the original returns a ProviderError(exc, request.provider, request.model) instance while the changed version returns None, a clear behavioral difference in the return value's type.",
-    "response_sha256": "a8926023a21a612891892a8bc8f7a10e8cfd731cd5d9292f433926a3fffbb70c",
+    "reason": "When exc is not an instance of LLMRouterError, the original version returns a ProviderError instance while the changed version returns None.",
+    "response_sha256": "992895e9bc3a1fb060aa146220a9dc951276efbe580e6f012b1c8f733c6d0f83",
     "sources": [
-     "return ProviderError(exc, request.provider, request.model)",
-     "return None"
+     "    return ProviderError(exc, request.provider, request.model)",
+     "    return None"
     ],
     "verdict": "distinct"
    },
@@ -61,12 +43,12 @@
      "request": "ProviderRequest(request_id='r', provider=Provider.GROQ, model=Model.LLAMA_8B, provider_model='m', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=())"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T111557Z-caf9d5",
-    "confidence": 0.96,
+    "call_id": "20261001T060403Z-ddc291",
+    "confidence": 0.93,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "For a non-LLMRouterError exception, the original returns a ProviderError and the changed version returns None.",
-    "response_sha256": "87a0f8be1768c5baef1bf6c47d1f4708f3c9f30b9e5d267b2e131f7ad7ec36bc",
+    "reason": "For a non-LLMRouterError exception such as ValueError, the original returns a ProviderError while the changed version returns None.",
+    "response_sha256": "eb80efdce2a31d4b1d16798419f684f01ff47ac6c0d55cbb94db40a723f1cdee",
     "sources": [
      "return ProviderError(exc, request.provider, request.model)",
      "return None"
@@ -74,6 +56,6 @@
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "6ead20a2b8255439d21c1cae17b6f064e7bf74bea072615366b653d303d22cd7"
+  "prompt_sha256": "4148b322fe94954581b47d0a9047ac219ed5ff2647a1f99fe5c01ee8fedaaee8"
  }
 }

@@ -558,7 +558,11 @@ its requirement names through what the code offers its callers, since a private 
 a refactoring that breaks nothing (on 2026-09-30 a third of the REQ pins read or replaced one,
 against one module in fifty of the project's own tests). A parametrized value with a bracket
 needs `ids=`: a test's id becomes a need's title in the documentation, where `[[` starts a
-sphinx-needs function call and stops the build. The author has no tools, so the question carries what a person would
+sphinx-needs function call and stops the build. Every test run blocks the network but for the
+machine itself (pytest-recording's `--block-network`): the retained run, CI and the pre-push
+hook alike, so a test whose call the block stops behaves the same in each. On 2026-10-01 the
+pre-push run, without the block, let a pin's call reach a real provider, and the pin was taken
+back. The author has no tools, so the question carries what a person would
 look up. Its example is a test that runs the mutant's line, else one that runs its function,
 the contract's own first (the shortest of the contract's tests when none does; for a
 scenario pytest-bdd generates, its step definitions), with the helpers, fixtures and
@@ -636,12 +640,12 @@ roles page lists every pin verdict still waiting for its pin, with where its lad
 
 | Role                           | Order | Backend           | Model                     | Effort         |
 | ------------------------------ | ----: | ----------------- | ------------------------- | -------------- |
-| Semantic mutant generator      |     1 | `claude-cli`      | `claude-sonnet-5-5`       | `high`         |
-| Semantic mutant generator      |     2 | `antigravity-cli` | `gemini-3.1-pro-high`     | —              |
-| Semantic mutant generator      |     3 | `antigravity-cli` | `gemini-3.8-flash-high`   | —              |
-| Draft test author              |     1 | `claude-cli`      | `claude-sonnet-5-5`       | `low` → `high` |
-| Draft test author              |     2 | `antigravity-cli` | `gemini-3.8-flash-medium` | —              |
-| Draft test author              |     3 | `antigravity-cli` | `gemini-3.1-pro-high`     | —              |
+| Semantic mutant generator      |     1 | `antigravity-cli` | `gemini-3.1-pro-high`     | —              |
+| Semantic mutant generator      |     2 | `antigravity-cli` | `gemini-3.8-flash-high`   | —              |
+| Semantic mutant generator      |     3 | `claude-cli`      | `claude-sonnet-5-5`       | `high`         |
+| Draft test author              |     1 | `antigravity-cli` | `gemini-3.8-flash-medium` | —              |
+| Draft test author              |     2 | `antigravity-cli` | `gemini-3.1-pro-high`     | —              |
+| Draft test author              |     3 | `claude-cli`      | `claude-sonnet-5-5`       | `low` → `high` |
 | Draft test author with tools   |     1 | `claude-cli`      | `claude-sonnet-5-5`       | `medium`       |
 | Draft test author, last resort |     1 | `claude-cli`      | `claude-opus-5-5`         | `xhigh`        |
 | Survivor verdict               |     1 | `claude-cli`      | `claude-opus-5-5`         | `xhigh`        |
@@ -652,13 +656,15 @@ Semantic mutants, their draft tests and the verdicts on survivors come from a mo
 through one adapter (ADR_0004). Antigravity serves Gemini and Claude models from two quotas,
 a large one for the Gemini family and a smaller one for every other model. On Google AI Pro
 a week of the smaller one took about 64 of the pilot's calls and a week of the Gemini one
-about 920 (2026-09-28). Since 2026-09-29 the Claude subscription comes first wherever a role
-may use either, the person's balancing of the quotas, to be turned back later: Gemini answers
-where another family is required (the verdict review, the second and third assessors) and
-wherever a Claude window defers a call. A draft's retry is asked one level up the same model's
-ladder where it has one, else of the next model. The smaller pool serves the first survivor
-assessor after Sonnet 5.5, of another family than Gemini on purpose: on the one real survivor
-both Gemini assessors judged equivalent, it found the mutant distinct. Which model a role asks
+about 920 (2026-09-28). Since 2026-10-01 Antigravity's Gemini models come first wherever they do
+the work as well, the person's balancing of the quotas: several Antigravity accounts now carry
+the volume, and a run moves to the next account when one runs out. The Claude subscription
+serves what only it can (the draft author's rungs with tools, the assessor of another family
+than Gemini) and the most critical roles (the verdict and the last resort), and answers where a
+Gemini call is deferred. At the draft author's first rung Gemini 3.8 Flash kept about as many
+drafts as Sonnet 5.5 (33 of 106 against 147 of 464, the drafts to 2026-09-30). A draft's retry is
+asked one level up the same model's ladder where it has one, else of the next model. No role uses
+Antigravity's smaller pool: its one assessor model never answered. Which model a role asks
 first changes no stored answer: a proposal counts while its inputs are unchanged, a draft is
 judged by running it, and a verdict is bound to its question. Each role tries its backends in order. A backend that is unavailable (not
 signed in, account not eligible) or whose budget defers the call is skipped for the next.
@@ -739,7 +745,9 @@ is down to the share the Test Plan keeps free; a call its quota rejects is asked
 another account, and when the run ends agy is back on the account it used before. Which account
 agy uses is what its own credential store holds, as `agm sync` reads it, not agm's list, which
 on 2026-09-29 named the second account while the store still held the first: a switch counts once
-the store holds the new account, and a refusal counts against the account the store confirms.
+the store holds the new account, and a refusal counts against the account the store confirms. An
+account agm reports switched while the store keeps the account it had (two of five on 2026-10-01) is
+passed over for the next one with quota left, for the rest of the run.
 agm reads an account's short window, not its week: a confirmed refusal that says when its quota
 resets keeps that quota spent on its account until then, in the next runs too. Every account has
 a weekly quota of its own. The accounts are alike: a run works on the one agy was left on and
@@ -768,13 +776,11 @@ produced it, and the gate recomputes it from the stored response.
 
 ##### Survivor judgement
 
-| Assessor | Order | Backend           | Model                      | Effort                    |
-| -------: | ----: | ----------------- | -------------------------- | ------------------------- |
-|        1 |     1 | `claude-cli`      | `claude-sonnet-5-5`        | `low` → `medium` → `high` |
-|        1 |     2 | `antigravity-cli` | `claude-opus-4-6-thinking` | —                         |
-|        1 |     3 | `claude-cli`      | `claude-sonnet-5`          | —                         |
-|        2 |     1 | `antigravity-cli` | `gemini-3.1-pro-high`      | —                         |
-|        3 |     1 | `antigravity-cli` | `gemini-3.8-flash-high`    | —                         |
+| Assessor | Order | Backend           | Model                   | Effort                    |
+| -------: | ----: | ----------------- | ----------------------- | ------------------------- |
+|        1 |     1 | `claude-cli`      | `claude-sonnet-5-5`     | `low` → `medium` → `high` |
+|        2 |     1 | `antigravity-cli` | `gemini-3.1-pro-high`   | —                         |
+|        3 |     1 | `antigravity-cli` | `gemini-3.8-flash-high` | —                         |
 
 A survivor is a mutant that every passing test of its contract lets through, rule or
 semantic (ADR_0005). A symbolic search (CrossHair) over a typed harness of the original and
@@ -787,17 +793,23 @@ answers through its first model that can, as a role does: a later one only when 
 before it are deferred, unavailable or not calibrated yet. A model whose Effort is a ladder of
 levels is the search for its lowest level that meets the calibration floors: each level answers
 as a model of its own, a level that misses the floors does not answer, and the calibration asks
-the next level only then, in the same run. Sonnet 5 stays after Sonnet 5.5 so that the answers
-it gave keep counting. The assessors
+the next level only then, in the same run. Sonnet 5 and Opus 4.6 left the first assessor on
+2026-10-01: no current answer of the triage rested on them. The assessors
 see the parameters as the code declares them and how the project's types the target takes
 or names are built; an input may use any of the project's dataclasses, exceptions and enum
 members. The question shows both versions as code, not the requirement: whether two versions
-behave the same does not depend on it. Every answer cites, copied word for word from the code
+behave the same does not depend on it. Behaviour is what CrossHair's diffbehavior compares: what
+the target returns, what it leaves in its arguments and the exception it raises. The question
+names an argument only when its type lets a call change it (not a number, a text, a tuple, an
+enum member or one of the project's frozen dataclasses), so a question about any other target
+reads as before. Until 2026-10-01 it asked only for the return value and the exception, and an
+assessor that followed it called a pin-proven mutant that changes its argument equivalent. Every answer cites, copied word for word from the code
 it was shown, the lines it rests on, one of them a line the change touches; an answer whose
 sources are not in its question does not count and its assessor is asked again. None of this
 can make a survivor caught. An input counts only when execution confirms it: called with
 it twice, each version repeats itself, and the original and the mutant return different
-values, leave their object in different states or raise different exception types. A clock
+values, leave their object or an argument that can change in different states or raise
+different exception types. A clock
 reading or a memory address is not a difference. A semantic survivor with a confirmed input is
 distinguished. A rule survivor keeps its outcome and gains the input as its test goal. An
 assessors' equivalent is never a proof. When every assessor judges a survivor equivalent
@@ -805,7 +817,10 @@ with a confidence above the calibrated threshold, it is labelled likely equivale
 UNKNOWN, or survived for a rule mutant, until its verdict is recorded (below).
 Otherwise it is labelled unsure. A survivor that cannot be called from typed arguments, such
 as an asynchronous method or a method of an object that needs a running router, is not
-judged, and its row says why. The assessors come from two model families, Claude and
+judged, and its row says why. Nor is a target that reads the environment (environment
+variables, files, the locale, the clock, randomness, the network), in its own code or through a
+function of its module or a method of its class it calls: the harness cannot vary what it
+reads, so its survivors go to the verdict with the whole context. The assessors come from two model families, Claude and
 Gemini, and a label needs all of them that take part, so one family's shared blind spot does not
 label a survivor alone. An assessor none of whose models meets the calibration floors takes no
 part until one does, though what it answered before stays in the judgements it is in; a label
@@ -840,7 +855,10 @@ missing. Each combination of usable models, one per assessor, gets its own thres
 (Mondrian conformal), and the highest labels, so a label keeps the rate whichever models
 answered. The assessors' answers on the pairs are frozen and replayed by the qualification.
 A change of assessor, model, level, prompt or labelled pairs leaves the ensemble uncalibrated
-until the calibration runs again.
+until the calibration runs again. An answer counts only for the question it answered, a labelled
+pair's as the record names it and an observed pair's as the triage stored it: when a question
+changes, every model answers the new one, and a model that missed the floors on the old questions
+is measured anew.
 Rule survivors are judged on request, apart from the campaign.
 
 ##### Survivor verdicts

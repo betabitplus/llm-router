@@ -2808,6 +2808,25 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             and all(barred_run.quota_left("antigravity-cli", "third", model) == -1 for model in (pro, "gemini-3.8-flash-high", "claude-opus-4-6-thinking"))
             and barred.switches == ["third", "fifth"]
         )
+        # An account agm reports switched while agy's credential store keeps the account it had is
+        # passed over for the next one with quota left, not waited on.
+        class Unmoved(FakeAgm):
+            def switch(self, alias):
+                self.switches.append(alias)
+                if alias == "third":
+                    return False
+                self.active = alias
+                return True
+
+        unmoved = Unmoved({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
+                           "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "main")
+        unmoved_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
+                                    ledger_path=temp / "unmoved.jsonl", backends={"antigravity-cli": AgyScripted([probe(), answered()], unmoved)})
+        unmoved_row, unmoved_answer = unmoved_run.call("generator", response_dir=temp / "unmoved", **request)
+        checks["an account agm cannot move agy to is passed over for the next one with quota left"] = (
+            unmoved_answer is not None and unmoved_row["account"] == models["account_label"]("fifth")
+            and unmoved.switches == ["third", "fifth"] and unmoved.active == "fifth"
+        )
         # The account a person left agy on is not let in from the start: the probe itself moves on to an
         # account that is, and a later run skips that account without a call for a while.
         start_barred = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
@@ -3203,7 +3222,8 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
             and judge["friendly_repr"](namespace["Color"].RED) == "Color.RED" and judge["friendly_repr"](namespace["Tally"](count=1)) == "Tally(count=1)"
         )
         # A version that does not repeat itself tells nothing apart, and an address is not behaviour.
-        clock = "import time\n\n\ndef stamp(step: int) -> float:\n    return time.monotonic() + step\n"
+        # (a counter of the module: a clock is the environment, which the harness does not judge at all)
+        clock = "_calls = [0]\n\n\ndef stamp(step: int) -> int:\n    _calls[0] += 1\n    return _calls[0] + step\n"
         locker = (
             "import threading\n\n\nclass Box:\n    def __init__(self) -> None:\n        self.lock = threading.RLock()\n        self.size = 1\n\n\n"
             "def make(size: int) -> Box:\n    box = Box()\n    box.size = size\n    return box\n"
@@ -3303,6 +3323,32 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
         asked = judge["assessor_prompt"](target="loose", original="return 1", mutant="return 2", harness=loose)
         checks["an assessor is asked about the parameters as declared, not the search's substitutes"] = (
             loose.get("parameters") == [("value", judge["PAYLOAD_TYPE"])] and "value: object" in asked and judge["PAYLOAD_TYPE"] not in asked
+        )
+        # Behaviour is also what a call leaves in an argument that can change, as CrossHair's
+        # diffbehavior counts it, and only such an argument is named in the question; a target that
+        # reads the environment (its own code or a function of its module it calls) is not judged.
+        fill_original = "def fill(values: dict[str, int], key: str) -> None:\n    values[key] = 1\n"
+        fill_mutant = "def fill(values: dict[str, int], key: str) -> None:\n    values[key] = 2\n"
+        fill = judge["harness_for"](fill_original, "fill")
+        (temp / "q_fill_original.py").write_text(judge["with_harness"](fill_original, fill))
+        (temp / "q_fill_mutant.py").write_text(judge["with_harness"](fill_mutant, fill))
+        fill_witness = judge["verify_witness"](
+            judge["load_module"](temp / "q_fill_original.py", "q_fill_original"), judge["load_module"](temp / "q_fill_mutant.py", "q_fill_mutant"),
+            {"values": "{}", "key": "'a'"}, fill["parameters"],
+        )
+        frozen = judge["harness_for"]("def size(config: Config, count: int) -> int:\n    return count\n", "size", frozenset({"Config"}))
+        reads = judge["harness_for"]("import os\n\n\ndef key() -> str:\n    return os.environ.get('K', '')\n", "key")
+        timed = judge["harness_for"]("import time\n\n\ndef stamp(step: int) -> float:\n    return time.monotonic() + step\n", "stamp")
+        through = judge["harness_for"]("def _stamp() -> str:\n    return open('stamp').read()\n\n\ndef label(name: str) -> str:\n    return name + _stamp()\n", "label")
+        filled = judge["assessor_prompt"](target="fill", original=fill_original, mutant=fill_mutant, harness=fill)
+        sized = judge["assessor_prompt"](target="size", original="return count", mutant="return 0", harness=frozen)
+        checks["a witness that differs only in what the call leaves in a changeable argument is confirmed, and only such an argument is named in the question"] = (
+            fill_witness["verified"] is True and fill.get("changeable") == ["values"] and frozen.get("changeable") == []
+            and "what it leaves in values" in filled and "what it leaves in" not in sized
+        )
+        checks["a target that reads the environment, itself or through a function of its module, is not judged"] = (
+            "os.environ" in str(reads.get("reason")) and "open" in str(through.get("reason")) and "time.monotonic" in str(timed.get("reason"))
+            and "reason" not in fill and "reason" not in frozen
         )
         # A witness may name the project's classes beyond the module's imports, never an ambiguous name.
         import types as _types
@@ -3451,7 +3497,7 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
     record_path = calibration / "calibration.json"
     base = {
         "intended_use": "label a survivor likely equivalent only when every assessor of the Test Plan, each through one usable model, judges it equivalent above a split-conformal threshold, advisory; distinct only through a confirmed input",
-        "false_green_control": "the frozen calibration replayed: every answer bound to a stored, ledgered call; each pair's judgement and the threshold recomputed; the labelled distinct pairs within the Test Plan's false-equivalent rate; the calibration current for the assessors, the question, the pairs and the rate; every observed pair a real survivor the symbolic search left unsure, that a recorded mutation pin proves distinct and the campaign now catches, its answers the triage's own for the question it names",
+        "false_green_control": "the frozen calibration replayed: every answer bound to a stored, ledgered call; each pair's judgement and the threshold recomputed; the labelled distinct pairs within the Test Plan's false-equivalent rate; the calibration current for the assessors, the question, the pairs and the rate; every labelled answer a response to its pair's question as the record names it; every observed pair a real survivor the symbolic search left unsure, that a recorded mutation pin proves distinct and the campaign now catches, its answers the triage's own for the question it names",
     }
     if not record_path.exists():
         return {"PRODUCER_ASSESSOR_ENSEMBLE": {**base, "status": "NOT QUALIFIED", "control": {"reason": "the assessors have not been calibrated yet"}}}
@@ -3484,6 +3530,14 @@ def assessor_ensemble_controls() -> dict[str, dict[str, object]]:
                 and judge["answer_problems"](structured, str(response.get("prompt") or "")) == answer.get("problems")
             )
     checks["every calibration answer is a stored, ledgered call's answer"] = bound and bool(record.get("answers"))
+    # An answer counts only for the question it answered: the record names each labelled pair's
+    # question, and every answer it keeps for the pair is a response to that question.
+    pair_prompts = record.get("pair_prompts") or {}
+    payload_ids = [pair["id"] for pair in judge["calibration_payload"](folder)["pairs"]]
+    checks["every calibration answer answered its pair's question as the record names it"] = sorted(pair_prompts) == sorted(payload_ids) and all(
+        hashlib.sha256(str((json.loads((calibration / "responses" / f"{answer.get('call_id')}.json").read_text()) if (calibration / "responses" / f"{answer.get('call_id')}.json").exists() else {}).get("prompt") or "").encode()).hexdigest() == pair_prompts.get(pair_id)
+        for pair_id, answers in (record.get("answers") or {}).items() for answer in answers.values()
+    )
     # Each answer is stored under the model and level its call asked for.
     checks["every calibration answer is stored under the model and level its call asked for"] = all(
         models["entry_key"](str(answer.get("backend") or ""), str(answer.get("model") or ""), str((ledger.get(str(answer.get("call_id"))) or {}).get("effort") or "")) == member

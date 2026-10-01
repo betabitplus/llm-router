@@ -109,14 +109,14 @@
  "0c1b36286cf6938e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T203027Z-2d94a8",
+   "call_id": "20261001T062428Z-8bf573",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The caller normalize_content passes any object straight to _content_parts. Under the mutant, bytes content (b\"\", bytearray(b\"\")) is no longer rejected as unsupported top-level content: b\"\" becomes an empty parts tuple instead of a TypeError. That breaks the local rejection the requirement asks for.",
-   "response_sha256": "721c45d4b40dd2f5a7f84642e409a3920a1997f3e204d7f8d84669169507ded4",
+   "reason": "normalize_content passes its argument straight to _content_parts, so bytes reach the changed branch. With empty bytes (b'' or bytearray()), the mutant gives an empty tuple and normalize_content returns a message with no parts, assuming normalize_parts(()) returns (). The original raises TypeError. Unsupported top-level content is then accepted when the requirement says it must fail locally.",
+   "response_sha256": "fca155cfd4b32d3d72c3f83c2e91f77cb1de42446c08656ed5d8871f4b62b599",
    "sources": [
     "Unsupported top-level content or media parts and raw images outside supported mode or dimension bounds shall fail before provider execution.",
     "Unsupported top-level/part inputs and raw images violating mode/min/max bounds are rejected locally.",
@@ -124,11 +124,11 @@
     "if isinstance(content, Sequence):",
     "parts=normalize_parts(_content_parts(content)),"
    ],
-   "test_focus": "Call normalize_content with b\"\", bytearray(b\"\") and b\"x\", and check that each raises TypeError matching \"Unsupported message content: bytes\" (or \"bytearray\"), not an empty message or a part-level error.",
+   "test_focus": "Call normalize_content(b'') and normalize_content(bytearray()), plus b'abc', and check that each raises TypeError whose message names the unsupported content type (\"Unsupported message content: bytes\"/\"bytearray\").",
    "verdict": "pin"
   },
   "operator": "condition",
-  "prompt_sha256": "f1645085901973ce234ad00eca57d604774bfd3e666e219390db4127d73a5841"
+  "prompt_sha256": "023308d88a6449bf8c0fb95b580c023281ca2714f96b0f88bf56e867dec3760c"
  },
  "4e35b24fc276e4ad": {
   "answer": {
@@ -187,14 +187,14 @@
  "85f4bcb339f625ed": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195735Z-632a53",
+   "call_id": "20261001T062424Z-477a3c",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant returns the caller's sequence instead of a tuple copy, which only changes an internal return type. Order and part content stay the same, and every candidate input behaved the same under both versions. The requirement asks only that ordered parts be preserved, and its ownership rule covers only the top-level metadata mapping, not the parts sequence.",
-   "response_sha256": "482500563bb03fe974c72022473dde50871d373870f03c8cf2a800a4f3455eb3",
+   "reason": "For a list, the mutant hands back the caller's list instead of a tuple copy, so only the internal return type and object identity change. Order and the unsupported-content branches are the same, and every distinguishing input was refuted at the contract level. The \"separate mapping\" criterion covers metadata, not the parts sequence.",
+   "response_sha256": "0d5292291e895793fc30cc13585e08ae48395a85162c3ba9333c34feb462bfa6",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
     "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
@@ -205,18 +205,18 @@
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "9b59307e02c92cdd2f8985be35085a704ccef40ec74ea5bd3631651fc57b428a",
+  "prompt_sha256": "7d7bd57b57451a3d9beb99c64066c4277d331aa3de4a46b8a6cc3c29508d0b83",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195757Z-3ee8f1",
+   "call_id": "20261001T064237Z-b61694",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "9b59307e02c92cdd2f8985be35085a704ccef40ec74ea5bd3631651fc57b428a",
-   "reason": "The requirement mandates preserving the caller order of parts, which both returning the original sequence directly and converting it to a tuple achieve. Choosing a specific sequence type like a tuple over another is an implementation detail.",
-   "response_sha256": "4421d8a9a8233a61e4630f6d0de109f4599a153cee252864c4bc2cdfc7170276",
+   "prompt_sha256": "7d7bd57b57451a3d9beb99c64066c4277d331aa3de4a46b8a6cc3c29508d0b83",
+   "reason": "The requirement mandates preserving the caller order of parts, which is achieved whether the function returns a new tuple or the original list. The specific type of the returned sequence (tuple vs. list) is an implementation detail not mandated by the requirement.",
+   "response_sha256": "d7835db949f9c8c438b5e5e2a4f4370a3d4e96930fd43b5df1b76fa0781a18fc",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
     "return tuple(content)",
@@ -379,38 +379,41 @@
  "a9925109311de4d5": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195735Z-9838e1",
+   "call_id": "20261001T064218Z-215638",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant returns a list instead of a tuple. Order, text, media descriptors and kind stay the same, and each call still builds its own fresh list. The requirement asks only that normalization preserve order, role, metadata and media kind, not that the result be a particular immutable container.",
-   "response_sha256": "8246e11cfd0c53265cb5e10bfe010b2db14d5f5415eb1f8570b151c8263a0d1d",
+   "reason": "The mutant only returns the same parts, in the same order, as a list instead of a tuple. The requirement asks for caller order, role, metadata, media kind and descriptor metadata, not a container type. Both callers only hand the result to NormalizedMessage(parts=...), and every drafted test passed on both versions, so the difference doesn't show where the requirement is observed.",
+   "response_sha256": "d65fc8a0483d49f32d2176009b422802be0e757aec7ed92d36724a2d8c72bf2f",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
     "Mixed text/file/image/local-video/remote-video parts retain caller order and relevant descriptor metadata.",
-    "    return tuple(normalized)",
-    "    return normalized"
+    "return normalized",
+    "return tuple(normalized)",
+    "parts=normalize_parts(_content_parts(content)),",
+    "parts=normalize_parts(message.parts),"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "78128874d9fab28d9ecb7c9a985bc7dcc801da273291e530fd42ca204d3014ca",
+  "prompt_sha256": "925e41b4fa69afab3d6d6856c1648ddc1591a0b4482facb1b9afc2c9b6be3e21",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195813Z-d33178",
+   "call_id": "20261001T064237Z-16b078",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "78128874d9fab28d9ecb7c9a985bc7dcc801da273291e530fd42ca204d3014ca",
-   "reason": "The mutation returns a list instead of a tuple, altering the exact collection type returned by the function. Since both sequences reliably retain caller order and correctly wrap the normalized parts, this difference is an implementation detail that does not violate any requirement.",
-   "response_sha256": "28f45b7caa92ed0085e26577ebdf86105937d97e082a83f022d566ace7747c8b",
+   "prompt_sha256": "925e41b4fa69afab3d6d6856c1648ddc1591a0b4482facb1b9afc2c9b6be3e21",
+   "reason": "The requirement specifies that the normalization process must preserve caller order, but it does not mandate a specific collection type. Both a list and a tuple preserve the order of parts, making the type difference an implementation detail.",
+   "response_sha256": "89cda5350cd781d3d4b63c500d5eaead54394c41db684a3284d6fe22b9ba1551",
    "sources": [
     "Content normalization shall preserve caller order, message role and metadata, media kind, and public descriptor metadata across text, file, image, local-video, and remote-video parts.",
+    "Normalizing a ChatMessage preserves role, ordered parts, and metadata values while owning a separate top-level metadata mapping.",
     "return tuple(normalized)",
     "return normalized"
    ],

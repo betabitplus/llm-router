@@ -2,39 +2,38 @@
  "3455f92045d0119f": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141611Z-c7f674",
+   "call_id": "20261001T062428Z-080984",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only rewrites the echoed max_rounds on the no-execute path. It differs from the original only when completed_rounds already exceeds max_rounds, which the loop never produces. The returned state still refuses further rounds and keeps the outstanding calls, so stopping at the limit and preserving outstanding calls are unchanged.",
-   "response_sha256": "cec2d3ef3acf520a6c2c6269241d518ae6c0241fbef626be6a11a71dadb1a4bb",
+   "reason": "The mutant still stops execution at the limit and keeps the outstanding tool calls; only the stored max_rounds of the stopped state changes. That differs only when completed_rounds exceeds max_rounds, which normal runs can't produce (they stop exactly at the limit), and no criterion checks that field.",
+   "response_sha256": "16f7b6caaeb406c511a5ea6b209387f31899b4071ac8ca0fcd7684a07b4ab7ac",
    "sources": [
     "tool execution shall stop at the configured maximum round count",
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
-    "return ToolLoopState(max_rounds=state.completed_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)",
-    "max_rounds=state.max_rounds,"
+    "return ToolLoopState(max_rounds=state.completed_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "5624ce9428e8d988c33613a801ddafb1a254a97e8677a97cc049ef06dd0ae066",
+  "prompt_sha256": "505fd9c277f679883acfeccbba99d4fee93fec65cf1d082cbce5c4478d92a31b",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141636Z-4f4ec0",
+   "call_id": "20261001T064256Z-804665",
    "confirmed": true,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "5624ce9428e8d988c33613a801ddafb1a254a97e8677a97cc049ef06dd0ae066",
-   "reason": "The requirement dictates that execution stops at the configured round limit and preserves outstanding tool calls, but does not mandate that the original maximum round configuration must be preserved unchanged in the returned state object after execution has stopped.",
-   "response_sha256": "757aa3fe04c4c26cb4a6182f2cc23e7d077ff5154f99d2bb3a17ec109ec4a6c5",
+   "prompt_sha256": "505fd9c277f679883acfeccbba99d4fee93fec65cf1d082cbce5c4478d92a31b",
+   "reason": "The mutation alters the maximum rounds value in the returned state object when stopping execution, but the requirement only dictates that execution must stop at the limit and preserve outstanding tool calls, without specifying the preservation of the configured round limit itself in the returned state.",
+   "response_sha256": "e8bf6fc20997037b2b04fc5520d41bd181aa8b4452458a7e2ed2ed36d837b1af",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
-    "max_rounds=state.completed_rounds"
+    "return ToolLoopState(max_rounds=state.completed_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -173,36 +172,36 @@
  "8e8627e39c224a63": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141611Z-f634ef",
+   "call_id": "20261001T062428Z-89ae5b",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only repeats completion log events for steps from earlier rounds. The returned state, the ToolExecutionError failure path and the round-limit stop are unchanged, and the extra events carry only tool names, not sensitive arguments. The requirement says nothing about how many completion events are logged.",
-   "response_sha256": "7a91b6a4147fb6f7e6eb2bf0dbfc67f4b473d3ae6eb65b60ff8ac1c2057d3e72",
+   "reason": "The mutant changes only which steps get a 'tool completed' log event. In multi-round loops it logs earlier steps again, using only the tool name. The returned state, the error raised and logged on failure, and the round-limit behaviour are all unchanged. The requirement asks only for bounded, public, non-leaking errors and stopping at the round limit, not for completion-log counts.",
+   "response_sha256": "eaa38e5cc7a8706fd2fabaaa0100a792d659829e59087ea278712639f3241fdd",
    "sources": [
     "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
-    "for step in next_state.steps[len(state.steps) :]:",
     "for step in next_state.steps[:]:",
+    "for step in next_state.steps[len(state.steps) :]:",
     "_log_tool_completed(request=request, state=state, tool_name=step.tool_name)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "slice",
-  "prompt_sha256": "1afad00cc9c27bc184c4eab7d564e74e69f48544e5220a794e3c216ead3f5361",
+  "prompt_sha256": "b0d47e9b1ba2ed84cf8ef43983d092ba29bdd97f584a380a49993eeeec76141c",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141636Z-45f1e2",
+   "call_id": "20261001T064256Z-398909",
    "confirmed": false,
    "effort": "",
-   "level": "implementation",
+   "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "1afad00cc9c27bc184c4eab7d564e74e69f48544e5220a794e3c216ead3f5361",
-   "reason": "The mutated code logs tool completion for all historical steps instead of only the newly added steps, resulting in duplicate observability events. This change in logging behavior does not affect whether failures surface securely or if execution stops at the round limit as the requirement demands.",
-   "response_sha256": "9572e666b12018ae0ceaef71f691132fdb4659b466e0c86feb3dd7822009af0b",
+   "prompt_sha256": "b0d47e9b1ba2ed84cf8ef43983d092ba29bdd97f584a380a49993eeeec76141c",
+   "reason": "The mutated version logs completion for all steps in the state rather than just the new ones, but this logging behavior is an implementation detail not governed by the requirement, which only specifies how errors surface and when execution stops.",
+   "response_sha256": "c80808c9d52175ca014db23d50f37def600f7a26d63d7f885d4f7fe8bcff3339",
    "sources": [
     "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
     "for step in next_state.steps[len(state.steps) :]:",
@@ -348,78 +347,80 @@
  "a86851825ae036b5": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141611Z-26c6bd",
-   "confirmed": false,
+   "call_id": "20261001T062428Z-e67777",
+   "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The generator is fully consumed by the `*steps` unpacking before ToolLoopState is built, and the original also runs a generator inside tuple(). So both versions make the same calls in the same order and raise the same exceptions, and failures and the round limit are handled the same way. Only the side-effect-free `completed_rounds + 1` is evaluated before the unpacking.",
-   "response_sha256": "34999e06ef2ba4994860a802fb1864536df8d0d8b139aba0c6fc2ef5db8f6dbb",
+   "reason": "The mutant runs the tools lazily from a generator during tuple unpacking, which only changes the order relative to unpacking state.steps. Valid states execute the same tools with the same results and exceptions. The confirmed difference needs the malformed state steps=None, where neither version raises the public tool-execution error, so no requirement covers it.",
+   "response_sha256": "9c81f449574f9181e3e1e2ade6d65f7a08746154c05f87ebbf15fdc92d1955a9",
    "sources": [
+    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
     "steps = (registry.execute(call) for call in parsed_calls)",
     "steps = tuple(registry.execute(call) for call in parsed_calls)",
-    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count."
+    "run_tool_round(registry=ToolRegistry(tools={}), state=ToolLoopState(max_rounds=1, steps=None), tool_calls=[{'name': 'missing', 'arguments': {}}]); the original gives ('raises', 'KeyError') and the mutant gives ('raises', 'TypeError')"
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "irrelevant"
   },
   "operator": "conversion",
-  "prompt_sha256": "0c733bcf6fa591f63254f42ca63caf27d8b299c2e70f9b21cc8950684988e248",
+  "prompt_sha256": "f4a29abe5cd932495a6eef027ee354ac3dd3ba81f9f489edb7a6bf513c212f1b",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141715Z-e11282",
-   "confirmed": false,
+   "call_id": "20261001T064256Z-6fb4f7",
+   "confirmed": true,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "0c733bcf6fa591f63254f42ca63caf27d8b299c2e70f9b21cc8950684988e248",
-   "reason": "The generator expression replaces the eagerly evaluated tuple but is fully consumed on the very next line during the `*steps` unpacking. Because no side effects or state changes happen between these two points, execution order, return values, and exceptions remain perfectly identical.",
-   "response_sha256": "469d92755f196949124b599e8411cf6fbed4855888fdd410bbcae726b89d2da4",
+   "prompt_sha256": "f4a29abe5cd932495a6eef027ee354ac3dd3ba81f9f489edb7a6bf513c212f1b",
+   "reason": "Replacing the intermediate tuple with a generator expression does not change the outcome for valid inputs, as the generator is immediately evaluated when unpacked into the new steps tuple. The execution order difference only manifests on invalid inputs like `state.steps=None`, which is outside the requirement's scope.",
+   "response_sha256": "37835b95da65ff80cc17b16f31448ff22c33682c21b42fe52b6bb2e974891bee",
    "sources": [
-    "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+    "A local tool failure surfaces through the public tool-execution error without a further provider turn or sensitive values.",
     "steps = tuple(registry.execute(call) for call in parsed_calls)",
     "steps = (registry.execute(call) for call in parsed_calls)"
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "irrelevant"
   }
  },
  "b286d88b39b3a8e6": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T152405Z-f06e25",
+   "call_id": "20261001T062428Z-ecb249",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Once the round limit is reached, the mutant stops filling in outstanding_tool_calls, so the pending call is dropped. The requirement explicitly asks for that call to be kept in the public response. The caller `_run_logged_tool_round` sends every `result.tool_calls` to `run_tool_round`, even when `state.can_execute_tools()` is false, so it can reach the changed branch.",
-   "response_sha256": "5fab237a3ba06bc6362154b67fa03c350708532abf7ada6a4e6a11fd839b4ed7",
+   "reason": "The criterion says that at the round limit, execution must stop and the outstanding tool call must be kept. The mutant drops `outstanding_tool_calls` on exactly that path: a confirmed input with `max_rounds=0` lost `ToolCall(name='my_tool')`. `_run_logged_tool_round` reaches this branch by passing the provider result's tool calls into `run_tool_round`.",
+   "response_sha256": "d0dd05f769256136c89bd0373f646f091019d3ab08fbf042a61a7b42be49ef27",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "tool execution shall stop at the configured maximum round count.",
     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps)",
     "outstanding_tool_calls=parsed_calls,",
     "next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )"
    ],
-   "test_focus": "Call `_run_logged_tool_round` with `state=ToolLoopState(max_rounds=1, completed_rounds=1)`, a `ProviderResult` whose `tool_calls=(ToolCall(name='lookup', args={'q': 'x'}),)`, and an empty `ToolRegistry`. Assert that the returned state's `outstanding_tool_calls` still contains that ToolCall and that `completed_rounds` is still 1.",
+   "test_focus": "Call `_run_logged_tool_round` with `state=ToolLoopState(max_rounds=0)` and a `ProviderResult` whose `tool_calls=(ToolCall(name='my_tool', args={}),)`, using an empty `ToolRegistry`. Assert that the returned state's `outstanding_tool_calls` still contains that `ToolCall` and that `completed_rounds` is still 0.",
    "verdict": "pin"
   },
   "operator": "argument",
-  "prompt_sha256": "ac4799d404a5648998115bf2a07555b37bae0e549a985c25e163125e6dca3b5a"
+  "prompt_sha256": "688ff8e691918422100e06b02fcf2b66a24c4310c783a17fa84f51c26c4073cf"
  },
  "b93510947e39b6d5": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141611Z-877ed5",
+   "call_id": "20261001T062424Z-615d73",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only differs when completed_rounds already exceeds max_rounds, which normal execution can't produce because the count only rises when another round is allowed. In that case it clamps the counter. Execution still stops at the limit and the outstanding tool calls are still kept, and the requirement doesn't ask for this counter to be preserved.",
-   "response_sha256": "eb5677ed58d765e99acc44adf555bd4df900943aa17686814fa35cafef926f45",
+   "reason": "Both versions stop executing at the limit and keep the outstanding tool calls. They differ only in the stored completed_rounds count, and only when completed_rounds already exceeds max_rounds. Rounds increase one at a time up to max_rounds, so normal use never reaches that state, and no criterion depends on that count.",
+   "response_sha256": "afe5e8439248289127fd31155cee67ea1436a3ed37e39dd2cfccc415a776866c",
    "sources": [
     "tool execution shall stop at the configured maximum round count",
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
@@ -430,22 +431,22 @@
    "verdict": "irrelevant"
   },
   "operator": "attribute",
-  "prompt_sha256": "6495013a808c0364ce01f3eb9bde0848e70cb2939310243f0ce47371278269ce",
+  "prompt_sha256": "694dc041a55208fdaafb57f50217b607a8baa5b7fd22bb5de7e6b356fd6ee163",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141636Z-6f851e",
+   "call_id": "20261001T064256Z-86d4bc",
    "confirmed": true,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "6495013a808c0364ce01f3eb9bde0848e70cb2939310243f0ce47371278269ce",
-   "reason": "The mutant alters the returned state to set completed_rounds to max_rounds when tool execution stops, rather than preserving the actual completed_rounds count. This does not violate the requirement, which dictates only that execution halts at the configured limit and preserves outstanding tool calls, without mandating the precise reporting of the internal completed round count.",
-   "response_sha256": "c8d3670c902bf600976acf059c18946d2d441fa7114073e7ad0f07ae95704592",
+   "prompt_sha256": "694dc041a55208fdaafb57f50217b607a8baa5b7fd22bb5de7e6b356fd6ee163",
+   "reason": "The requirement mandates stopping tool execution at the round limit and preserving outstanding tool calls, which both versions do. Altering the internal count to match the maximum when execution is already stopped only affects states that exceed the limit, which is an implementation detail not governed by this requirement.",
+   "response_sha256": "a444b1a8067eec60c51ea7bf14f024ebb7a2909f88e386215396b385683e6f94",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
     "completed_rounds=state.completed_rounds,",
-    "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.max_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)"
+    "completed_rounds=state.max_rounds,"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -454,47 +455,26 @@
  "c7d2d7e9975406e2": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T144207Z-3ee992",
+   "call_id": "20261001T062428Z-cc0a64",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The confirmed difference needs a malformed call (tool_calls=[None]) at the round limit, but the only caller passes result.tool_calls, which is typed tuple[ToolCall, ...], so parsing never fails and the lazy-parse difference can't be reached. At the limit the outstanding calls are still preserved, and no ladder test, including one run in a project copy, found a difference in the public response.",
-   "response_sha256": "8763c41d8e5db33468ca1281cab84f5e147b8e7731bcb6062893de42bccb82d4",
+   "reason": "`_run_logged_tool_round` calls `run_tool_round` with any state and with `result.tool_calls`, so it can pass in a state that has already reached the round limit. In the mutant it then returns `outstanding_tool_calls` as a single-use generator instead of the declared `tuple[ToolCall, ...]`. That generator does not equal a tuple, always counts as true, and is empty on a second read, so the outstanding call is not reliably kept. That breaks the requirement that execution stops at the round limit and keeps the outstanding call.",
+   "response_sha256": "8efa01b8e9936146b0a280dd6cd841c28442ad2ac90091ee131bf90a1fad91bd",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "tool execution shall stop at the configured maximum round count",
     "parsed_calls = (parse_tool_call(call) for call in tool_calls)",
     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, steps=state.steps, outstanding_tool_calls=parsed_calls)",
-    "tool_calls=result.tool_calls,",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
+    "next_state = run_tool_round("
    ],
-   "test_focus": "",
-   "verdict": "irrelevant"
+   "test_focus": "Call `_run_logged_tool_round` with `ToolLoopState(max_rounds=1, completed_rounds=1)` and a `ProviderResult` holding one `ToolCall`. Check that no step is executed, that `next_state.outstanding_tool_calls == (call,)`, and that it is still `(call,)` when read a second time.",
+   "verdict": "pin"
   },
   "operator": "conversion",
-  "prompt_sha256": "acf188a9f452272d95f2280a6aae5262eff7a821df4a27941e7691727062f25d",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T144240Z-5c461d",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "acf188a9f452272d95f2280a6aae5262eff7a821df4a27941e7691727062f25d",
-   "reason": "The mutant changes eager tuple evaluation to a lazy generator, delaying any parsing exceptions from invalid tool calls. However, the caller _run_logged_tool_round only passes result.tool_calls from a ProviderResult, which is strongly typed as tuple[ToolCall, ...]. Because the caller cannot hand the function invalid inputs (like None) that would cause a parsing exception, the delayed error difference cannot be observed where the requirement is evaluated.",
-   "response_sha256": "ddd5185ca03be47131b12df793e420e80446dd8dee3a88f8f31fc1521452e4ce",
-   "sources": [
-    "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
-    "    parsed_calls = (parse_tool_call(call) for call in tool_calls)",
-    "    result: ProviderResult,",
-    "            tool_calls=result.tool_calls,",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "d72408e3c3303724e7288b666a3ff4236070ca2c0084afb7754377aabaa11d3f"
  },
  "cc2237e2e7228b57": {
   "answer": {
@@ -650,14 +630,14 @@
  "f3cc88335b72791d": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141611Z-6af4dc",
+   "call_id": "20261001T062424Z-5c3bb3",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The only change that matters is leaving out `outstanding_tool_calls=()` on the path where a round runs. The requirement's tests have to run rounds to reach the round limit, and the mutant passes them, so this constructor call does not raise. That means the tuple field has a default, almost certainly the empty tuple, so both versions return the same state. The extra parentheses around the generators change nothing.",
-   "response_sha256": "a06b71d4879e581c101e1f80f6f09397cebc779f4c66bacec73b3236b5fb496b",
+   "reason": "The only change is that the executing branch no longer passes outstanding_tool_calls=() explicitly and relies on the ToolLoopState default instead. The passing tests build this state, so the field must have a default, and an empty tuple is the natural one. I couldn't open ToolLoopState to check, but if the default is empty, no input can tell the two versions apart. The extra brackets around the generator expressions change nothing.",
+   "response_sha256": "0bd853a98c2f269be41db1f0540a15f01f43d5c8bbf7f559a47315ceca0a5415",
    "sources": [
     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds + 1, steps=(*state.steps, *steps))",
     "outstanding_tool_calls=(),",
@@ -667,20 +647,21 @@
    "verdict": "equivalent"
   },
   "operator": "argument",
-  "prompt_sha256": "a3011b8c5b22feba612bc058b1aa3ddaba5227d3f665673e60174561e63aa0a1",
+  "prompt_sha256": "1a22576277d8e49a7238030ab925cc88f47110122162412f08e23ab48d03a65c",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141715Z-4a1251",
+   "call_id": "20261001T064256Z-2b5a52",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "a3011b8c5b22feba612bc058b1aa3ddaba5227d3f665673e60174561e63aa0a1",
-   "reason": "The mutated version omits the outstanding_tool_calls keyword argument, relying on the class's default value for the field. The resulting state object is identical to the original, so the public behavior remains completely unchanged.",
-   "response_sha256": "e6fb0112b4e60437bd90b4b4bd0d2aaa5522ffcfc5c25c6b80f053613e2b5786",
+   "prompt_sha256": "1a22576277d8e49a7238030ab925cc88f47110122162412f08e23ab48d03a65c",
+   "reason": "The mutated version behaves identically to the original by omitting the explicit `outstanding_tool_calls=()` argument to rely on its default empty tuple value, and adding redundant parentheses to the generator expressions. The resulting `ToolLoopState` objects are functionally identical, meaning no input can distinguish between the two versions.",
+   "response_sha256": "ab182a328ed88378cd241861ee0f51ecf53130972141e5e9716dd350fc0e3bea",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+    "outstanding_tool_calls=(),",
     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds + 1, steps=(*state.steps, *steps))"
    ],
    "test_focus": "",
@@ -690,25 +671,24 @@
  "f7f884d8946a1724": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T144204Z-0c11f4",
+   "call_id": "20261001T062428Z-f6f49d",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "At the round limit the mutant rebuilds the state without `steps=state.steps`, so tool steps from earlier rounds vanish from the state that becomes the public response. `_run_logged_tool_round` reaches this path whenever the provider asks for another tool call after the limit is hit. So stopping at the limit loses completed work instead of cleanly preserving the stopped state.",
-   "response_sha256": "fc604b3005a9e6a0b4552c0009c5c7e155745a9610345f37c8655713af990c56",
+   "reason": "When the round limit has been reached, the mutant returns a state without the steps from earlier rounds, so the response the user sees at the limit loses the tool work that already ran. `_run_logged_tool_round` passes the accumulated `state` straight to `run_tool_round`, so a run with `max_rounds=1` and a second tool-call turn reaches the changed branch. The changed branch is the one that has to keep the stopped round intact in the public response.",
+   "response_sha256": "3c327e0231946bdd1c1611176d7d3743a997a5762c1261a5c911278fd48c987a",
    "sources": [
     "Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
     "return ToolLoopState(max_rounds=state.max_rounds, completed_rounds=state.completed_rounds, outstanding_tool_calls=parsed_calls)",
     "next_state = run_tool_round(\n            state=state,\n            tool_calls=result.tool_calls,\n            registry=registry,\n        )",
-    "return next_state",
-    "Execute local tools through a bounded public orchestration contract"
+    "steps=state.steps,"
    ],
-   "test_focus": "Call `_run_logged_tool_round` with state=ToolLoopState(max_rounds=1, completed_rounds=1, steps=(ToolStep(tool_name='t', args={}, result=1),)) and a ProviderResult whose tool_calls hold one ToolCall. Assert the returned state still has the earlier ToolStep, has completed_rounds 1, and holds that call as outstanding.",
+   "test_focus": "Call `_run_logged_tool_round` with `ToolLoopState(max_rounds=1, completed_rounds=1, steps=(ToolStep(tool_name='t'),))` and a `ProviderResult` with one `ToolCall`. Check that the returned state keeps the earlier step and that the call is in `outstanding_tool_calls`.",
    "verdict": "pin"
   },
   "operator": "argument",
-  "prompt_sha256": "35ec71fdec83a61cc2b34340a10306837ed4295e0b0c46991833f853f5daf191"
+  "prompt_sha256": "ef0b296800d32a760156f924ad1212dcdfd3a91faa6582f6b6a82dcd0a4f068a"
  }
 }

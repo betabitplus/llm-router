@@ -153,19 +153,20 @@
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "choice": "[]",
+     "choice": "[\"a\"]",
      "registry": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T230647Z-ae97d8",
+    "call_id": "20261001T061834Z-93c8b9",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The original version correctly raises a TypeError for non-mapping iterables like a list, while the changed version processes it by passing it to dict() and returns a ToolChoice instead.",
-    "response_sha256": "fdb4ccac385aaea48ceca3b1ecc96ef464f09d47a0bac40f6e00040961f2d037",
+    "reason": "When passed a sequence with elements that cannot be unpacked into key-value pairs (like [\"a\"]), the original version rejects it with a TypeError (not a Mapping), whereas the changed version passes it to dict() which raises a ValueError.",
+    "response_sha256": "6c01c9858d9c44d6137e1dc6373b24592f18612fd544349edfdd98797a64f64c",
     "sources": [
      "    if isinstance(choice, Mapping):",
-     "    if True:"
+     "    if True:",
+     "        copied = deepcopy(dict(choice))"
     ],
     "verdict": "distinct"
    },
@@ -175,89 +176,94 @@
      "registry": "None"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T230647Z-cfc3b4",
+    "call_id": "20261001T061834Z-b8f655",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When choice is an empty list, the original function raises a TypeError because it is not a Mapping, whereas the changed version executes the if True branch and returns a ToolChoice object.",
-    "response_sha256": "2b833caa4251a2d9b0dc607c9d2d30c5a2adc655952d8022f8336ea802435b85",
+    "reason": "When choice is an empty list, the original function raises a TypeError because a list is not a Mapping, whereas the changed version converts it to a dict and returns a ToolChoice.",
+    "response_sha256": "e10befed1f6b04db8cbd230fff7f5a228504133f1f420256e936733b88532ed1",
     "sources": [
      "    if isinstance(choice, Mapping):",
      "    if True:"
     ],
     "verdict": "distinct"
    },
-   "claude-cli:claude-sonnet-5": {
+   "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "choice": "[]",
+     "choice": "[('type', 'function')]",
      "registry": "None"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T230647Z-a40eba",
-    "confidence": 0.9,
-    "model": "claude-sonnet-5",
+    "call_id": "20261001T061830Z-bea857",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "Replacing `isinstance(choice, Mapping)` with `if True:` makes any non-str, non-sentinel object (e.g. a list) fall into the mapping-handling branch; for `choice=[]`, `dict([])` succeeds and returns `ToolChoice(kind='raw', name=None, raw={})`, whereas the original raises `TypeError` since `[]` is not a `Mapping`.",
-    "response_sha256": "019d715b7f62bb98616e718038be1222e4f890a79084590139bc14793cc7568d",
+    "reason": "A list of pairs is not a Mapping, so the original raises TypeError, while the changed version's unconditional branch converts it with dict() and returns a raw ToolChoice.",
+    "response_sha256": "e62d06dfc540f767dcb36614883835235af0866b1a80f33bb35bf1cf1214659e",
     "sources": [
      "if isinstance(choice, Mapping):",
      "if True:",
-     "msg = \"tool_choice must be a string, mapping, or None.\"\n    raise TypeError(msg)"
+     "copied = deepcopy(dict(choice))",
+     "raise TypeError(msg)"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "bbe0be98a3a9aa6b0457483d87c1787e5188b1c0dbb59343ddb04288adb2c8ff"
+  "prompt_sha256": "5d8a9ef158c781f33c002ee4a002ac0ec5a19f401e055eb76611cb15fa660bb2"
  },
  "e6293e4c0f29961b": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260928T230647Z-8caea0",
+    "call_id": "20261001T060635Z-7ff2bc",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When restricted to literals and the project's types, any Mapping provided will be a standard dictionary, for which `deepcopy(dict(choice))` and `deepcopy(choice)` yield identical deep copies.",
-    "response_sha256": "f6d26a982ceb2831ac292f96a88bb89ed717bd347ee28570a890ac768c612011",
+    "reason": "Since the only mapping constructible using purely literals is a dict, and deepcopy(dict(choice)) is functionally identical to deepcopy(choice) for any acyclic dictionary, no allowed input can tell the versions apart.",
+    "response_sha256": "a7c18124e01ac82a8e9032a96ad191b180a335814df9b5260dead1a5f24dd288",
     "sources": [
      "    if isinstance(choice, Mapping):",
-     "        copied = deepcopy(dict(choice))"
+     "        copied = deepcopy(dict(choice))",
+     "        copied = deepcopy(choice)"
     ],
     "verdict": "equivalent"
    },
    "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {},
     "backend": "antigravity-cli",
-    "call_id": "20260928T230647Z-c82936",
-    "confidence": 0.98,
+    "call_id": "20261001T060635Z-44df3c",
+    "confidence": 0.95,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "For any mapping constructible from literals, deepcopying choice directly produces the exact same dictionary as deepcopying dict(choice).",
-    "response_sha256": "184dcfc35029393a204befb10ade8afc71e05db78db7e09dce33ce491f4f3d9f",
+    "reason": "For any mapping constructible from literals and the project's types, choice is a built-in dict, making deepcopy(dict(choice)) and deepcopy(choice) produce identical copies.",
+    "response_sha256": "8dd0fcea0bb11abd3124094e5d0aee987608a9469b2f7e9b22907f8454680865",
     "sources": [
      "        copied = deepcopy(dict(choice))",
      "        copied = deepcopy(choice)"
     ],
     "verdict": "equivalent"
    },
-   "claude-cli:claude-sonnet-5": {
-    "arguments": {},
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "choice": "types.MappingProxyType({'type': 'function'})",
+     "registry": "None"
+    },
     "backend": "claude-cli",
-    "call_id": "20260928T230647Z-d433cf",
-    "confidence": 0.72,
-    "model": "claude-sonnet-5",
+    "call_id": "20261001T060632Z-2a37e4",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The only code difference is `deepcopy(dict(choice))` vs `deepcopy(choice)`, which only diverges for a non-dict Mapping subtype, but any Mapping constructible purely from literals is a plain dict for which dict(choice) is a no-op copy, so deepcopy of it and deepcopy of choice directly produce identical results.",
-    "response_sha256": "6c1902eca8deefbd5ea846bba3fc42aa68f70d86403cf615ec7f5a9698fe7790",
+    "reason": "The original converts the mapping to a dict before deepcopy and returns a raw ToolChoice, while the changed version deep-copies the mappingproxy directly and raises TypeError.",
+    "response_sha256": "00a887271037cf4fa88ed427a502384cf8394cff6ce8fcb79b5bad8081788406",
     "sources": [
      "copied = deepcopy(dict(choice))",
      "copied = deepcopy(choice)"
     ],
-    "verdict": "equivalent"
+    "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ca9ffbb9dc38a6a0657cde2de70d0410758c568ab5f4125445e97445861b5dbd"
+  "prompt_sha256": "628a71d97f09d46bd74b774e37610d52cd7fbd7475b5319c832c1a9a727bae35"
  },
  "eecdb1201e9ab7e6": {
   "answers": {
@@ -267,15 +273,15 @@
      "registry": "ToolRegistry(tools={})"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T230647Z-db448e",
-    "confidence": 1,
+    "call_id": "20261001T061830Z-9cd8a8",
+    "confidence": 0.95,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The changed version removes the `if name is not None:` guard, unconditionally calling `_require_tool_exists` with `None` for an empty mapping, which will likely cause an error since the function expects a string.",
-    "response_sha256": "997705f84c005e9d74bf1d0d52dd1322f4c6fde94919db71a49936fb7320764d",
+    "reason": "If the mapping does not specify a tool name, the original version correctly bypasses validation, whereas the modified version calls `_require_tool_exists` with `None`, raising an exception when it tries to check the registry.",
+    "response_sha256": "a220944b0a46398cd7ab37cd480bc72c7f8641bb0f443031eb6061cb83d84b17",
     "sources": [
-     "        if name is not None:\n            _require_tool_exists(name, registry=registry)",
-     "        if True:\n            _require_tool_exists(name, registry=registry)"
+     "        if name is not None:",
+     "        if True:"
     ],
     "verdict": "distinct"
    },
@@ -285,40 +291,39 @@
      "registry": "ToolRegistry()"
     },
     "backend": "antigravity-cli",
-    "call_id": "20260928T230647Z-1def05",
+    "call_id": "20261001T061815Z-02824a",
     "confidence": 1,
     "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "When choice is a mapping for which _tool_choice_name returns None and a registry is provided, the original version skips tool validation while the changed version unconditionally calls _require_tool_exists.",
-    "response_sha256": "b49cb29038107e6d0039e9badf8aa98c1b6a7180c0562c4cc9d85c3b5841b591",
+    "reason": "When choice is a mapping without a named tool and a registry is provided, the original version skips validation while the changed version unconditionally calls _require_tool_exists with name=None, raising an exception.",
+    "response_sha256": "53969310a849dc04ea0c54cc6a13e348dc210e88cf8144f59c9a2a153d6d2e42",
     "sources": [
-     "if name is not None:"
+     "        if name is not None:",
+     "        if True:",
+     "            _require_tool_exists(name, registry=registry)"
     ],
     "verdict": "distinct"
    },
-   "claude-cli:claude-sonnet-5": {
+   "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
      "choice": "{}",
-     "registry": "ToolRegistry(tools={'weather': ToolDefinition(name='weather', description='Get weather', parameters={}, descriptor={}, callable=None)})"
+     "registry": "ToolRegistry(tools={})"
     },
     "backend": "claude-cli",
-    "call_id": "20260928T230647Z-a02c53",
+    "call_id": "20261001T061834Z-e98a38",
     "confidence": 0.72,
-    "model": "claude-sonnet-5",
-    "problems": [
-     "its source \u00abdef _require_tool_exists(name: str, *, registry: ToolRegistry | None) -> None: \u2026\u00bb is not in the question"
-    ],
-    "reason": "When choice is a mapping with no extractable tool name (so _tool_choice_name returns None) and registry is non-None, the original skips the existence check (`if name is not None:`) and returns ToolChoice(kind='raw', name=None, raw={}), but the changed version always calls `_require_tool_exists(None, registry=registry)`, which will look up None in registry.tools and raise since None is never a valid tool key.",
-    "response_sha256": "8df2716f2fdb8db1dca55b1804f3b4ebc82deda525303163fef048e006c2f577",
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a mapping with no extractable name and a registry present, the original skips validation and returns a raw ToolChoice, while the changed version calls _require_tool_exists(None), which likely raises because None is not a registered tool.",
+    "response_sha256": "8dfbb8fb3444cd1d35a4197b6541279a69ad40f2a13be8cfd596324a3ff59718",
     "sources": [
-     "if name is not None:",
      "if True:",
      "_require_tool_exists(name, registry=registry)",
-     "def _require_tool_exists(name: str, *, registry: ToolRegistry | None) -> None: Validate a named tool choice when a registry is available."
+     "if name is not None:"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "f6cf114e31706df116873223b4c28df092afefcb21770d90f82a464a7d75e16e"
+  "prompt_sha256": "ce11be1a6cae7068e846494883df898b38be42ac7b69e8bc9d934aea974465b0"
  }
 }

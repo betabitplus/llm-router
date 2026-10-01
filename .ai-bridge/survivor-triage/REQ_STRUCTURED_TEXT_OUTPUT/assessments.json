@@ -1,4 +1,62 @@
 {
+ "1045c8ab17c9edbd": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "[]"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060422Z-d35154",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version raises a TypeError when decoded is not a dictionary, whereas the changed version suppresses the TypeError and raises an AttributeError instead when calling decoded.items().",
+    "response_sha256": "cec926741c430b9acc99e0116ea64ddcd339f9e1b2ce2f3f2791268a73c2a9f7",
+    "sources": [
+     "        raise TypeError(msg)",
+     "        pass"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060423Z-474800",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is not a dictionary, the original function raises a TypeError whereas the changed version executes pass and raises an AttributeError when calling decoded.items().",
+    "response_sha256": "5e2792631be8c5e6f40ac9d988596e812af3a8e67de82d26dea1aaea604e5922",
+    "sources": [
+     "        raise TypeError(msg)",
+     "        pass",
+     "    return {str(key): item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "[]"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060421Z-3ccf45",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a non-dict value such as [], the original raises TypeError, while the changed version replaces the raise with pass and then raises AttributeError on decoded.items().",
+    "response_sha256": "5a403e50ec1cc96474b8b2650299d44524618d131912a9b4837beffcfb7490cb",
+    "sources": [
+     "msg = 'Structured output must be a JSON object.'\n        pass",
+     "raise TypeError(msg)",
+     "return {str(key): item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8ab424acf921453dc585b6ec687bdbb79915c101ba252ccd7bb11fa10ab9a5bb"
+ },
  "137765413f3e5276": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -99,6 +157,62 @@
   },
   "prompt_sha256": "91dad2d6b4ec091b27068e0b2d2a106d58440b0f6de81bc90ad6e042d59e2b30"
  },
+ "1d475cc4b98b3b39": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{1: 'a'}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060424Z-7af4d6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When passed a dictionary with non-string keys, the original version coerces the keys to strings using str(), whereas the changed version preserves the original key types.",
+    "response_sha256": "e87c974c0bbe8d2e661b18b28c5a4fc153732e99f03219d79e0b12cd64133a4d",
+    "sources": [
+     "return {str(key): item for key, item in decoded.items()}",
+     "return {key: item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{1: 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060424Z-24bf34",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a dictionary with non-string keys, the original version converts the keys to strings whereas the changed version preserves the original key types.",
+    "response_sha256": "0e53c3176653aa137bf80faf37fd83433dda99ff1f93898a234e0c6b53b2944c",
+    "sources": [
+     "    return {str(key): item for key, item in decoded.items()}",
+     "    return {key: item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{1: 2}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060424Z-bb3d9e",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a non-string dict input with non-str keys, the original stringifies keys ({'1': 2}) while the changed version keeps them ({1: 2}).",
+    "response_sha256": "0ac9f0fa9ae9d9bfffa54ccf361e26e2a86cb98f6ddc7fa60b8cf3548ca0bd2f",
+    "sources": [
+     "return {str(key): item for key, item in decoded.items()}",
+     "return {key: item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "60030b3089402dae3c05cce5b629283507762684288a84f091d51959121a8755"
+ },
  "2020243fe707999b": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
@@ -150,6 +264,120 @@
    }
   },
   "prompt_sha256": "21acc1a56ab6b5aeae80541e8d73fb44c8f7167878818ada526ffc580392a9b3"
+ },
+ "245b3268fc24b414": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "\"{}\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060425Z-e7e98d",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version parses string inputs as JSON, while the changed version always skips string parsing and raises a TypeError for string inputs.",
+    "response_sha256": "6a72069628df3dee6b0c938a652a76af9c9c8d151168262168671f037bc0e138",
+    "sources": [
+     "    if isinstance(value, str):",
+     "    if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'{}'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060425Z-ad056a",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a string, the original version parses it as JSON while the changed version skips parsing and raises a TypeError.",
+    "response_sha256": "07aa92343b7e250249389c61df77938d562263f5fa8fe56146f4b4edf502007d",
+    "sources": [
+     "    if isinstance(value, str):",
+     "    if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "'{\"a\": 1}'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060424Z-b04dcb",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version skips JSON parsing for strings, so a valid JSON object string returns a dict in the original but raises TypeError in the changed version.",
+    "response_sha256": "0da20f98795d15ae507980bc6c1c5b85d8976e23a8220b7de70c3392386c18c4",
+    "sources": [
+     "if False:",
+     "if isinstance(value, str):",
+     "decoded = json.loads(value)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "3d3e3477925c0f207d4787c7c8e656192285d9c75b912b9ab6a11bab664a07c9"
+ },
+ "2c9f7f6d82356258": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "\"{}\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060429Z-c15a71",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version negates the `isinstance(value, str)` check, causing it to incorrectly bypass JSON parsing for strings and subsequently raise a TypeError, while attempting to parse non-strings.",
+    "response_sha256": "c6ccc26f5f715df73d8c451398afaf6d517c5d6af90bda6bd2ba5d3af41fd538",
+    "sources": [
+     "if isinstance(value, str):",
+     "if not isinstance(value, str):"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'{}'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060431Z-9642e9",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version inverts the type check to `if not isinstance(value, str):`, causing string inputs to bypass JSON decoding and raise a TypeError because the decoded value remains a string instead of a dictionary.",
+    "response_sha256": "b8953a625ae98e2979d7ccb6120a0e16613d4cff997ef36f17bbee498738c7b1",
+    "sources": [
+     "    if isinstance(value, str):",
+     "    if not isinstance(value, str):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "'{\"a\": 1}'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060426Z-060dc1",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The isinstance check is inverted: a JSON string is parsed and returns {'a': 1} in the original, but in the changed version it skips parsing and raises TypeError.",
+    "response_sha256": "40401e7226b8ab9ef21bf6ad12ff9a13f8796759fbb25496b9798c1bae7ed32e",
+    "sources": [
+     "if not isinstance(value, str):",
+     "if isinstance(value, str):",
+     "decoded = value"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "04f9c156c0a45da62e49ae28e2c2f597821221b43308ff88999ae701ca0f449e"
  },
  "4ca061c650885f70": {
   "answers": {
@@ -301,21 +529,39 @@
  },
  "6de617b610b093eb": {
   "answers": {
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.1-pro-high": {
     "arguments": {
-     "spec": "SchemaSpec(name='bad', json_schema={}, parser=lambda v: 1/0)",
+     "spec": "SchemaSpec(name=\"test\", json_schema={}, parser=int)",
      "value": "None"
     },
-    "backend": "claude-cli",
-    "call_id": "20260929T111607Z-3e7444",
-    "confidence": 0.95,
-    "model": "claude-sonnet-5",
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060438Z-a6c7de",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "When spec.parse raises, the original returns SchemaValidationResult(valid=False, ...) while the changed version returns SchemaValidationResult(valid=True, ...), so any spec whose parser raises (e.g. one that divides by zero) yields a differing .valid field for the same value.",
-    "response_sha256": "57ce0dea3b1477c78b1bef9e417d0db04cef74350152d1eb053ad789b6db45eb",
+    "reason": "The original function sets `valid=False` when `spec.parse(value)` raises an exception, while the changed version sets `valid=True`, resulting in different output properties for any input that triggers a parsing exception.",
+    "response_sha256": "b8943d8710a274c3c16df2e127677bd9cc39feca7ba375091433360db2607982",
     "sources": [
-     "return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )",
-     "return SchemaValidationResult(valid=True, error_message=preview_value(exc))"
+     "            valid=False,",
+     "        return SchemaValidationResult(valid=True, error_message=preview_value(exc))"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "spec": "SchemaSpec(name='', json_schema={}, parser=None)",
+     "value": "None"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060440Z-7a67a7",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When spec.parse raises an exception, the original version returns a SchemaValidationResult with valid=False, whereas the changed version returns one with valid=True.",
+    "response_sha256": "6cfbbe711c40d1982cc5ce42111796162f4049122d79e6052211cb095b818565",
+    "sources": [
+     "            valid=False,",
+     "        return SchemaValidationResult(valid=True, error_message=preview_value(exc))"
     ],
     "verdict": "distinct"
    },
@@ -325,21 +571,76 @@
      "value": "1"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T111606Z-e1a079",
+    "call_id": "20261001T060432Z-2e96f8",
     "confidence": 0.93,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "When spec.parse raises, the original returns valid=False but the changed version returns valid=True.",
-    "response_sha256": "e406ce03e7c2f96f1c7d80bacec3ec63d630e49725e9db1a6b7b075ccb643e98",
+    "reason": "When the parser raises, the original returns valid=False but the changed version returns valid=True, so a raising parser tells them apart.",
+    "response_sha256": "9bcc40cea8250b0f9be91d15135551cf36c92d888e2622e3d3c828f443d4e643",
     "sources": [
      "return SchemaValidationResult(valid=True, error_message=preview_value(exc))",
-     "valid=False,",
-     "parsed = spec.parse(value)"
+     "return SchemaValidationResult(\n            valid=False,\n            error_message=preview_value(exc),\n        )"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "25a32338cffb275027790757c4544bbd489c3013aa21d0163dd4d4f3f0e4236d"
+  "prompt_sha256": "1bcf17c7fa1eec7d650422e35f13305d5078feb99f21f7f15ce45d91a083c6ce"
+ },
+ "745bcea4332c9c50": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "\"{}\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060456Z-d2131a",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original function returns a new dictionary mapped from the valid JSON object's items, whereas the changed version discards the parsed data and returns None.",
+    "response_sha256": "b1c9749da33e5e6400c528168e07600e256361d67e9c6dde5c9040dfe021b5e1",
+    "sources": [
+     "return {str(key): item for key, item in decoded.items()}",
+     "return None"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060456Z-6e81fc",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For input value {}, the original version returns an empty dictionary whereas the changed version returns None.",
+    "response_sha256": "b0ccdd0e3c616e1a3cd5c42d5e67972cb9635273f61220dfe57e934d5d2fba63",
+    "sources": [
+     "    return {str(key): item for key, item in decoded.items()}",
+     "    return None"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'a': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060451Z-f0ea5f",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a dict input the original returns a stringified-key dict copy, while the changed version returns None.",
+    "response_sha256": "1cc093ab18c0a0c0f06ddbc2e0cf0ed46fd951abe6077fb01e5612760c50b7db",
+    "sources": [
+     "return {str(key): item for key, item in decoded.items()}",
+     "return None"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "7c8dfee0d5c6df00c45eace869ffa7a512cc3f886d12b19a3231830c133b31cb"
  },
  "87ad8ca644dbe3d7": {
   "answers": {
@@ -366,6 +667,40 @@
  },
  "8f18e1a435591236": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "'```json\\n{}\\n```'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060458Z-34d1b7",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The modified version always returns an empty string when a valid markdown code fence is provided, whereas the original version extracts and returns the contents within the fence.",
+    "response_sha256": "69bd23493e37c13b14748bd5851b262c04f189e5f5e416636618837a9f910fd7",
+    "sources": [
+     "    return \"\\n\".join(lines[1:-1]).strip()",
+     "    return '\\n'.strip()"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'```json\\n{\\n}\\n```'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060539Z-d5fe34",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When given a fenced JSON string, the original version returns the content between the markdown fences, whereas the changed version returns an empty string.",
+    "response_sha256": "550f3712c3ce43dd528aeb6a23a10089a542436df39915a0e01bc34420984dbc",
+    "sources": [
+     "    return \"\\n\".join(lines[1:-1]).strip()",
+     "    return '\\n'.strip()"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "value": "\"```json\\ncontent\\n```\""
@@ -405,6 +740,40 @@
  },
  "a1048e7de4231e38": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "\"```JSON\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n```\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060547Z-905d4c",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version accepts '```JSON' as a valid fence opening and strips it, whereas the changed version does not recognize it and returns the original unstripped string.",
+    "response_sha256": "b0927138522aef9ff4e4c8c04b28216f979ba0d6100148913b07120376686a0c",
+    "sources": [
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "if lines[0].strip() not in {'```', '```json'}:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'```JSON\\n{}\\n```'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060549Z-19ffa0",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version strips markdown fences starting with '```JSON', whereas the changed version removes '```JSON' from the set of recognized opening fences and returns the value unchanged.",
+    "response_sha256": "ea9bafa25617d1eb79db51a87e357bf1063a357c546c9142645036515c63f29f",
+    "sources": [
+     "    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "    if lines[0].strip() not in {'```', '```json'}:"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "value": "\"```JSON\\n{}\\n```\""
@@ -421,9 +790,82 @@
      "if lines[0].strip() not in {'```', '```json'}:"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "\"```JSON\\n{}\\n```\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060540Z-b00193",
+    "confidence": 0.88,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The original accepts a \"```JSON\" opening fence and returns the stripped body, while the changed version drops that case and returns the value unchanged.",
+    "response_sha256": "4f02c537d69f4a979ae7d216c2ddb5ac13dd5e60460248e6e27a562187e6102b",
+    "sources": [
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "if lines[0].strip() not in {'```', '```json'}:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "ea02e06bbd5e20644abf252d94d4f4c8f5feb4ed28d66957f8fe774ad4f22cbd"
+ },
+ "a1ecc6333d1910f4": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{\"a\": 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060555Z-fbd938",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version iterates over the dictionary using `decoded.items()`, yielding key-value pairs, whereas the changed version iterates over just the keys of the dictionary, attempting to unpack each key into two variables, which raises a ValueError for a key of length 1.",
+    "response_sha256": "aa5ea3e37293f3f71cd3866b2f9a41e6635ecadb3001b8bd9d7879a3af98c7b7",
+    "sources": [
+     "    return {str(key): item for key, item in decoded.items()}",
+     "    return {str(key): item for key, item in decoded}"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{\"a\": 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060559Z-b4e024",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Iterating directly over a dictionary yields its keys rather than key-value tuples, causing unpacking to fail with a ValueError on non-two-character keys or to misassign characters of two-character keys.",
+    "response_sha256": "775fc2078984f475a0ebc33e2cfaa95bee7eb5cac74025d8a6055f4edeb3c46c",
+    "sources": [
+     "    return {str(key): item for key, item in decoded.items()}",
+     "    return {str(key): item for key, item in decoded}"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'a': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060554Z-56df7a",
+    "confidence": 0.98,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version iterates the dict directly, so a non-empty dict like {'a': 1} raises ValueError on unpacking the key 'a', while the original returns {'a': 1}.",
+    "response_sha256": "5a45dd145f1fb73a02a8803fd39624b1f7ed6f447eb0e9dd201643dcb934f049",
+    "sources": [
+     "return {str(key): item for key, item in decoded}",
+     "return {str(key): item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "76fecc865bad8e8d6a194a09f310d0e6c3d043006378f32e22ea9a022fbe3101"
  },
  "a57b176468930694": {
   "answers": {
@@ -479,12 +921,63 @@
      "return \"\\n\".join(lines[1:-1]).strip()"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "'```json\\n{}\\n{}\\nabc'"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060600Z-d131dd",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The removed endswith(\"```\") check matters when the text starts with a json fence but doesn't end with one: the original returns value unchanged, while the changed version strips the first and last lines and returns '{}\\n{}'.",
+    "response_sha256": "382acd68e60a92926ab56c0c6f1dd05fc9ecb6faadc183de4c3e817d92c27cb8",
+    "sources": [
+     "if not stripped.startswith(\"```\") or not stripped.endswith(\"```\"):",
+     "return \"\\n\".join(lines[1:-1]).strip()"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "9f31a9bf9e2915570c0ac24dd3a01316fb01f6e4739158abc6626418690646c6"
  },
  "a6d49b98e29bf6d3": {
   "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "'```json \\n1\\n2\\n3\\n4\\n5\\n6\\n7\\n8\\n9\\n```'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060608Z-887db1",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version strips trailing whitespace from the first line before validating the fence marker, whereas the changed version does not, causing it to return the unmodified string if there is a trailing space after the opening fence.",
+    "response_sha256": "3f40b5c3b978c1314f0c37a2050da6b7c2a591389055bbd457a9fd895f6f3d0b",
+    "sources": [
+     "    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "    if lines[0] not in {'```', '```json', '```JSON'}:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'```json \\n{}\\n```'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060608Z-d491a4",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version does not strip trailing whitespace from the first line, causing an opening fence with trailing spaces to be rejected and return the unstripped value.",
+    "response_sha256": "b0a56d94ffc318bb3bb8eb7a2c6e34da09184fdd824e0351e8a26a0987efe840",
+    "sources": [
+     "    if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "    if lines[0] not in {'```', '```json', '```JSON'}:"
+    ],
+    "verdict": "distinct"
+   },
    "claude-cli:claude-sonnet-5": {
     "arguments": {
      "value": "'```json \\n{\"a\": 1}\\n```'"
@@ -501,9 +994,139 @@
      "if lines[0] not in {'```', '```json', '```JSON'}:"
     ],
     "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "\"```json \\n{\\n\\\"a\\\": 1\\n}\\n```\""
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060601Z-bcd9e9",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change removes .strip() on the first line, so an opening fence with trailing whitespace like \"```json \" is accepted by the original but rejected by the new version, which returns value unchanged.",
+    "response_sha256": "27e264bcfc4ad56a74b1acfc1c622f4276926cbaa682aa0c54ef963da4d04472",
+    "sources": [
+     "if lines[0].strip() not in {\"```\", \"```json\", \"```JSON\"}:",
+     "if lines[0] not in {'```', '```json', '```JSON'}:"
+    ],
+    "verdict": "distinct"
    }
   },
   "prompt_sha256": "32ce3aa041fb0c825f804499b9cde28d1bb7b90dfe9362742fc6d6c1ebe5e13c"
+ },
+ "b5318e3ef6f5d37e": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060610Z-55917a",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The changed version unconditionally raises a TypeError for all valid inputs that parse to or are a dictionary, whereas the original version only raises it if the decoded value is not a dictionary.",
+    "response_sha256": "7be55fb86e2da13c15f44763119dd01e431085c1c2698ffdcfbff59bd6897876",
+    "sources": [
+     "if not isinstance(decoded, dict):",
+     "if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060615Z-0cc026",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is a dictionary, the original function returns the dictionary mapping while the modified function unconditionally raises a TypeError.",
+    "response_sha256": "b95682ab16b61d862773259cb70be3ef14c082062c4b060df2a77f804a45402a",
+    "sources": [
+     "    if not isinstance(decoded, dict):",
+     "    if True:"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'a': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060608Z-85676b",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a dict input, the original returns the dict, but the changed version's unconditional `if True:` raises TypeError.",
+    "response_sha256": "a71bbab83dd8b2b035541f6ff7cf8ba845a49c0a00a3a7c21c14d4b0c54f5443",
+    "sources": [
+     "if True:",
+     "if not isinstance(decoded, dict):",
+     "return {str(key): item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d325ea09a41b9ed7e1376cff95f606d1a2217fa7f0d5e63cf960182477bbacb7"
+ },
+ "bfa1905a769a5c06": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{\"a\": 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060617Z-bae268",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original function parses and returns the contents of a non-empty dictionary, whereas the changed version always returns an empty dictionary regardless of the input.",
+    "response_sha256": "1296a0591516c455aaae544dd86c5e98d9e36ade4c46a564b715896c3a4313e9",
+    "sources": [
+     "return {str(key): item for key, item in decoded.items()}",
+     "return {}"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{'a': 1}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060618Z-d994e0",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "For a non-empty dictionary input, the original version returns the mapped key-value pairs while the changed version always returns an empty dictionary.",
+    "response_sha256": "5dab094036d34336438680c8ad451b632e1748070d1f6946aa3114499758056b",
+    "sources": [
+     "    return {str(key): item for key, item in decoded.items()}",
+     "    return {}"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'a': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060617Z-1b0524",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For value={'a': 1} the original returns {'a': 1}, while the changed version always returns {}. Non-dict input such as [] also raises TypeError in the original but returns {} in the change.",
+    "response_sha256": "f70c434ddbad102ddf3c6f37a9e994636a1562b1fb7507594c1ca010e66e27a1",
+    "sources": [
+     "return {str(key): item for key, item in decoded.items()}",
+     "raise TypeError(msg)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "fde7a221dfff156ff4ea29bea676f6090863a0a091ae609cd85bb0d81ab21283"
  },
  "cafa38eadba9fb9f": {
   "answers": {
@@ -526,6 +1149,178 @@
    }
   },
   "prompt_sha256": "d877889bd5c87f2c099a07f16daee5ff7b3ce0a758c4f1f9f6e4c28d9ba19051"
+ },
+ "d3d06f3ed1c4b9af": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "'invalid'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060620Z-1b91d6",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version raises a ValueError when the string is invalid JSON, while the changed version catches the JSONDecodeError but fails to assign 'decoded', resulting in an UnboundLocalError when it attempts to evaluate isinstance(decoded, dict).",
+    "response_sha256": "38dc78273f01283030410f0f688b9a7b37188d080a38d33c73ccc134681849a8",
+    "sources": [
+     "            raise ValueError(msg) from exc",
+     "            pass"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "'invalid'"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060623Z-d5f3b6",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is an invalid JSON string, the original version raises ValueError while the changed version passes the JSONDecodeError and subsequently raises UnboundLocalError when checking decoded.",
+    "response_sha256": "cfd5615a285131086b2084f4d43c8091d990d9d83069d46928d7664262ce6ccd",
+    "sources": [
+     "            raise ValueError(msg) from exc",
+     "            pass"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "'{\"a\": '"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060619Z-f8a15e",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For invalid JSON the original raises ValueError, while the changed version swallows the error with pass and then raises UnboundLocalError on the unassigned decoded.",
+    "response_sha256": "2e4a65c1c0fb55bdd274ad01d75ec45825c47cdfd35c3d37a78c39013e6e06fa",
+    "sources": [
+     "msg = f'Structured output is not valid JSON: {exc.msg}.'\n            pass",
+     "if not isinstance(decoded, dict):",
+     "raise ValueError(msg) from exc"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "86d6fbf0353f91b29c94f74a633c90a4ff724d1c8b8428468b366d7c66adf208"
+ },
+ "dd75771132cecdc4": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060625Z-3f763a",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version raises a TypeError if the decoded value is not a dictionary, while the changed version raises a TypeError if it is a dictionary, causing them to behave differently for valid JSON objects.",
+    "response_sha256": "94f5d98861071b0cf429231b1576cd598a6035523d33f029ebaf27403382db40",
+    "sources": [
+     "    if not isinstance(decoded, dict):",
+     "    if isinstance(decoded, dict):"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "{}"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060626Z-18a93f",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The changed version checks if isinstance(decoded, dict) instead of if not isinstance(decoded, dict), raising a TypeError when decoded is a dictionary.",
+    "response_sha256": "a80699ff519d47cb60f718e40af75f7aa2716fc07a91afae733955276e935c20",
+    "sources": [
+     "    if not isinstance(decoded, dict):",
+     "    if isinstance(decoded, dict):"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "{'a': 1}"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060625Z-aeab16",
+    "confidence": 0.99,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The changed version inverts the isinstance check: a dict input now raises TypeError, whereas the original returns the dict; a non-dict such as [] now raises AttributeError instead of TypeError.",
+    "response_sha256": "b30eb50f640ca1ec83f15702c778e0a23c4f44ec08e86abe80c266aa5bafa765",
+    "sources": [
+     "if isinstance(decoded, dict):",
+     "if not isinstance(decoded, dict):"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "8346fe30b668a0af08a464cee2235279c42836470a34a4aeebec1202460c39ce"
+ },
+ "e380cf04b476a823": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "value": "\"[]\""
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060629Z-748086",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "When given a JSON string that decodes to a list rather than a dictionary, the original version explicitly raises a TypeError, while the changed version bypasses this check and raises an AttributeError when attempting to call .items().",
+    "response_sha256": "cacd29a7488d3c2f7ad7b0616872ccd7473e85c1d1e3bb16b778c19f90895b2e",
+    "sources": [
+     "if not isinstance(decoded, dict):",
+     "if False:"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "value": "1"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060630Z-0f5181",
+    "confidence": 1,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "When value is not a dict, the original version raises a TypeError, whereas the changed version skips the validation check and raises an AttributeError when attempting to call decoded.items().",
+    "response_sha256": "4d1b58be7d4d1ead476c1cf5cfe125d8e73d8478a82b544852908d49a5b72ff4",
+    "sources": [
+     "    if not isinstance(decoded, dict):",
+     "    if False:",
+     "        raise TypeError(msg)",
+     "    return {str(key): item for key, item in decoded.items()}"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "value": "[1, 2]"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261001T060627Z-42c5af",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "For a non-dict such as the list [1, 2], the original raises TypeError, while the changed version skips the check (if False) and raises AttributeError on .items().",
+    "response_sha256": "6d8a2a06363e84541b9873276e64c74ec4098aa5ab374b22c0715661e0818ec7",
+    "sources": [
+     "if not isinstance(decoded, dict):",
+     "if False:",
+     "raise TypeError(msg)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "531c894159f3fb522a0dbc59b50b137de167b54c351b0c1004de2adf620b96b8"
  },
  "f89c92d6b15a7771": {
   "answers": {

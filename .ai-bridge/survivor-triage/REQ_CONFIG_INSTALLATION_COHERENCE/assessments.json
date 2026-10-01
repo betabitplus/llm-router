@@ -2,70 +2,57 @@
  "a2e61f2155653e45": {
   "answers": {
    "antigravity-cli:gemini-3.1-pro-high": {
-    "arguments": {},
+    "arguments": {
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=-1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=-1.0, max_wait_seconds=-1.0, max_attempts=-1), policy=RouterPolicyDefaults(max_attempts=-1, attempt_timeout_seconds=-1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=-1, default_limits=ProviderLimits(rps=-1.0, rpm=-1.0, cooldown_seconds=-1.0, cooldown_after_failures=-1)), default_max_tool_rounds=-1, structured_output_max_attempts=-1, provider_limits=ProviderLimits(rps=-1.0, rpm=-1.0, cooldown_seconds=-1.0, cooldown_after_failures=-1)), catalog=ProviderCatalog())"
+    },
     "backend": "antigravity-cli",
-    "call_id": "20260928T211046Z-d657ef",
+    "call_id": "20261001T060403Z-1e042a",
     "confidence": 1,
     "model": "gemini-3.1-pro-high",
     "problems": [],
-    "reason": "The removal of the validate_config call means the versions behave differently for invalid configurations, but without the implementation of validate_config, it is impossible to construct a specific configuration that is known to fail validation.",
-    "response_sha256": "0e059b8caab59a95f909ee30bce6e993a6ff2642f3a9206200b7473d902cec8a",
+    "reason": "The changed version removes the call to `validate_config(config)`, meaning an invalid config will no longer raise a `ConfigurationError` and will be installed normally instead.",
+    "response_sha256": "d048630175afc1d8d6c83094f5135fc3ea281e4bee3e18dd11dedbabcc851e32",
     "sources": [
-     "    validate_config(config)"
-    ],
-    "verdict": "unsure"
-   },
-   "antigravity-cli:gemini-3.8-flash-high": {
-    "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=True, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=1.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))"
-    },
-    "backend": "antigravity-cli",
-    "call_id": "20260928T211046Z-746a03",
-    "confidence": 0.95,
-    "model": "gemini-3.8-flash-high",
-    "problems": [],
-    "reason": "The original version validates the configuration snapshot by calling validate_config, which raises ConfigurationError on an invalid config, whereas the changed version replaces that call with pass and installs the invalid configuration.",
-    "response_sha256": "60002a5e5f0c4a9040bbb164df0a68ed7ada01b4748100456d9d5fcf948b8b78",
-    "sources": [
-     "    validate_config(config)"
+     "    validate_config(config)",
+     "    pass"
     ],
     "verdict": "distinct"
    },
-   "claude-cli:claude-sonnet-5": {
+   "antigravity-cli:gemini-3.8-flash-high": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=1), policy=RouterPolicyDefaults(max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=1, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=1, structured_output_max_attempts=1, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))"
+     "config": "LLMRouterConfig(default_provider=Provider.GOOGLE, default_model=Model.GEMINI_FLASH, default_key_id=0, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=1.0, max_wait_seconds=2.0, max_attempts=3), policy=RouterPolicyDefaults(max_attempts=3, attempt_timeout_seconds=10.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=2, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), default_max_tool_rounds=5, structured_output_max_attempts=3, provider_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=1.0, cooldown_after_failures=1)), catalog=ProviderCatalog(providers={}, provider_base_urls={}, models={}))"
     },
-    "backend": "claude-cli",
-    "call_id": "20260928T211046Z-240946",
-    "confidence": 0.9,
-    "model": "claude-sonnet-5",
+    "backend": "antigravity-cli",
+    "call_id": "20261001T060403Z-599e0f",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
     "problems": [],
-    "reason": "The changed version drops the `validate_config(config)` call (replaced by `pass`), so a syntactically valid LLMRouterConfig whose default_provider/default_model are absent from an empty catalog will raise ConfigurationError in the original but be silently installed and returned in the changed version.",
-    "response_sha256": "90fd1a5f663ed72a23e9cc2383197414e2c1b8823f999e6c695074d58a42c8fc",
+    "reason": "The original version validates the configuration snapshot with validate_config(config), which raises ConfigurationError when default_provider is not in catalog.providers, whereas the changed version replaces validation with pass and successfully installs and returns the configuration.",
+    "response_sha256": "7166aa3a800be9aa40d69c6765f231ee85c2ad38037fd0ff73dd22868bbd7a4a",
     "sources": [
-     "validate_config(config)",
-     "pass"
+     "    validate_config(config)",
+     "    pass"
     ],
     "verdict": "distinct"
    },
    "claude-cli:claude-sonnet-5-5@low": {
     "arguments": {
-     "config": "LLMRouterConfig(default_provider=Provider.GROQ, default_model=Model.LLAMA_8B, default_key_id=-1, defaults=BehaviorDefaults(retry_policy=RetryPolicy(min_wait_seconds=10.0, max_wait_seconds=1.0, max_attempts=0), policy=RouterPolicyDefaults(max_attempts=0, attempt_timeout_seconds=-1.0, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, min_routes_for_fallback_shuffle=0, default_limits=ProviderLimits(rps=-1.0, rpm=-1.0, cooldown_seconds=-1.0, cooldown_after_failures=0)), default_max_tool_rounds=-1, structured_output_max_attempts=0, provider_limits=ProviderLimits(rps=-1.0, rpm=-1.0, cooldown_seconds=-1.0, cooldown_after_failures=0)), catalog=ProviderCatalog())"
+     "config": "an LLMRouterConfig whose defaults have structured_output_max_attempts=0 and default_max_tool_rounds=-1, with RetryPolicy(min_wait_seconds=-1.0, max_wait_seconds=0.0, max_attempts=0), so that validate_config raises ConfigurationError"
     },
     "backend": "claude-cli",
-    "call_id": "20260929T111544Z-a32b8b",
-    "confidence": 0.8,
+    "call_id": "20261001T060403Z-35c644",
+    "confidence": 0.85,
     "model": "claude-sonnet-5-5",
     "problems": [],
-    "reason": "The changed version removes validate_config(config), so an invalid LLMRouterConfig raises ConfigurationError in the original but is installed and returned in the changed version.",
-    "response_sha256": "61f69e6dfe0c28546190ed9a4f21d0c980d9709c2612fcfd3ec06ddb542ce80d",
+    "reason": "The changed version removes validate_config(config), so an invalid LLMRouterConfig is installed and returned instead of raising ConfigurationError.",
+    "response_sha256": "0060ea96b273472d1166522c48d01de1619440f0b8f45c12d595064c60585d0b",
     "sources": [
      "validate_config(config)",
-     "    validate_config(config)\n    global _installed_config  # noqa: PLW0603"
+     "    pass"
     ],
     "verdict": "distinct"
    }
   },
-  "prompt_sha256": "ea1fc128803563873586fbb0289152a62a3211b7861e9b55de0578c478bca7a8"
+  "prompt_sha256": "fac6875295f67ffb807e7883262380cf8b8a268fbdd3da71d032ffdd06614014"
  }
 }
