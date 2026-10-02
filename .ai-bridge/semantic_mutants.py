@@ -44,6 +44,7 @@ from __future__ import annotations
 
 import ast
 import builtins
+import contextlib
 import copy
 import dataclasses
 import enum
@@ -880,7 +881,10 @@ def run_tests(project: Path, workdir: Path, tests: list[str], timeout: int = 900
         output, _ = process.communicate(timeout=timeout)
         code, output = process.returncode, output or ""
     except subprocess.TimeoutExpired:
-        os.killpg(process.pid, signal.SIGKILL)
+        # A group that is gone, or that holds only its leader, exited as the limit came and not yet
+        # reaped, has nothing left to stop; macOS refuses to signal the latter (EPERM).
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.killpg(process.pid, signal.SIGKILL)
         output, _ = process.communicate()
         code, output = None, output or ""
     errors = test_errors(output, workdir)

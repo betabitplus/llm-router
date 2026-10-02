@@ -77,9 +77,10 @@ def _build_router(*, scenario: str) -> Any:
     raise ValueError(msg)
 
 
-def _run_scenario(*, scenario: str) -> dict[str, Any]:
+def _run_scenario(*, scenario: str, marker: str = "") -> dict[str, Any]:
     router = _build_router(scenario=scenario)
-    prompt = "Reply with the timeout marker only."
+    # A marker of the run's own lets a test count its requests among any others.
+    prompt = "Reply with the timeout marker only." + (f" [{marker}]" if marker else "")
 
     try:
         if scenario.startswith("async_"):

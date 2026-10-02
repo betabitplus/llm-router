@@ -30,25 +30,49 @@ from typing import Any
 # ================================================================================
 
 
+# Where a client built by earlier work is sent instead: nothing listens on the discard
+# port, so its request fails at once and reaches no test's server.
+_UNREACHABLE_BASE_URL = "http://127.0.0.1:9/v1"
+
+
 def patch_openai(*, forced_base_url: str | None, disable_sdk_retries: bool) -> None:
-    """Patch OpenAI SDK clients to use a forced local base URL."""
+    """Patch OpenAI SDK clients to use a forced local base URL.
+
+    Only the clients the patching code builds, in its own thread or in a thread it
+    starts later, are sent there. A thread already running when the patch begins
+    belongs to earlier work, such as a route attempt an earlier test abandoned on its
+    timeout and that keeps running past it; a client it builds now must not reach this
+    test's server and count as this test's request.
+    """
+    import threading
+
     import openai
 
     original_sync = openai.OpenAI
     original_async = openai.AsyncOpenAI
+    earlier = set(threading.enumerate()) - {threading.current_thread()}
+
+    def base_url() -> str | None:
+        if forced_base_url is None:
+            return None
+        return (
+            _UNREACHABLE_BASE_URL
+            if threading.current_thread() in earlier
+            else forced_base_url
+        )
 
     class PatchedOpenAI(original_sync):
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            if forced_base_url is not None:
-                kwargs["base_url"] = forced_base_url
+            if (url := base_url()) is not None:
+                kwargs["base_url"] = url
             if disable_sdk_retries:
                 kwargs["max_retries"] = 0
             super().__init__(*args, **kwargs)
 
     class PatchedAsyncOpenAI(original_async):
         def __init__(self, *args: Any, **kwargs: Any) -> None:
-            if forced_base_url is not None:
-                kwargs["base_url"] = forced_base_url
+            if (url := base_url()) is not None:
+                kwargs["base_url"] = url
             if disable_sdk_retries:
                 kwargs["max_retries"] = 0
             super().__init__(*args, **kwargs)

@@ -7611,6 +7611,7 @@ def main() -> None:
         "tests/llm_router/support/workers/retry_worker.py",
         "tests/llm_router/support/workers/structured_recovery.py",
         "tests/llm_router/support/workers/structured_recovery_worker.py",
+        "tests/llm_router/support/workers/timeout.py",
         "tests/llm_router/support/workers/timeout_worker.py",
         "tests/llm_router/support/workers/worker_patches.py",
         "tests/llm_router/integration/test_config_installation_runtime_effect.py",

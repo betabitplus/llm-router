@@ -69,8 +69,12 @@ def run_timeout_inprocess(
     *,
     scenario: str,
     server_base_url: str,
+    marker: str = "",
 ) -> TimeoutWorkerResult:
-    """Run one attempt-timeout scenario in-process (no subprocess overhead)."""
+    """Run one attempt-timeout scenario in-process (no subprocess overhead).
+
+    ``marker`` goes into the prompt, so the test can tell its own requests apart.
+    """
     import tests.llm_router.support.workers.timeout_worker as worker
     from tests.llm_router.support.runtime import clear_test_caches
 
@@ -87,7 +91,7 @@ def run_timeout_inprocess(
             forced_base_url=f"{server_base_url}/v1",
             disable_sdk_retries=True,
         ):
-            payload = worker._run_scenario(scenario=scenario)
+            payload = worker._run_scenario(scenario=scenario, marker=marker)
     except Exception as exc:
         payload = {
             "ok": False,

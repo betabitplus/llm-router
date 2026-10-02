@@ -298,38 +298,39 @@
  "896165f2ae8f1610": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T091217Z-f838e9",
+   "call_id": "20261002T111804Z-54cdca",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant drops the minimum-route threshold, so it shuffles fallbacks the original would leave in place. It still keeps routes[0] as the first attempt. The requirement and its criteria only ask that the selected starting route stays first, and no stated requirement asks when shuffling should start.",
-   "response_sha256": "6363bd2093c78d14507be14bc54f09b9b5d376c9dece86e1863916de39ab68eb",
+   "reason": "The mutant drops the min_routes_for_fallback_shuffle check, so fallbacks get shuffled even below that threshold. Only the order of routes after the first one changes. routes[0] stays first and route identities stay the same, which is all TREQ_ROUTE_ORDER and REQ_ROUTE_STICKY_START require. No requirement given here says anything about the shuffle threshold or the order of the fallback routes.",
+   "response_sha256": "722818fdead741dd51a7fe87a1c38b0ad10293568aafd9119d19dc0ffd6a459c",
    "sources": [
-    "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "Fallback shuffling never moves the already selected starting route away from the first attempt.",
-    "and len(routes) >= options.min_routes_for_fallback_shuffle",
-    "if options.shuffle_fallbacks:"
+    "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
+    "    if options.shuffle_fallbacks:",
+    "        routes = [routes[0], *fallbacks]"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "fbd73673fd2f17d7bbd7255ff4e43b485d91650cd1dec5b33d7df8d83e74fd80",
+  "prompt_sha256": "fda54dfe40763e52945fc1ed337a1a472674c79177d9b9f7835397e45a1f3c82",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261002T091229Z-e89db6",
+   "call_id": "20261002T111818Z-d709fc",
    "confirmed": true,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "fbd73673fd2f17d7bbd7255ff4e43b485d91650cd1dec5b33d7df8d83e74fd80",
-   "reason": "The mutant removes the condition checking if the number of routes meets a minimum threshold for fallback shuffling. Since the requirements do not mandate a minimum route count for shuffling and the starting route identity is still preserved as the first attempt, this is an unconstrained implementation detail.",
-   "response_sha256": "351d89a68cb56535ad82b61d5edac7659d5285dead1248692274371196004eb3",
+   "prompt_sha256": "fda54dfe40763e52945fc1ed337a1a472674c79177d9b9f7835397e45a1f3c82",
+   "reason": "The mutation removes the threshold condition for the minimum number of routes needed to shuffle fallbacks, but the requirements only dictate that shuffling must preserve the starting-route identity without restricting when shuffling is permitted.",
+   "response_sha256": "7cd4244b662d970f23a6b8ab1c5b26f672ab4aaf864f995d969dcc7aa4a409b4",
    "sources": [
-    "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
+    "Technical requirement TREQ_ROUTE_ORDER (Stable route ordering): Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
+    "Fallback shuffling never moves the already selected starting route away from the first attempt.",
     "and len(routes) >= options.min_routes_for_fallback_shuffle"
    ],
    "test_focus": "",

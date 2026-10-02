@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import uuid
 from typing import Any
 
 import pytest
@@ -159,6 +161,26 @@ _TIMEOUT_TEXT = "timeout fallback ok"
 _TIMEOUT_DELAY_SECONDS = 2.0
 
 
+def _own_requests(server: ScriptedHTTPServer, marker: str) -> tuple[int, str]:
+    """How many requests the run with this marker sent, and what the server saw.
+
+    A route attempt another test abandoned can reach a later test's server, so a
+    scenario counts only the requests that carry its own marker, and names all of
+    them if the count is wrong.
+    """
+    records = server.recorded_requests("POST", _TIMEOUT_PATH)
+    seen = []
+    for record in records:
+        try:
+            model = json.loads(record.body).get("model")
+        except ValueError:
+            model = "unreadable body"
+        mine = marker.encode() in record.body
+        seen.append(f"{model} ({'this run' if mine else 'another run'})")
+    own = sum(marker.encode() in record.body for record in records)
+    return own, "requests seen: " + ", ".join(seen)
+
+
 def _openrouter_keys(monkeypatch: pytest.MonkeyPatch, *, count: int) -> None:
     for key_id in range(1, count + 1):
         monkeypatch.setenv(f"OPENROUTER_API_KEY_{key_id}", f"openrouter-key-{key_id}")
@@ -231,6 +253,7 @@ def request_is_made(case: dict[str, Any]) -> None:
             ),
             details={"delay_seconds": _TIMEOUT_DELAY_SECONDS},
         )
+        marker = uuid.uuid4().hex
         with ScriptedHTTPServer(port=0, routes=case["timeout_routes"]) as server:
             case["response"] = run_timeout_inprocess(
                 scenario=(
@@ -239,8 +262,9 @@ def request_is_made(case: dict[str, Any]) -> None:
                     else "fallback_after_timeout"
                 ),
                 server_base_url=server.base_url,
+                marker=marker,
             )
-            case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
+            case["request_count"], case["requests_seen"] = _own_requests(server, marker)
         return
 
     first_route: list[ScriptedResponse]
@@ -414,7 +438,7 @@ def timeout_falls_back(case: dict[str, Any]) -> None:
     result = case["response"]
     assert result.ok is True, result.error_message
     assert result.output_text == _TIMEOUT_TEXT
-    assert case["request_count"] == 2
+    assert case["request_count"] == 2, case["requests_seen"]
     assert [attempt["error_type"] for attempt in result.routing_trace] == [
         "TimeoutError",
         None,
@@ -447,12 +471,16 @@ def execute_terminal_timeout(terminal_case: dict[str, Any]) -> None:
         ),
         details={"delay_seconds": _TIMEOUT_DELAY_SECONDS},
     )
+    marker = uuid.uuid4().hex
     with ScriptedHTTPServer(port=0, routes=terminal_case["routes"]) as server:
         terminal_case["result"] = run_timeout_inprocess(
             scenario="terminal_timeout",
             server_base_url=server.base_url,
+            marker=marker,
         )
-        terminal_case["request_count"] = server.request_count("POST", _TIMEOUT_PATH)
+        terminal_case["request_count"], terminal_case["requests_seen"] = _own_requests(
+            server, marker
+        )
 
 
 @then("the request fails with a timeout error")
@@ -460,7 +488,7 @@ def terminal_timeout_is_public(terminal_case: dict[str, Any]) -> None:
     result = terminal_case["result"]
     assert result.ok is False
     assert result.error_type == "TimeoutError"
-    assert terminal_case["request_count"] == 1
+    assert terminal_case["request_count"] == 1, terminal_case["requests_seen"]
 
 
 @given(
@@ -482,15 +510,17 @@ def execute_async_terminal_timeout(async_terminal_case: dict[str, Any]) -> None:
         ),
         details={"delay_seconds": _TIMEOUT_DELAY_SECONDS},
     )
+    marker = uuid.uuid4().hex
     with ScriptedHTTPServer(port=0, routes=async_terminal_case["routes"]) as server:
         async_terminal_case["result"] = run_timeout_inprocess(
             scenario="async_terminal_timeout",
             server_base_url=server.base_url,
+            marker=marker,
         )
-        async_terminal_case["request_count"] = server.request_count(
-            "POST",
-            _TIMEOUT_PATH,
-        )
+        (
+            async_terminal_case["request_count"],
+            async_terminal_case["requests_seen"],
+        ) = _own_requests(server, marker)
 
 
 @then("the async request fails with a timeout error")
