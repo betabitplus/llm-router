@@ -15,6 +15,16 @@ PROVENANCE = ["COMPLETE", "INCOMPLETE", "UNKNOWN"]
 PRODUCER = ["QUALIFIED", "NOT QUALIFIED", "UNKNOWN"]
 FRESHNESS = ["CURRENT", "STALE", "UNKNOWN"]
 MS_LEVELS = ["N/A", "L0", "L1", "L2", "L3", "L4", "UNKNOWN", "NOT DECLARED"]
+# Each scale low to high: the states a retained path can reach, in order. The vocabulary's other states (unknown,
+# not declared, not applicable) stand outside its scale.
+SCALES = {
+    "representation": REPRESENTATION[:4],
+    "ms_validation": MS_LEVELS[1:6],
+    "provenance": ["INCOMPLETE", "COMPLETE"],
+    "producer": ["NOT QUALIFIED", "QUALIFIED"],
+    "freshness": ["STALE", "CURRENT"],
+    "classification": ["MISMATCH", "MATCH"],
+}
 
 
 def combine(statuses: list[str]) -> str:

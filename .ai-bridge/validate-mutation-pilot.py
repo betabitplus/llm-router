@@ -3580,7 +3580,8 @@ def main() -> None:
         check(
             'class="fault-layout"' in page
             and "data-upper=" in page
-            and 'class="inspector"' in page
+            and 'class="inspector stack"' in page
+            and 'class="ins-layer on"' in page
             and "classList.toggle('selected'" in page,
             f"{name}: active upper criteria use canonical tile → selected inspector interaction",
         )
@@ -3605,7 +3606,7 @@ def main() -> None:
         "Product / System",
     ):
         check(
-            'class="fault-tile na"' in upper_assurance_pages[name],
+            'class="fault-tile na air"' in upper_assurance_pages[name],
             f"{name}: undeclared upper Targets use canonical disabled N/A tiles",
         )
 
@@ -3853,14 +3854,14 @@ def main() -> None:
         and '<div class="signal-card coverage-card met-signal">' in goal_page
         and f"<b>{len(observed_chain)}/{len(observed_chain)}</b><small>producers</small>" in goal_page
         and "Test level × boundary × realism" in goal_page
-        and goal_page.count('class="state-lane"') >= 2
-        and 'class="marker both">ACTUAL = TARGET' in goal_page
+        and goal_page.count('class="track"') >= 2
+        and 'class="tmark">ACTUAL = TARGET' in goal_page
         and "Retained path properties" in goal_page
         and "Evidence confidence" in goal_page
         and "Freshness" not in goal_page
         and ">Execution<" not in goal_page
         and ">Confidence<" not in goal_page,
-        "upper assurance reuses the canonical REQ coverage-card and state-lane inspector pattern",
+        "upper assurance reuses the canonical REQ coverage-card and scale-track inspector pattern",
     )
 
     trust_need_ids=set(
@@ -4617,7 +4618,7 @@ def main() -> None:
             security_page,
             re.DOTALL,
         )
-        and "0 / 4 pass" in security_page,
+        and "0 of 4 pass" in security_page,
         "REQ_SENSITIVE_DATA_PROTECTION: rendered monitor keeps missing product proof and failing Technical Support visible",
     )
 
@@ -6336,7 +6337,7 @@ def main() -> None:
         unchallenged["status"] == "NOT MET"
         and unchallenged["detection_status"] == "N/A"
         and unchallenged["detection_actual"] is None
-        and "<span>Detection</span><strong>—</strong><i></i>"
+        and "<span>Detected</span><strong>—</strong><i></i>"
         in (HTML / "contract-evidence-config-cache-invalidation.html").read_text(),
         "fault detection is undefined (—) when nothing was challenged, while the unchallenged group still fails",
     )

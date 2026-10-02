@@ -956,6 +956,7 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         sum(check["status"] == "MET" for check in classification_checks),
         len(classification_checks),
         "paths",
+        rungs=domain.SCALES["classification"],
     )
     producer_actual_values = sorted(
         {str(row.get("actual") or "UNKNOWN").upper() for row in producer_rows}
@@ -970,6 +971,7 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
         sum(row["status"] == "MET" for row in producer_rows),
         len(producer_rows),
         "producers",
+        rungs=domain.SCALES["producer"],
     )
     freshness_actual_values = sorted(
         {
@@ -991,6 +993,7 @@ def criterion_inspector(criterion: dict, profile_url: str) -> str:
             sum(row["status"] == "MET" for row in freshness_rows),
             len(freshness_rows),
             "evidence paths",
+            rungs=domain.SCALES["freshness"],
         )
     bdd_url = living_spec_url(criterion["rows"])
     links = []
@@ -1111,7 +1114,12 @@ def direct_section(
         )
         + '<div class="fault-layout"><div class="fault-grid">'
         + "".join(tiles)
-        + f'</div><aside class="inspector" id="upper-inspector-{esc(section_id)}">{inspectors[default]}</aside></div></section>'
+        + f'</div><aside class="inspector stack" id="upper-inspector-{esc(section_id)}">'
+        + "".join(
+            f'<div class="ins-layer{" on" if key == default else ""}" data-for="{esc(key)}">{value}</div>'
+            for key, value in inspectors.items()
+        )
+        + "</aside></div></section>"
     )
     return markup, inspectors, default
 
@@ -1135,7 +1143,6 @@ def render_page(
         for label, key in labels
     ]
     sections = []
-    upper_inspectors: dict[str, str] = {}
     upper_defaults: list[tuple[str, str]] = []
     for label, key in labels:
         state = entity[key]
@@ -1150,7 +1157,7 @@ def render_page(
                 )
             )
         else:
-            markup, inspectors, default = direct_section(
+            markup, _inspectors, default = direct_section(
                 section_ids[key],
                 label,
                 state,
@@ -1158,7 +1165,6 @@ def render_page(
                 ui.explorer_href(entity_id, kind="check"),
             )
             sections.append(markup)
-            upper_inspectors.update(inspectors)
             if default is not None:
                 upper_defaults.append((section_ids[key], default))
     history_id = f"ua-{entity_id.lower().replace('_', '-')}-history"
@@ -1183,6 +1189,7 @@ def render_page(
             map_href="verification-health-map.html#overall"
             + (f":{entity_id}" if entity_id.startswith(("GOAL_", "FEAT_")) else ""),
             explorer_href=ui.explorer_href(entity_id),
+            title=str(entity.get("title") or entity_id),
         )
         + "".join(sections)
         + "</div>"
@@ -1191,19 +1198,20 @@ def render_page(
         f"selectUpper(document.querySelector('[data-upper=\\\"{criterion}\\\"]'));"
         for _, criterion in upper_defaults
     )
-    setup_js = (
-        f"const upperInspectors={json.dumps(upper_inspectors, ensure_ascii=False)};"
+    default_js += "".join(
+        f"arrows('[data-upper-inspector=\\\"upper-inspector-{section}\\\"]',selectUpper,node=>node);"
+        for section, _ in upper_defaults
     )
     bind_js = (
-        "function selectUpper(button){if(!button)return;const key=button.dataset.upper;"
-        "const inspectorId=button.dataset.upperInspector;const value=upperInspectors[key];"
-        "const inspector=root.querySelector('#'+inspectorId);if(!value||!inspector)return;"
-        "inspector.innerHTML=value;root.querySelectorAll('[data-upper-inspector=\"'+inspectorId+'\"]')"
-        ".forEach(item=>item.classList.toggle('selected',item===button));}"
+        "function selectUpper(button){if(!button)return;const inspectorId=button.dataset.upperInspector;"
+        "if(!showLayer(inspectorId,button.dataset.upper))return;"
+        "root.querySelectorAll('[data-upper-inspector=\"'+inspectorId+'\"]')"
+        ".forEach(item=>item.classList.toggle('selected',item===button));"
+        "aimAt(button.closest('.fault-grid'),button,root.querySelector('#'+inspectorId));}"
         "root.querySelectorAll('[data-upper]').forEach(button=>button.addEventListener('click',()=>selectUpper(button)));"
     )
     script = ui.monitor_script(
-        setup_js=setup_js,
+        setup_js="",
         bind_js=bind_js,
         nav_selector='a[href^="#ua-"]',
         init_js=default_js,
