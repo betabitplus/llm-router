@@ -44,14 +44,14 @@
  "43eb66a1bd8232c0": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T170722Z-7e6b08",
+   "call_id": "20261002T085809Z-99fce8",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only stops the repair step from resetting the state's schema to plan.schema. Attempt counting, the check against structured_output_max_attempts and the exhaustion error are unchanged, so repair still stops at the configured finite limit. The requirement asks only for that bound, and nothing given says which schema a repair request must carry.",
-   "response_sha256": "5a9b320cbf61f08bb2ee070aa0bed39920f367596fbeca19037832e15d07e29d",
+   "reason": "The mutant only skips resetting the loop state's schema to plan.schema on a repair turn. The repair message still carries plan.schema, and the attempt count and finite stop are unchanged, so bounded repair and the budget-2 criterion behave the same. The difference is real but lies in a state field this requirement doesn't ask about.",
+   "response_sha256": "665e606964ffaefb2f9b808da5e063b492de23f9628320d0733a63686cae2f25",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
@@ -62,20 +62,20 @@
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "9b3b17acf9e702b6d2790348a52a790db4fd797b919b497b0115366e47546bc5",
+  "prompt_sha256": "2814851fdb281d6bd0b329df29b0f0ac655f9b250f245b81eb8378361c0de8bf",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T170745Z-310014",
+   "call_id": "20261002T090957Z-09c602",
    "confirmed": true,
    "effort": "",
-   "level": "requirement",
+   "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "9b3b17acf9e702b6d2790348a52a790db4fd797b919b497b0115366e47546bc5",
-   "reason": "The requirement and its verification criteria focus strictly on bounding the number of repair attempts for invalid output. The mutant removes the `schema=plan.schema` assignment when preparing the next state, which only alters behavior if the plan and state schemas artificially differ. This does not affect the attempt limit or the recovery mechanism required by the requirement.",
-   "response_sha256": "ae9861411af778f98bdd3643c6942d68c7019fee9b0b6dcf6cff0e0b1e7770c0",
+   "prompt_sha256": "2814851fdb281d6bd0b329df29b0f0ac655f9b250f245b81eb8378361c0de8bf",
+   "reason": "The requirement bounds repair attempts and ensures successful recovery, but it does not specify that the internal loop state must continuously copy the static schema from the execution plan. Both versions successfully use the plan's schema to construct the repair message, making the omission of the schema update in the state object an internal implementation difference that does not affect any requirement.",
+   "response_sha256": "96038a655a004a9753aa77a559562439470ecbbf5ae363c405fab159f305a7c6",
    "sources": [
-    "Requirement REQ_STRUCTURED_OUTPUT_REPAIR (Structured output repair is bounded): Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "schema=plan.schema,"
    ],
    "test_focus": "",
@@ -217,14 +217,14 @@
  "7d7bccdbf94b90fa": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T170722Z-b8f891",
+   "call_id": "20261002T085809Z-74972c",
    "confirmed": true,
    "effort": "xhigh",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant no longer clears tool_registry in the repair state, so tools stay available during repair turns. It still counts structured_attempts the same way and raises once next_attempts >= structured_output_max_attempts, so repair still stops at the configured limit. With a budget of 2, an invalid response followed by a valid one still succeeds. Whether tools are offered during repair is not something this requirement asks for.",
-   "response_sha256": "47cc58d5893aec031d633da8b1bd7fdbfe2fb9332d8107c20c9fcc51310738a9",
+   "reason": "The mutant only stops clearing tool_registry in the repair state, so the repair turn keeps its tools. The attempt count, the stop at structured_output_max_attempts and success on the last allowed response are all unchanged. The requirement asks only that repair stops at the configured limit, not that repair turns run without tools, so the difference is outside what it observes.",
+   "response_sha256": "ceb3645b4ec2e8bb7552104fff86f8f86de6105a3cb67313218127fee7bdc913",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
@@ -235,18 +235,18 @@
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "e1cf7df3fc510efaf948ac242258cd60f173ac1f8ca0c5f5e4a2e6d66d6fe91a",
+  "prompt_sha256": "f04b41406758984bfe452d9a54032333c80f6b6035ad8ac519da4ca74c1a9da3",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T170758Z-e4754c",
+   "call_id": "20261002T090957Z-ee1b07",
    "confirmed": true,
    "effort": "",
    "level": "requirement",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "e1cf7df3fc510efaf948ac242258cd60f173ac1f8ca0c5f5e4a2e6d66d6fe91a",
-   "reason": "The requirement solely concerns enforcing a finite limit on the number of repair attempts for invalid structured output, which the mutant maintains. The mutant's removal of the tool registry reset during a repair attempt is an implementation detail that does not impact the attempt bounds.",
-   "response_sha256": "ea80b9816c3422d33379f9c793d5f28b53c6037cd9f3e29574ec2db652a01103",
+   "prompt_sha256": "f04b41406758984bfe452d9a54032333c80f6b6035ad8ac519da4ca74c1a9da3",
+   "reason": "The requirement specifies that structured output repair attempts must stop at a finite limit, but it does not mandate whether the tool registry must be disabled during those attempts. The change only affects the clearing of the tool registry and does not alter the attempt counting or bounding logic.",
+   "response_sha256": "54ebc5ef0b4c2a19da82266ab8a9fa1e54fa2ce36782986805257be37834f75b",
    "sources": [
     "Requirement REQ_STRUCTURED_OUTPUT_REPAIR (Structured output repair is bounded): Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "tool_registry=None,"

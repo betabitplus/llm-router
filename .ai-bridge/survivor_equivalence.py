@@ -1321,7 +1321,7 @@ A changed version (a mutant) that every passing test of the requirement lets thr
 ```python
 {mutant}
 ```
-What the survivor judgement found: {judgement}
+{callee}What the survivor judgement found: {judgement}
 Decide one verdict:
 - pin: the change breaks something the requirement asks for, so a test must pin it;
 - equivalent: no input can tell the versions apart as the contract observes them (never when an input above is confirmed);
@@ -1385,8 +1385,12 @@ def recheck_against(entry: dict) -> dict | None:
     return None
 
 
-def verdict_prompt(*, context: str, target: str, original: str, mutant: str, judgement: str) -> str:
-    return VERDICT_TEMPLATE.format(context=context + "\n" if context else "", target=target, original=original, mutant=mutant, judgement=judgement)
+def verdict_prompt(*, context: str, target: str, original: str, mutant: str, judgement: str, callee: str = "") -> str:
+    """A verdict question; ``callee`` says what a call the mutant keeps falls back to once it drops a
+    keyword (``callee_cards.card_text``), and every other question reads as before."""
+    return VERDICT_TEMPLATE.format(
+        context=context + "\n" if context else "", target=target, original=original, mutant=mutant, callee=callee, judgement=judgement,
+    )
 
 
 # A pin verdict no rung of the draft ladder could turn into a test is asked once more with what a
@@ -1456,11 +1460,16 @@ def reconsider_prompt(prompt: str, root: Path, qualname: str, path: str, card: s
 
 def verdict_parts(prompt: str) -> tuple[dict[str, str], list[str]]:
     """The parts of a verdict question a source may quote (what the requirement and those above it
-    say, the code, the survivor judgement) and the lines its change touches."""
+    say, the code, what a changed call falls back to, the survivor judgement) and the lines its
+    change touches."""
     question = asked_question(prompt)
     blocks = CODE_FENCE.findall(question)
     judgement = re.search(r"What the survivor judgement found: (.*?)\nDecide one verdict:", question, re.DOTALL)
     parts = {"requirement": question.split("The original version of ", 1)[0], "code": "\n".join(blocks), "judgement": judgement.group(1) if judgement else ""}
+    # What a changed call falls back to (``callee_cards``) is a fact a verdict rests on and cites.
+    callee = re.search(r"What the changed call falls back to:\n(.*?)\nWhat the survivor judgement found:", question, re.DOTALL)
+    if callee:
+        parts["callee"] = callee.group(1)
     if RECONSIDER_MARK in question:
         # A reconsidered question also shows the callers and how what they hand is built.
         parts["callers"] = question.split(RECONSIDER_MARK, 1)[1]

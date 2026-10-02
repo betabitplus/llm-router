@@ -863,38 +863,39 @@
  "f0760cfe8c668b1a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000642Z-d12b58",
+   "call_id": "20261002T085937Z-d89555",
    "confirmed": true,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "For status 400, the mutant still classifies the status as NON_RETRYABLE and gives the same reason. The only difference is that the decision no longer records the diagnostic status_code, and no requirement or criterion asks for that metadata.",
-   "response_sha256": "d38b55247c9cf04863111b39993ad4601ddc27c2f6ca299a0c6cb6dfdbd9ac4b",
+   "reason": "The mutant still classifies 400 as NON_RETRYABLE with the same reason, so permanent failures are not retried and the classification still comes from status semantics. The only difference is that the decision's diagnostic status_code field is left empty, which no requirement or criterion here asks for.",
+   "response_sha256": "1ecb25edbbf3b704ba89a82f17af0dbd47e3291050a778633730be23788dc248",
    "sources": [
-    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
     "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "2e2801e9abbed5d1652c7bce8740106a19d03431962d4437e56bd5c865e94f57",
+  "prompt_sha256": "cbcd9107ec4f451e19db6eef8388cf4e1bcd8f9774cdc043e0f2098071bab593",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T093656Z-705305",
+   "call_id": "20261002T091155Z-1dd44d",
    "confirmed": true,
-   "level": "requirement",
+   "effort": "",
+   "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "2e2801e9abbed5d1652c7bce8740106a19d03431962d4437e56bd5c865e94f57",
-   "reason": "The requirement specifies that the classification logic must use status semantics, which the mutant still accomplishes. Omitting the exact status code from the returned decision object for non-retryable errors is an implementation detail not governed by the stated requirements.",
-   "response_sha256": "e07d97e4406935dbfce2184203c8f209533e1cf43e38f943e2b5b94c458d4c83",
+   "prompt_sha256": "cbcd9107ec4f451e19db6eef8388cf4e1bcd8f9774cdc043e0f2098071bab593",
+   "reason": "The requirements specify classifying failures as retryable or permanent based on status semantics, which both versions achieve correctly. Omitting the status code in the returned decision object is an implementation detail not mandated by any requirement.",
+   "response_sha256": "2bf4e2bccf8e100c36917ab974c8c5b7c6fe8ba46232d938965be17f49d7285d",
    "sources": [
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "Retry classification shall use explicit status and exception semantics rather than message substrings.",
-    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
-    "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')",
-    "status_code=status_code,"
+    "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')"
    ],
    "test_focus": "",
    "verdict": "irrelevant"

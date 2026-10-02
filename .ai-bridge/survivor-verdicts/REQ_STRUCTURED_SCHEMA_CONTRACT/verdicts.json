@@ -719,14 +719,14 @@
  "87ad8ca644dbe3d7": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T113700Z-2fc7df",
+   "call_id": "20261002T085809Z-a35042",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant still reports valid=False and returns no parsed value when parsing fails, so router-side validation still enforces the schema. It only drops the diagnostic error_message text, and no requirement, criterion, Feature or Goal asks for that message.",
-   "response_sha256": "24b5206d47bd632af731f44ec414ab439f0058f96d135663f7354945fd041bb2",
+   "reason": "On a failed parse the mutant still returns valid=False, so router-side validation still rejects bad output exactly as before. It only leaves out the diagnostic error_message, and the requirement asks for enforcement, not for any message.",
+   "response_sha256": "12f0049b717767f2ce99cf9283274d1fcfc55b9b83e43919ebd6ef08e0880297",
    "sources": [
     "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
     "router-side validation enforces its declared nested/common constraints rather than silently ignoring them",
@@ -737,21 +737,22 @@
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "3984e597cd5f8ba1730d9f44c36419143f38801d7314cbccdaebba7955d70a68",
+  "prompt_sha256": "293d569812c9e7457091e7fd9c50ef86a6bd9b25bb641805b5e80e93403c8952",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T113803Z-7c660d",
+   "call_id": "20261002T090939Z-d536c3",
    "confirmed": true,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "3984e597cd5f8ba1730d9f44c36419143f38801d7314cbccdaebba7955d70a68",
-   "reason": "The requirement mandates that router-side validation enforces constraints and rejects invalid schemas, but it does not prescribe capturing or surfacing a specific error message upon validation failure.",
-   "response_sha256": "cbd205b9ecc3f71491d3b23bb87c1c4a16522af6a441ad37fc7073c2666d5e69",
+   "prompt_sha256": "293d569812c9e7457091e7fd9c50ef86a6bd9b25bb641805b5e80e93403c8952",
+   "reason": "The requirement mandates that invalid outputs are rejected by router-side validation, which the mutant still accomplishes by returning valid=False. The specific error message returned upon failure is an implementation detail not specified by the requirement.",
+   "response_sha256": "2425c95eaff32e2988bf17dd544c601606ec9ff00cc8f22980c5c396adfea4f8",
    "sources": [
-    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
-    "error_message=preview_value(exc),"
+    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
+    "error_message=preview_value(exc),",
+    "return SchemaValidationResult(valid=False)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -2105,14 +2106,14 @@
  "f149230e76762027": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T120813Z-7ee15f",
+   "call_id": "20261002T085809Z-b0a909",
    "confirmed": false,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only differs when a caller passes `name`, and the project's only caller never does. Through that path both versions return the same name and the same transformed schema. Spec renaming is also not something the requirement asks for; it covers schema preservation and router-side validation.",
-   "response_sha256": "4a7e8fc42981c897824264a701557f6b31bef1f5c7f5af3cd934f8fecc1f3e5e",
+   "reason": "The two versions differ only when a caller passes a non-None `name`. The only caller, the AI Studio adapter, never passes `name`, so the spec keeps its name in both versions and the schema and parser come out the same. The requirement says nothing about renaming specs; it covers schema preservation and validation.",
+   "response_sha256": "4e92a9d2159d58e670202d05567a8c4f538f19a7605d80387d2b92011233ca13",
    "sources": [
     "transformed = with_schema_transform(request.schema, inline_schema_refs)",
     "name=spec.name if name is None else name,",
@@ -2123,22 +2124,22 @@
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "e6057f0e2e174b2873aaf2d0571a5ec99b4b1cde97f7c48894989a9d4050b1b9",
+  "prompt_sha256": "5f98e351842b129b61dae898b10d0eae16557e65218e443c391150fee601465d",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T120905Z-3317c1",
+   "call_id": "20261002T090957Z-87fae2",
    "confirmed": false,
    "effort": "",
    "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "e6057f0e2e174b2873aaf2d0571a5ec99b4b1cde97f7c48894989a9d4050b1b9",
-   "reason": "The mutation removes the ability to override the schema's name by dropping the `name` argument during `replace()`, but the only caller (`_request_with_inlined_schema`) does not pass this argument. Since the argument defaults to `None` and is never provided, both versions preserve the original `spec.name`, making the difference unobservable where the requirement is evaluated.",
-   "response_sha256": "10e698afbcec1488a36efac01022ccdb82df6252418485d37a0bb333476451c8",
+   "prompt_sha256": "5f98e351842b129b61dae898b10d0eae16557e65218e443c391150fee601465d",
+   "reason": "The mutated code ignores the `name` argument when replacing fields in the `SchemaSpec`, meaning the schema's name cannot be overridden. However, the project's only caller (`_request_with_inlined_schema`) does not pass a `name` argument. Since it defaults to `None`, both versions behave identically in practice by keeping the original `spec.name`. Thus, the mutation cannot be reached with the inputs needed to observe the difference.",
+   "response_sha256": "b6109bfe2c49fd62e1708e138efd906ae0a6f8990763840baaa07b1c2cd6b15a",
    "sources": [
     "Provider-specific schema transforms shall not weaken router-side validation.",
     "transformed = with_schema_transform(request.schema, inline_schema_refs)",
-    "name=spec.name if name is None else name,"
+    "return replace(spec, json_schema=transformed)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"

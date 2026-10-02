@@ -298,14 +298,14 @@
  "896165f2ae8f1610": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T145126Z-8f440f",
+   "call_id": "20261002T091217Z-f838e9",
    "confirmed": true,
    "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant ignores the min_routes_for_fallback_shuffle threshold, so it can shuffle fallbacks even when there are fewer routes than the threshold. It still always keeps routes[0], the selected starting route, in first place, before and after the attempt cap. The requirement only asks that the starting-route identity is kept, and no stated requirement or criterion says when shuffling must be skipped.",
-   "response_sha256": "b49e127641d1105a46d7335a6199b77d51d05807028daf223dff586201aa93f3",
+   "reason": "The mutant drops the minimum-route threshold, so it shuffles fallbacks the original would leave in place. It still keeps routes[0] as the first attempt. The requirement and its criteria only ask that the selected starting route stays first, and no stated requirement asks when shuffling should start.",
+   "response_sha256": "6363bd2093c78d14507be14bc54f09b9b5d376c9dece86e1863916de39ab68eb",
    "sources": [
     "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "Fallback shuffling never moves the already selected starting route away from the first attempt.",
@@ -319,15 +319,15 @@
   "prompt_sha256": "fbd73673fd2f17d7bbd7255ff4e43b485d91650cd1dec5b33d7df8d83e74fd80",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T145142Z-ff1cb5",
+   "call_id": "20261002T091229Z-e89db6",
    "confirmed": true,
    "effort": "",
-   "level": "requirement",
+   "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
    "prompt_sha256": "fbd73673fd2f17d7bbd7255ff4e43b485d91650cd1dec5b33d7df8d83e74fd80",
-   "reason": "The requirement specifies that fallback shuffling must preserve the starting route, but it does not mandate a minimum number of routes for shuffling to occur. The mutant still satisfies the technical requirement to keep the starting route first during shuffling, making the threshold condition an irrelevant implementation detail.",
-   "response_sha256": "1e71e4c5b8e081a8d4421d2fcd30bc7ab8343bbf3ab28dfae742f20219b35e9d",
+   "reason": "The mutant removes the condition checking if the number of routes meets a minimum threshold for fallback shuffling. Since the requirements do not mandate a minimum route count for shuffling and the starting route identity is still preserved as the first attempt, this is an unconstrained implementation detail.",
+   "response_sha256": "351d89a68cb56535ad82b61d5edac7659d5285dead1248692274371196004eb3",
    "sources": [
     "Route ordering shall rotate or shuffle attempt order without losing the selected starting-route identity.",
     "and len(routes) >= options.min_routes_for_fallback_shuffle"

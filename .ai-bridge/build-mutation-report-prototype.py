@@ -135,6 +135,12 @@ if ORACLE_SPEC is None or ORACLE_SPEC.loader is None:
     raise RuntimeError("Could not load the pin oracle rule")
 ORACLE=importlib.util.module_from_spec(ORACLE_SPEC)
 ORACLE_SPEC.loader.exec_module(ORACLE)
+# What a call falls back to when a mutant drops one of its keywords (2026-10-02). No model.
+CALLEES_SPEC=importlib.util.spec_from_file_location("callee_cards",ROOT/".ai-bridge/callee_cards.py")
+if CALLEES_SPEC is None or CALLEES_SPEC.loader is None:
+    raise RuntimeError("Could not load the callee cards")
+CALLEES=importlib.util.module_from_spec(CALLEES_SPEC)
+CALLEES_SPEC.loader.exec_module(CALLEES)
 SYMBOLIC_PRODUCERS=("PRODUCER_SYMBOLIC_DIFFERENTIAL",)
 ASSESSOR_PRODUCERS=("PRODUCER_ASSESSOR_ENSEMBLE",)
 # Scenario oracle mutants (050): does a Gherkin scenario check the outcome it names? No model.
@@ -3568,6 +3574,7 @@ def current_evidence_qualification_environment():
       "survivor_equivalence_sha256":code(ROOT/".ai-bridge/survivor_equivalence.py"),
       "pin_subsumption_sha256":code(ROOT/".ai-bridge/pin_subsumption.py"),
       "pin_oracle_sha256":code(ROOT/".ai-bridge/pin_oracle.py"),
+      "callee_cards_sha256":code(ROOT/".ai-bridge/callee_cards.py"),
       "qualification_harness_sha256":code(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":code(ROOT/"tests/conftest.py"),
     }
@@ -6771,7 +6778,7 @@ def rule_verdict_item(contract_id,record,context,judged):
       "operator":str(record.get("operator")),"path":str(Path(record["file_path"]).resolve().relative_to(ROOT)),
       "qualname":qualname,"original":rebuilt["original"],"mutated":rebuilt["mutated"],"mutated_source":rebuilt["source"],
       "defect":str(record.get("description") or ""),"confirmed":judged.get("status")=="found","judged":judged,
-      "prompt":EQ.verdict_prompt(context=context,target=rebuilt.get("target") or qualname,original=rebuilt["original"],mutant=rebuilt["mutated"],judgement=EQ.judgement_summary(judged)),
+      "question":{"context":context,"target":rebuilt.get("target") or qualname,"original":rebuilt["original"],"mutant":rebuilt["mutated"],"judgement":EQ.judgement_summary(judged)},
     }
 
 
@@ -6839,14 +6846,64 @@ def verdict_items(needs,policy):
               "original":original,"mutated":mutated,"mutated_source":mutated_source,"defect":str(proposal.get("rationale") or proposal.get("risk") or ""),
               "confirmed":row.get("outcome")=="distinguished","judged":judged,
               "kept_draft":drafts.get(row["id"]) if (row.get("draft") or {}).get("accepted") else None,
-              "prompt":EQ.verdict_prompt(context=context,target=qualname,original=original,mutant=mutated,judgement=EQ.judgement_summary(judged)),
+              "question":{"context":context,"target":qualname,"original":original,"mutant":mutated,"judgement":EQ.judgement_summary(judged)},
             })
+    # A mutant that drops a keyword from a call it keeps is asked with what the call then falls back
+    # to; every other question stays as it was.
+    dropped=[CALLEES.dropped_keywords(item["original"],item["mutated"]) for item in items]
+    cards=callee_cards([
+      {"module":module_of(item["path"]),"qualname":item["qualname"],"callee":callee,"keyword":keyword}
+      for item,keywords in zip(items,dropped,strict=True) for callee,keyword in keywords
+    ])
+    for item,keywords in zip(items,dropped,strict=True):
+        shown=[(callee,keyword,cards[callee_card_key(module_of(item["path"]),item["qualname"],callee,keyword)]) for callee,keyword in keywords]
+        item["prompt"]=EQ.verdict_prompt(**item.pop("question"),callee=CALLEES.card_text(shown))
     # A pin no rung of the draft ladder could write asks its verdict once more, with the callers in view.
     for item in items:
         if ladder_exhausted(item["contract_id"],item["key"]):
             item["prompt"]=reconsidered_prompt(item)
             item["reconsidered"]=True
     return items
+
+
+# A callee card is read from the installed code: the product's source, the locked dependencies, the
+# Python that imports them and the resolver. Every stage that builds the verdict questions asks for
+# the same cards, so each is kept by the call it describes and read back while those are unchanged;
+# the resolver imports the mutated modules, so it runs apart, in the project's environment.
+CALLEE_CARDS=ROOT/"test-results/survivor-verdicts/callee-cards.json"
+
+
+def callee_card_key(module,qualname,callee,keyword):
+    return sha256_text(stable_json([module,qualname,callee,keyword]))
+
+
+def callee_cards(requests):
+    """Each request's callee card, by ``callee_card_key``: resolved apart for the requests not kept."""
+    inputs=sha256_text(stable_json({
+      "inputs":_inputs_digest(("src/**/*.py","uv.lock")),"resolver":IMPL_FAULTS.code_digest(ROOT/".ai-bridge/callee_cards.py"),
+      "python":sys.version,
+    })) if requests else ""
+    try:
+        kept=json.loads(CALLEE_CARDS.read_text()) if CALLEE_CARDS.is_file() else {}
+    except ValueError:
+        kept={}
+    cards=dict(kept.get("cards") or {}) if kept.get("inputs")==inputs else {}
+    wanted={callee_card_key(request["module"],request["qualname"],request["callee"],request["keyword"]):request for request in requests}
+    missing=[key for key in sorted(wanted) if key not in cards]
+    if missing:
+        with tempfile.TemporaryDirectory(prefix="ternforge-callees-") as scratch:
+            request_path,result_path=Path(scratch)/"requests.json",Path(scratch)/"cards.json"
+            request_path.write_text(json.dumps([wanted[key] for key in missing]))
+            done=subprocess.run(
+              [shutil.which("uv") or "uv","run","python",str(ROOT/".ai-bridge/callee_cards.py"),"resolve",str(request_path),str(result_path)],
+              cwd=ROOT,text=True,capture_output=True,timeout=300,check=False,
+            )
+            if done.returncode!=0 or not result_path.is_file():
+                raise SystemExit(f"callee cards: the resolver failed: {(done.stderr or done.stdout)[-800:]}")
+            cards.update(zip(missing,json.loads(result_path.read_text()),strict=True))
+        CALLEE_CARDS.parent.mkdir(parents=True,exist_ok=True)
+        CALLEE_CARDS.write_text(json.dumps({"inputs":inputs,"cards":cards},indent=1,sort_keys=True)+"\n")
+    return cards
 
 
 # A reconsidered question reads every caller of its function across the product's source and an API

@@ -360,40 +360,45 @@
  "f01210c4280a2513": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000214Z-a2d36b",
+   "call_id": "20261002T091142Z-cf6700",
    "confirmed": false,
+   "effort": "xhigh",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only stops passing wait_seconds to the final success trace. At that point wait_seconds is never positive, because positive waits are diverted to blocked_requests. At most the trace's wait field could fall back to the helper's default. The requirement only asks for fallback, failed\u2192successful trace order and raising the last error. It says nothing about the wait value in the success trace.",
-   "response_sha256": "715d23458587b16549aba98f66ba11ba08b01aa09285b09796886e2aacd9e19e",
+   "reason": "The success trace is only built once the `if wait_seconds > 0:` branch has passed without hitting `continue`, so wait_seconds is not positive there. A rate-limit wait is never negative in practice, so it is 0.0, which is also the default the mutant falls back to. Both versions therefore build the same final trace, and the failed \u2192 successful order is unchanged.",
+   "response_sha256": "db5294fbd3351dd1e79ea8e59289431dc52044bb77f13b1b16191ca6a41e365d",
    "sources": [
-    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
+    "if wait_seconds > 0:",
     "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)",
-    "wait_seconds=wait_seconds,",
-    "if wait_seconds > 0:"
+    "without `wait_seconds`, the call takes `wait_seconds=0.0`.",
+    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   },
   "operator": "argument",
-  "prompt_sha256": "a6c95137186bba8557a2ec146e5f72891ff4ca37a20a5fcafb8ef3cea902e5bd",
+  "prompt_sha256": "3348b3f7b0b95dd30ec1c394fbb9d7ca3f15b881dc83930c062ae34e1843d5ec",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T092035Z-2e0434",
+   "call_id": "20261002T091155Z-b05edb",
    "confirmed": false,
-   "level": "requirement",
+   "effort": "",
+   "level": "implementation",
    "model": "gemini-3.1-pro-high",
    "problems": [],
-   "prompt_sha256": "a6c95137186bba8557a2ec146e5f72891ff4ca37a20a5fcafb8ef3cea902e5bd",
-   "reason": "The requirement mandates exposing trace entries for the failed and successful attempts, but does not specify that wait times must be recorded in them. Furthermore, execution only reaches this trace construction when `wait_seconds > 0` is false, meaning the wait time is zero, so omitting the argument does not affect the presence, order, or meaningful content of the traces.",
-   "response_sha256": "3aca090973d8bfa3ad4098a8b2bcdd2d21b6f104ca512ff564acbd86b7f10f6d",
+   "prompt_sha256": "3348b3f7b0b95dd30ec1c394fbb9d7ca3f15b881dc83930c062ae34e1843d5ec",
+   "reason": "The execution only reaches the successful trace construction if wait_seconds is 0 or less, since any value greater than 0 triggers a continue. Because build_attempt_trace defaults wait_seconds to 0.0, omitting the argument produces an identical trace, making the mutation observationally equivalent.",
+   "response_sha256": "bb8dfc671b5e2cf3d2c51eff0307078e7ef2964f211313d1fa36b953aea65ded",
    "sources": [
     "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
-    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)"
+    "if wait_seconds > 0:",
+    "continue",
+    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)",
+    "wait_seconds: float = 0.0"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  }
 }

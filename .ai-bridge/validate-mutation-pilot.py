@@ -7391,6 +7391,7 @@ def main() -> None:
         "implementation_faults.py",
         "pin_subsumption.py",
         "pin_oracle.py",
+        "callee_cards.py",
         "qualify-evidence-confidence.py",
         "validate-mutation-pilot.py",
         "mutation-testing-integration-plan.md",

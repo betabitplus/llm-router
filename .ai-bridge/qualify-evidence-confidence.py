@@ -88,6 +88,7 @@ def environment() -> dict[str, str | None]:
         "survivor_equivalence_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/survivor_equivalence.py"),
         "pin_subsumption_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/pin_subsumption.py"),
         "pin_oracle_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/pin_oracle.py"),
+        "callee_cards_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/callee_cards.py"),
         "qualification_harness_sha256": FINGERPRINTS["code_digest"](Path(__file__)),
         "trace_bridge_sha256": FINGERPRINTS["code_digest"](ROOT / "tests/conftest.py"),
     }
@@ -3527,6 +3528,65 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
             and "fourth_setting" in (long_rebuilt.get("mutated") or "")
             and "reason" in judge["rule_mutant_source"](long_source, {**long_record, "original": "make( first_setting=policy.other" + "x" * 167 + "…"})
         )
+        # What a call falls back to (2026-10-02): a keyword the changed version no longer passes to a
+        # call it keeps is found, a call removed whole drops none; the callee is read from the
+        # installed code (a function's default, a method through self, a local a constructor builds,
+        # an attribute its class annotates, dataclasses.replace), and one called on a value the code
+        # computes is said to be unknown; a question with a card shows it after the mutant, one
+        # without reads as before.
+        cards_module = runpy.run_path(str(ROOT / ".ai-bridge/callee_cards.py"), run_name="evidence_confidence_callee_cards")
+        dropped_ok = (
+            cards_module["dropped_keywords"]("def f(x):\n    return preview(x, limit=300)\n", "def f(x):\n    return preview(x)\n") == [("preview", "limit")]
+            and cards_module["dropped_keywords"]("def f(x):\n    log(x, level=1)\n    return x\n", "def f(x):\n    return x\n") == []
+            and cards_module["dropped_keywords"]("def f(x):\n    return preview(x, limit=300)\n", "def f(x):\n    return preview(x, limit=301)\n") == []
+        )
+        with tempfile.TemporaryDirectory(prefix="ternforge-callees-qualification-") as callee_dir:
+            (Path(callee_dir) / "callee_target.py").write_text(
+                "from dataclasses import dataclass, replace\n\n\n"
+                "def preview(text, *, limit=160):\n    return text[:limit]\n\n\n"
+                "class Sink:\n    def write(self, text, *, flush=False):\n        return text\n\n\n"
+                "@dataclass\nclass Box:\n    size: int = 1\n\n\n"
+                "def make():\n    return Sink()\n\n\n"
+                "class Worker:\n    sink: Sink\n\n    def __init__(self):\n        self.sink = Sink()\n\n"
+                "    def run(self, text):\n        local = Sink()\n        local.write(text, flush=True)\n        self.sink.write(text, flush=True)\n"
+                "        self.emit(text, loud=True)\n        replace(Box(), size=2)\n        make().write(text, flush=True)\n"
+                "        return preview(text, limit=300)\n\n"
+                "    def emit(self, text, *, loud=False):\n        return text\n"
+            )
+            callee_requests = [
+                {"module": "callee_target", "qualname": "Worker.run", "callee": callee, "keyword": keyword}
+                for callee, keyword in (("preview", "limit"), ("local.write", "flush"), ("self.sink.write", "flush"), ("self.emit", "loud"), ("replace", "size"), ("make().write", "flush"))
+            ]
+            (Path(callee_dir) / "requests.json").write_text(json.dumps(callee_requests))
+            subprocess.run(
+                [sys.executable, str(ROOT / ".ai-bridge/callee_cards.py"), "resolve", str(Path(callee_dir) / "requests.json"), str(Path(callee_dir) / "cards.json")],
+                cwd=callee_dir, env={**os.environ, "PYTHONPATH": callee_dir}, capture_output=True, text=True, timeout=120, check=False,
+            )
+            resolved = json.loads((Path(callee_dir) / "cards.json").read_text()) if (Path(callee_dir) / "cards.json").is_file() else []
+        cards_ok = (
+            len(resolved) == 6
+            and resolved[0].get("default") == "160" and "limit=160" in str(resolved[0].get("signature"))
+            and [card.get("default") for card in resolved[1:4]] == ["False", "False", "False"]
+            and resolved[4].get("replaces") is True
+            and "unknown" in resolved[5]
+        )
+        plain = judge["verdict_prompt"](context="", target="f", original="a", mutant="b", judgement="j")
+        carded = judge["verdict_prompt"](
+            context="", target="f", original="a", mutant="b", judgement="j",
+            callee=cards_module["card_text"]([("preview", "limit", resolved[0] if resolved else {})]),
+        )
+        checks["a keyword a mutant drops is shown with what its call falls back to, read from the installed code, and an unreadable callee is said to be unknown"] = (
+            dropped_ok and cards_ok
+            and "falls back" not in plain
+            and "without `limit`, the call takes `limit=160`." in carded
+            and carded.index("falls back") > carded.index("```python\nb\n```")
+            # A verdict may cite the card as what it rests on.
+            and judge["verdict_problems"](
+                {"verdict": "irrelevant", "level": "requirement", "reason": "the limit only shortens it", "test_focus": "",
+                 "sources": ["without `limit`, the call takes `limit=160`.", "b"]},
+                False, carded,
+            ) == []
+        )
         # Import-time code: a class attribute and a module-level call are rebuilt in their class and
         # their statement, shown alone, and named as code that runs when the module is imported; the
         # triage searches no call for them.
@@ -3741,7 +3801,7 @@ def survivor_judgement_controls() -> dict[str, dict[str, object]]:
         "PRODUCER_SYMBOLIC_DIFFERENTIAL": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
             "intended_use": "decide surviving mutants without a model: a symbolic search (CrossHair) over a typed harness, and every proposed input confirmed by execution before it counts",
-            "false_green_control": "labelled pairs: every distinct pair's input confirmed, the symbolic search finding and confirming inputs for its distinct pairs and none for its equivalent pairs; witnesses that reach beyond plain values never evaluated; non-finite inputs never counting; a rule mutant rebuilt exactly from its location, a long node the report names only by its beginning included; an assessor's equivalent only labelling, calibrated and unanimous; an answer's sources found word for word in its own question, one of them on a line the change touches and, for a verdict, one on the requirement it turns on; a shown outcome naming an environment variable without its value and the home directory without its path",
+            "false_green_control": "labelled pairs: every distinct pair's input confirmed, the symbolic search finding and confirming inputs for its distinct pairs and none for its equivalent pairs; witnesses that reach beyond plain values never evaluated; non-finite inputs never counting; a rule mutant rebuilt exactly from its location, a long node the report names only by its beginning included; a keyword a mutant drops shown in the verdict question with what its call falls back to, read from the installed code, and a callee the code does not name precisely enough said to be unknown; an assessor's equivalent only labelling, calibrated and unanimous; an answer's sources found word for word in its own question, one of them on a line the change touches and, for a verdict, one on the requirement it turns on; a shown outcome naming an environment variable without its value and the home directory without its path",
             "control": {"checks": checks, "symbolic": symbolic},
         }
     }
@@ -4045,7 +4105,7 @@ CONTROL_INPUTS = {
         ".ai-bridge/pytest_plugins/*.py",
         ".ai-bridge/semantic-mutants/calibration/**/*",
     ),
-    "survivor_judgement_controls": (".ai-bridge/survivor_equivalence.py", ".ai-bridge/semantic-mutants/calibration/equivalence/**/*"),
+    "survivor_judgement_controls": (".ai-bridge/survivor_equivalence.py", ".ai-bridge/callee_cards.py", ".ai-bridge/semantic-mutants/calibration/equivalence/**/*"),
     "scenario_mutant_controls": (".ai-bridge/scenario_mutants.py",),
     "architecture_mutant_controls": (".ai-bridge/architecture_mutants.py",),
 }

@@ -893,7 +893,12 @@ the Survivor verdict role (ADR_0006), once its judgement is complete: a survivor
 for an assessor's answer gets none yet, since its question would grow by that answer and the
 verdict and its review would be asked twice. The verdict model sees the requirement and its criteria,
 the Feature and Goal it serves, both versions of the code, the survivor judgement and any
-input execution confirmed; for an unreached mutant, that no test runs its line. A verdict
+input execution confirmed; for an unreached mutant, that no test runs its line. Where the changed
+version drops a keyword from a call it keeps, the question also says what the call then falls back
+to: the callee's signature and the default it takes, read from the installed code with
+`inspect.signature`, one line per keyword, never the callee's source (the least context that settles
+it); a callee the code does not name precisely enough is said to be unknown, so no verdict rests on
+an assumed default (on 2026-10-01 four verdicts guessed a library's default wrong). A verdict
 that would take a mutant out of its class, equivalent or irrelevant, counts only when the
 Survivor verdict review, a model of another family asked the same question, agrees: a panel
 of models from different families is less biased toward its own (PoLL). When the review does

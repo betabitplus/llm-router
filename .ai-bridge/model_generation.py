@@ -527,8 +527,10 @@ class AgmAccounts:
         return snapshot
 
     # agy's credential store can show a switch a moment after agm reports it done (2026-09-30: a check
-    # right after the switch still read the old account, so the run gave up on quota it had).
-    SWITCH_SETTLE = (0.0, 0.5, 1.0, 1.5, 2.0)
+    # right after the switch still read the old account, so the run gave up on quota it had), and
+    # longer on a loaded machine (2026-10-02: past the five seconds then waited, three runs deferred
+    # every Gemini call while the store moved a little later).
+    SWITCH_SETTLE = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0)
 
     def switch(self, alias: str) -> bool:
         """Move agy alone to an account; True once its credential store holds that account."""
