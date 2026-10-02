@@ -7390,6 +7390,7 @@ def main() -> None:
         "build-upper-assurance-pilot.py",
         "implementation_faults.py",
         "pin_subsumption.py",
+        "pin_oracle.py",
         "qualify-evidence-confidence.py",
         "validate-mutation-pilot.py",
         "mutation-testing-integration-plan.md",

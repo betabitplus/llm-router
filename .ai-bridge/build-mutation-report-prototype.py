@@ -129,6 +129,12 @@ if SUBSUME_SPEC is None or SUBSUME_SPEC.loader is None:
     raise RuntimeError("Could not load the pin subsumption")
 SUBSUME=importlib.util.module_from_spec(SUBSUME_SPEC)
 SUBSUME_SPEC.loader.exec_module(SUBSUME)
+# The pin oracle rule: what a new pin may not do to catch its mutant (057). No model.
+ORACLE_SPEC=importlib.util.spec_from_file_location("pin_oracle",ROOT/".ai-bridge/pin_oracle.py")
+if ORACLE_SPEC is None or ORACLE_SPEC.loader is None:
+    raise RuntimeError("Could not load the pin oracle rule")
+ORACLE=importlib.util.module_from_spec(ORACLE_SPEC)
+ORACLE_SPEC.loader.exec_module(ORACLE)
 SYMBOLIC_PRODUCERS=("PRODUCER_SYMBOLIC_DIFFERENTIAL",)
 ASSESSOR_PRODUCERS=("PRODUCER_ASSESSOR_ENSEMBLE",)
 # Scenario oracle mutants (050): does a Gherkin scenario check the outcome it names? No model.
@@ -3561,6 +3567,7 @@ def current_evidence_qualification_environment():
       "model_generation_sha256":code(ROOT/".ai-bridge/model_generation.py"),
       "survivor_equivalence_sha256":code(ROOT/".ai-bridge/survivor_equivalence.py"),
       "pin_subsumption_sha256":code(ROOT/".ai-bridge/pin_subsumption.py"),
+      "pin_oracle_sha256":code(ROOT/".ai-bridge/pin_oracle.py"),
       "qualification_harness_sha256":code(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":code(ROOT/"tests/conftest.py"),
     }
@@ -6525,6 +6532,15 @@ def judge_pin_drafts(root,items,inputs=None):
     every judgement depends on besides its draft (``pin_judgement_inputs``), when the caller read it."""
     if not items:
         return []
+    # A draft that breaks the pin oracle rule (057) is rejected unrun, as one reaching beyond the
+    # allowed imports is; a pin kept before the rule keeps its judgement until it is written anew.
+    ruled={item["key"]:ORACLE.oracle_problems(str(item["draft"]),root,public_only=bool(item.get("public_only"))) for item in items}
+    if any(ruled.values()):
+        rejected={key:{"key":key,"accepted":False,"ran":False,"passes_on_original":0,"fails_on_mutant":False,"imports_beyond_allowed":[],
+                       "primitives":problems,"private":[],"lint":[],"grounding":[],"draft":str(item["draft"])}
+                  for item in items for key,problems in [(item["key"],ruled[item["key"]])] if problems}
+        judged=iter(judge_pin_drafts(root,[item for item in items if item["key"] not in rejected],inputs))
+        return [rejected[item["key"]] if item["key"] in rejected else next(judged) for item in items]
     inputs=inputs or pin_judgement_inputs(root)
     keys=[sha256_text(stable_json({**inputs,"item":item})) for item in items]
     with PIN_CACHE_LOCK:

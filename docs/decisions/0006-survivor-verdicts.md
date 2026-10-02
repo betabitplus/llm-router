@@ -52,7 +52,8 @@ every one, after which the subsumption removes the pins it makes redundant (amen
 after AdverTest: a target's survivors given together; one pin per mutant had left most functions with
 several). A pin a new pin's full test run fails, or one whose mutant the campaign still reports as
 surviving, is taken back with its reason (amended 2026-10-01), as is a pin whose mutant a recorded decision says
-needs none. An escalated survivor keeps its class failing and waits for the person, whose
+needs none. A new pin replaces no computation of code the project does not own and, for a
+Requirement, hands the public API no value against its type (amended 2026-10-02). An escalated survivor keeps its class failing and waits for the person, whose
 verdict wins over the model's. The person decides only what a Goal or Feature promises: an
 escalation that turns on a requirement's or technical requirement's wording, and a pin no rung
 could write, are decided by the person's delegate (the agent's model, Claude Opus 5.5), who

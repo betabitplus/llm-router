@@ -568,7 +568,14 @@ imports it does not see, a private keyword and a private option the project spel
 such as `_executor`): a pin observes what
 its requirement names through what the code offers its callers, since a private step changes with
 a refactoring that breaks nothing (on 2026-09-30 a third of the REQ pins read or replaced one,
-against one module in fifty of the project's own tests). A parametrized value with a bracket
+against one module in fifty of the project's own tests). Nor does a new pin replace a computation of
+code the project does not own, as "don't mock what you don't own" asks (Freeman and Pryce): it may
+stand in for the network, a provider SDK, the clock, randomness, files, the locale, the environment
+and logging, never for what a library computes, since a replaced parser or validator can make a
+state the library never produces (on 2026-10-01 three pins replaced `json.loads` or `check_schema`
+so). A Requirement's new pin silences the type checker only where it checks that a value is refused
+(`pytest.raises`) or in a fake's own signature: elsewhere it would hand the public API a value no
+caller can write. A pin kept before these two rules keeps its judgement until it is written anew. A parametrized value with a bracket
 needs `ids=`: a test's id becomes a need's title in the documentation, where `[[` starts a
 sphinx-needs function call and stops the build. A pin is a fast check: a draft whose runs on the
 original take more than 3 s by pytest's own time (the median of its five) is rejected (on
