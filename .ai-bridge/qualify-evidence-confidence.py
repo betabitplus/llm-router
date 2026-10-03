@@ -2894,18 +2894,19 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             and stored_levels == ["low", "medium", "medium"]
         )
 
-        # Several Antigravity accounts through agm: a run reads their quotas, moves agy alone to the one
-        # with the most left once the one in use is spent, asks a rejected call again on another account,
-        # defers when none has any left, names every account by a digest and puts agy back at the end.
+        # Several Antigravity accounts through agm: a run reads no quota. It works on the account agy uses
+        # until a call is refused, then moves agy alone to the next account after it in alias order and
+        # asks the call again there, defers when none is left, names every account by a digest and puts
+        # agy back at the end.
         class FakeAgm:
             executable = "agm"
 
-            def __init__(self, quotas, active):
-                self.quotas, self.active, self.switches = quotas, active, []
-                self.addresses = {alias: f"{alias}@example.test" for alias in quotas}
+            def __init__(self, aliases, active):
+                self.aliases, self.active, self.switches = list(aliases), active, []
+                self.addresses = {alias: f"{alias}@example.test" for alias in self.aliases}
 
             def snapshot(self):
-                return {alias: {**row, "agy": alias == self.active} for alias, row in self.quotas.items()}
+                return {alias: {"agy": alias == self.active} for alias in self.aliases}
 
             def cli_address(self):
                 return self.addresses[self.active]
@@ -2929,9 +2930,9 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             def quota_pool(model):
                 return "gemini" if model.startswith("gemini") else "other"
 
-        switcher = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 100}}, "main")
+        switcher = FakeAgm(["main", "second"], "main")
         spent = invocation("rejected", "the Antigravity quota rejected the call: RESOURCE_EXHAUSTED")
-        agy_accounts = AgyScripted([probe(), answered(), spent], switcher)
+        agy_accounts = AgyScripted([probe(), spent, answered(), spent], switcher)
         claude_after = Scripted([probe(), answered()])
         pro_first = [{"order": 1, "backend": "antigravity-cli", "model": "gemini-3.1-pro-high"}, {"order": 2, "backend": "claude-cli", "model": "claude-sonnet-5-5"}]
         accounts_run = models["Run"]({"generator": pro_first}, budget, ledger_path=temp / "accounts.jsonl", backends={"antigravity-cli": agy_accounts, "claude-cli": claude_after})
@@ -2940,10 +2941,10 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         accounts_run.restore_accounts()
         ledger_text = json.dumps(accounts_run.rows)
         listed = "EMAIL  STATUS  GEM-PRO  GEM-FLASH  CLAUDE\n-----\na@example.test  cli,ide  0%  0%  10%\nb@example.test  99%  99%  100%\n"
-        checks["with several Antigravity accounts a run moves agy alone to one with quota left, asks a rejected call again on another, defers when none has any, names accounts by a digest and puts agy back"] = (
+        checks["with several Antigravity accounts a run keeps agy's account until a call is refused, then moves agy alone to the next one and asks the call again there, defers when none is left, names accounts by a digest and puts agy back"] = (
             first_answer is not None and first_answer["backend"] == "antigravity-cli" and first_row["account"] == models["account_label"]("second")
             and second_answer is not None and second_answer["backend"] == "claude-cli"
-            and [row["outcome"] for row in accounts_run.rows if row["backend"] == "antigravity-cli"] == ["ok", "ok", "rejected", "deferred"]
+            and [row["outcome"] for row in accounts_run.rows if row["backend"] == "antigravity-cli"] == ["ok", "rejected", "ok", "rejected", "deferred"]
             and switcher.switches == ["second", "main"] and switcher.active == "main"
             and '"main"' not in ledger_text and '"second"' not in ledger_text
             and models["parse_agm_list"](listed) == {
@@ -2952,6 +2953,28 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             }
             and models["parse_agm_aliases"]("ALIAS  EMAIL\nsecond  b@example.test\n") == {"b@example.test": "second"}
             and [models["quota_family"](model) for model in ("gemini-3.1-pro-high", "gemini-3.8-flash-high", "claude-opus-4-6-thinking")] == ["gemini-pro", "gemini-flash", "other"]
+        )
+
+        # A run never asks Antigravity for a quota: agm is asked only from its own records, and no account
+        # carries a quota the run could decide by.
+        class RecordedAgm:
+            def __init__(self):
+                self.verbs = []
+
+            def __call__(self, command, **_kwargs):
+                self.verbs.append(command[1])
+                out = {
+                    "alias": "ALIAS  EMAIL\nmain  a@example.test\nsecond  b@example.test\n",
+                    "list": "a@example.test  cli  50%  50%  50%\nb@example.test  50%  50%  50%\n",
+                    "sync": "Account Sync Status\n\nCLI (agy) credential store: a@example.test\n  Present in local DB.\n",
+                }.get(command[1], "")
+                return subprocess.CompletedProcess(command, 0, out, "")
+
+        recorded_agm = RecordedAgm()
+        listed_accounts = models["AgmAccounts"]("agm", recorded_agm).snapshot()
+        checks["a run reads no Antigravity quota: agm is asked only for its own records (alias, list, sync), never to refresh, and no account carries a quota"] = (
+            listed_accounts == {"main": {"agy": True}, "second": {"agy": False}}
+            and bool(recorded_agm.verbs) and set(recorded_agm.verbs) <= {"alias", "list", "sync"}
         )
 
         # A refusal that names when its quota resets keeps that quota spent on the account agy's
@@ -2968,21 +2991,21 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         pro = "gemini-3.1-pro-high"
         spent_rows = [refused("main", pro, 1, "10h0m0s", True), refused("second", pro, 1, "10h0m0s", False), refused("main", "gemini-3.8-flash-high", 30, "5h0m0s", True)]
         (temp / "spent.jsonl").write_text("".join(json.dumps(row) + "\n" for row in spent_rows))
-        roomy = FakeAgm({"main": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}}, "main")
+        roomy = FakeAgm(["main", "second"], "main")
         moved_agy = AgyScripted([probe(), answered()], roomy)
         spent_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
                                   ledger_path=temp / "spent.jsonl", backends={"antigravity-cli": moved_agy})
         spent_row, spent_answer = spent_run.call("generator", response_dir=temp / "spent", **request)
         (temp / "all-spent.jsonl").write_text("".join(json.dumps(row) + "\n" for row in [refused("main", pro, 1, "10h0m0s", True), refused("second", pro, 2, "20h0m0s", True)]))
-        empty = FakeAgm({"main": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}}, "second")
+        empty = FakeAgm(["main", "second"], "second")
         waiting_agy = AgyScripted([probe()], empty)
         waiting_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
                                     ledger_path=temp / "all-spent.jsonl", backends={"antigravity-cli": waiting_agy})
         waiting_row, waiting_answer = waiting_run.call("generator", response_dir=temp / "all-spent", **request)
         checks["a refusal that names when its quota resets keeps it spent on the account the credential store confirmed until then, and the call goes to another account"] = (
             spent_answer is not None and spent_row["account"] == models["account_label"]("second") and roomy.switches == ["second"]
-            and spent_run.quota_left("antigravity-cli", "main", pro) == -1 and spent_run.quota_left("antigravity-cli", "second", pro) == 99
-            and spent_run.quota_left("antigravity-cli", "main", "gemini-3.8-flash-high") == 99
+            and spent_run.spent("antigravity-cli", "main", pro) and not spent_run.spent("antigravity-cli", "second", pro)
+            and not spent_run.spent("antigravity-cli", "main", "gemini-3.8-flash-high")
             and waiting_answer is None and waiting_row["outcome"] == "deferred" and "resets at" in waiting_row["reason"]
             and waiting_agy.calls == 1 and empty.switches == []
         )
@@ -3015,17 +3038,16 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
                 self.accounts.active = "main"
                 return super().invoke(**request)
 
-        flipped = FakeAgm({"main": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}, "second": {"gemini-pro": 99, "gemini-flash": 99, "other": 99}}, "second")
+        flipped = FakeAgm(["main", "second"], "second")
         flipping_agy = Flipping([probe(), invocation("rejected", "the Antigravity quota rejected the call: Individual quota reached. Resets in 90h0m0s."), answered()], flipped)
         flip_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
                                  ledger_path=temp / "flip.jsonl", backends={"antigravity-cli": flipping_agy})
         _flip_row, flip_answer = flip_run.call("generator", response_dir=temp / "flip", **request)
         flip_refusal = next(row for row in flip_run.rows if row["outcome"] == "rejected")
         # An account Antigravity does not let in (its owner has yet to verify it) takes no call of the run:
-        # every quota of it counts as spent, and the call is asked again on another account.
-        barred = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
-                          "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "main")
-        barred_agy = AgyScripted([probe(), invocation("unavailable", models["INELIGIBLE"] + "Eligibility check failed: Your current account is not eligible for Antigravity."), answered()], barred)
+        # every quota of it counts as spent, and the call is asked again on the next account.
+        barred = FakeAgm(["main", "third", "fifth"], "main")
+        barred_agy = AgyScripted([probe(), spent, invocation("unavailable", models["INELIGIBLE"] + "Eligibility check failed: Your current account is not eligible for Antigravity."), answered()], barred)
         barred_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
                                    ledger_path=temp / "barred.jsonl", backends={"antigravity-cli": barred_agy})
         barred_row, barred_answer = barred_run.call("generator", response_dir=temp / "barred", **request)
@@ -3033,11 +3055,11 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
         checks["an Antigravity account that is not let in takes no call of the run: its quotas count as spent and another account answers"] = (
             barred_answer is not None and barred_row["account"] == models["account_label"]("fifth")
             and barred_refusal["account"] == models["account_label"]("third") and barred_refusal["account_verified"] is True
-            and all(barred_run.quota_left("antigravity-cli", "third", model) == -1 for model in (pro, "gemini-3.8-flash-high", "claude-opus-4-6-thinking"))
+            and all(barred_run.spent("antigravity-cli", "third", model) for model in (pro, "gemini-3.8-flash-high", "claude-opus-4-6-thinking"))
             and barred.switches == ["third", "fifth"]
         )
         # An account agm reports switched while agy's credential store keeps the account it had is
-        # passed over for the next one with quota left, not waited on.
+        # passed over for the next one, not waited on.
         class Unmoved(FakeAgm):
             def switch(self, alias):
                 self.switches.append(alias)
@@ -3046,17 +3068,16 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
                 self.active = alias
                 return True
 
-        unmoved = Unmoved({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
-                           "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "main")
+        unmoved = Unmoved(["main", "third", "fifth"], "main")
         unmoved_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
-                                    ledger_path=temp / "unmoved.jsonl", backends={"antigravity-cli": AgyScripted([probe(), answered()], unmoved)})
+                                    ledger_path=temp / "unmoved.jsonl", backends={"antigravity-cli": AgyScripted([probe(), spent, answered()], unmoved)})
         unmoved_row, unmoved_answer = unmoved_run.call("generator", response_dir=temp / "unmoved", **request)
-        checks["an account agm cannot move agy to is passed over for the next one with quota left"] = (
+        checks["an account agm cannot move agy to is passed over for the next one"] = (
             unmoved_answer is not None and unmoved_row["account"] == models["account_label"]("fifth")
             and unmoved.switches == ["third", "fifth"] and unmoved.active == "fifth"
         )
         # A switch agm could not confirm, while agy's credential store moved anyway (agm late, or a person
-        # moving agy): the run follows the store to an account with quota left instead of deferring.
+        # moving agy): the run follows the store to an account no refusal spent instead of deferring.
         class Late(FakeAgm):
             def switch(self, alias):
                 self.switches.append(alias)
@@ -3064,25 +3085,22 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
                     self.active = alias
                 return False
 
-        late = Late({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
-                     "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "main")
+        late = Late(["main", "third", "fifth"], "main")
         late_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
-                                 ledger_path=temp / "late.jsonl", backends={"antigravity-cli": AgyScripted([probe(), answered()], late)})
+                                 ledger_path=temp / "late.jsonl", backends={"antigravity-cli": AgyScripted([probe(), spent, answered()], late)})
         late_row, late_answer = late_run.call("generator", response_dir=temp / "late", **request)
-        checks["a switch agm could not confirm, while agy's credential store moved to an account with quota left, is followed rather than deferred"] = (
+        checks["a switch agm could not confirm, while agy's credential store moved to an account no refusal spent, is followed rather than deferred"] = (
             late_answer is not None and late_row["account"] == models["account_label"]("fifth") and late.switches == ["third", "fifth"]
         )
         # The account a person left agy on is not let in from the start: the probe itself moves on to an
         # account that is, and a later run skips that account without a call for a while.
-        start_barred = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
-                                "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "third")
+        start_barred = FakeAgm(["main", "third", "fifth"], "third")
         start_agy = AgyScripted([invocation("unavailable", models["INELIGIBLE"] + "Eligibility check failed."), probe(), answered()], start_barred)
         start_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
                                   ledger_path=temp / "start-barred.jsonl", backends={"antigravity-cli": start_agy})
         start_row, start_answer = start_run.call("generator", response_dir=temp / "start-barred", **request)
         start_probes = [row for row in start_run.rows if row["role"] == "probe"]
-        later = FakeAgm({"main": {"gemini-pro": 0, "gemini-flash": 0, "other": 10}, "third": {"gemini-pro": 100, "gemini-flash": 100, "other": 100},
-                         "fifth": {"gemini-pro": 90, "gemini-flash": 90, "other": 100}}, "third")
+        later = FakeAgm(["main", "third", "fifth"], "third")
         later_agy = AgyScripted([probe(), answered()], later)
         later_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, budget,
                                   ledger_path=temp / "start-barred.jsonl", backends={"antigravity-cli": later_agy})
@@ -3100,8 +3118,17 @@ def model_generation_controls() -> dict[str, dict[str, object]]:
             and diverged.switch("second") and diverged.cli_address() == "b@example.test"
             and not stuck.switch("second")
             and flip_answer is not None and flip_refusal["account_verified"] is False and flip_refusal["account"] == models["account_label"]("second")
-            and flip_run.quota_left("antigravity-cli", "second", pro) == 99 and flip_run.quota_left("antigravity-cli", "main", pro) == 99
+            and not flip_run.spent("antigravity-cli", "second", pro) and not flip_run.spent("antigravity-cli", "main", pro)
             and flipping_agy.profile == "main"
+        )
+        # Keeping a share of the Antigravity quota free needs quota reads, which a run no longer makes: a
+        # Test Plan that asks for it defers every Antigravity call with that reason.
+        floored = FakeAgm(["main", "second"], "main")
+        floored_run = models["Run"]({"generator": [{"order": 1, "backend": "antigravity-cli", "model": pro}]}, {**budget, "agy_quota_floor": 0.1},
+                                    ledger_path=temp / "floored.jsonl", backends={"antigravity-cli": AgyScripted([probe()], floored)})
+        floored_row, floored_answer = floored_run.call("generator", response_dir=temp / "floored", **request)
+        checks["a Test Plan that keeps part of the Antigravity quota free defers the call, since that needs quota reads the run no longer makes"] = (
+            floored_answer is None and floored_row["outcome"] == "deferred" and "no longer makes" in floored_row["reason"] and floored.switches == []
         )
 
         # Two channels at once: while the first model's pool runs as many calls as it takes, the role's

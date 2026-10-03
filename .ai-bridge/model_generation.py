@@ -482,10 +482,11 @@ def parse_agm_list(text: str) -> dict[str, dict]:
 
 
 class AgmAccounts:
-    """The Antigravity sign-ins agm keeps (its multi-account switcher): which one agy uses and what each
-    quota has left. A switch applies to agy alone (``--target agy``), never to the person's IDE. An
-    account is known by its alias, its address stays in memory for the switch, and a record names it
-    only by a digest."""
+    """The Antigravity sign-ins agm keeps (its multi-account switcher) and which one agy uses. A switch
+    applies to agy alone (``--target agy``), never to the person's IDE. An account is known by its
+    alias, its address stays in memory for the switch, and a record names it only by a digest. Their
+    quotas are never read: that would call Antigravity's own service from a tool other than agy, which
+    its terms forbid (061.1); a refusal tells the run that a quota is spent."""
 
     def __init__(self, executable: str | None = None, runner=subprocess.run):
         self.executable = executable if executable is not None else shutil.which("agm") or ""
@@ -510,16 +511,16 @@ class AgmAccounts:
         return next((alias for alias, known in self.addresses.items() if known == address), "account-" + sha256_text(address)[:8])
 
     def snapshot(self) -> dict[str, dict]:
-        """Every account by alias with its quotas, read live, and whether agy uses it; empty without agm."""
+        """Every account by alias and whether agy uses it, read from agm's own records without asking
+        Antigravity anything (no quota refresh); empty without agm."""
         if not self.executable:
             return {}
-        self._run("refresh-all", timeout=300)
         aliases = parse_agm_aliases(self._run("alias"))
         snapshot = {}
         for address, row in parse_agm_list(self._run("list")).items():
             alias = aliases.get(address) or "account-" + sha256_text(address)[:8]
             self.addresses[alias] = address
-            snapshot[alias] = row
+            snapshot[alias] = {"agy": row["agy"]}
         actual = self.cli_address()
         if actual:
             for alias, row in snapshot.items():
@@ -916,9 +917,10 @@ class Run:
         self.at_limit: dict[str, int] = {}
         # Every halving opens a new epoch: an answer to a call made before it is old news.
         self.epochs: dict[str, int] = {}
-        # Antigravity accounts agm keeps: their quotas read once per run, the (backend, account, quota)
-        # spent, and the account agy used before, put back when the run ends. A quota spent until a
-        # time a rejection named stays spent until then, in this run and the next.
+        # Antigravity accounts agm keeps: listed once per run (their quotas are never read), the
+        # (backend, account, quota) a refusal spent, and the account agy used before, put back when the
+        # run ends. A quota spent until a time a rejection named stays spent until then, in this run and
+        # the next.
         self.agy_accounts: dict[str, dict] = {}
         self.exhausted: set[tuple[str, str, str]] = set()
         self.quota_resets: dict[tuple[str, str, str], str] = {}
@@ -1004,8 +1006,8 @@ class Run:
         return accounts if accounts is not None and getattr(accounts, "executable", "") else None
 
     def read_accounts(self, name: str) -> None:
-        """Read once per run what each account's quotas have left and which one agy uses; the run puts
-        that one back when it ends."""
+        """List once per run the accounts agm keeps and which one agy uses; the run puts that one back
+        when it ends. What a past refusal spent comes from the ledger, not from Antigravity."""
         if name in self.agy_accounts:
             return
         accounts = self.accounts(name)
@@ -1016,9 +1018,9 @@ class Run:
             self.backend(name).profile = active
             self.agy_original[name] = active
             atexit.register(self.restore_accounts)
-            # agm reads each account's short window, not the week: a rejection that named when its
-            # quota resets keeps that quota spent until then on its account, so no call is spent on
-            # finding out again; only a rejection whose account agy's credential store confirmed.
+            # A rejection that named when its quota resets keeps that quota spent until then on its
+            # account, so no call is spent on finding out again; only a rejection whose account agy's
+            # credential store confirmed.
             now = datetime.fromisoformat(self.clock())
             labels = {account_label(alias) or alias: alias for alias in snapshot}
             for row in read_ledger(self.ledger_path):
@@ -1068,34 +1070,35 @@ class Run:
         if resets is not None:
             self.quota_resets[(name, alias, family)] = resets.isoformat(timespec="seconds").replace("+00:00", "Z")
 
-    def quota_left(self, name: str, alias: str, model: str) -> int:
-        """What an account has left of the quota a model draws on, in percent; -1 once spent in this run."""
-        family = quota_family(model)
-        if (name, alias, family) in self.exhausted:
-            return -1
-        return int(((self.agy_accounts.get(name) or {}).get(alias) or {}).get(family, 0))
+    def spent(self, name: str, alias: str, model: str) -> bool:
+        """Whether a refusal spent, in this run or a confirmed one before it, the quota a model draws on
+        at an account."""
+        return (name, alias, quota_family(model)) in self.exhausted
 
     def choose_account(self, name: str, model: str) -> str:
-        """Keep the account agy uses while its quota for the model is above what the Test Plan keeps free,
-        else move agy alone to the account with the most left. Why no account can take the call, or an
-        empty string."""
+        """Keep the account agy uses until a refusal spends its quota for the model, then move agy alone
+        to the next account after it, in alias order, that no refusal has spent. Why no account can take
+        the call, or an empty string."""
         snapshot = self.agy_accounts.get(name) or {}
         if not snapshot:
             return ""
         backend = self.backend(name)
         floor = 100 * float(self.budget.get("agy_quota_floor", 0.0))
-        if backend.profile in snapshot and self.quota_left(name, backend.profile, model) > floor:
+        if floor > 0:
+            # Keeping a share of a quota free needs reading the quota, which the run no longer does.
+            return f"the Test Plan keeps {floor:.0f}% of the Antigravity quota free, which needs quota reads the run no longer makes; set it to 0%"
+        if backend.profile in snapshot and not self.spent(name, backend.profile, model):
             return ""
-        # The account with the most left first; one agm cannot move agy to is passed over for the next.
-        candidates = [
-            alias for alias in sorted(sorted(snapshot), key=lambda alias: -self.quota_left(name, alias, model))
-            if self.quota_left(name, alias, model) > floor
-        ]
+        # The next account after the one in use, around the alias order; one agm cannot move agy to is
+        # passed over for the next.
+        order = sorted(snapshot)
+        start = order.index(backend.profile) + 1 if backend.profile in order else 0
+        candidates = [alias for alias in order[start:] + order[:start] if not self.spent(name, alias, model)]
         if not candidates:
             resets = sorted(at for (owner, _alias, family), at in self.quota_resets.items() if owner == name and family == quota_family(model))
             if resets:
                 return f"no Antigravity account has {quota_family(model)} quota left; the first one refused resets at {resets[0]}"
-            return f"no Antigravity account has more than the {floor:.0f}% of its {quota_family(model)} quota the Test Plan keeps free"
+            return f"no Antigravity account has {quota_family(model)} quota left"
         for alias in candidates:
             if (name, alias) in self.unswitchable:
                 continue
@@ -1182,7 +1185,7 @@ class Run:
         # account Antigravity does not let in hands the probe on to the next, as it hands any call.
         self.read_accounts(name)
         system, prompt = "Answer with one word.", "Reply with OK."
-        for turn in range(max(1, len(self.agy_accounts.get(name) or {}))):
+        for _turn in range(max(1, len(self.agy_accounts.get(name) or {}))):
             self.choose_account(name, PROBE_MODELS[name])
             used = str(getattr(backend, "profile", "") or "")
             invocation = backend.invoke(model=PROBE_MODELS[name], system=system, prompt=prompt, schema=None, usd_cap=0.05, timeout=120)
@@ -1197,11 +1200,6 @@ class Run:
                 "tokens": invocation.tokens, "list_usd": invocation.list_usd, "seconds": invocation.seconds,
                 "windows": invocation.windows,
                 **({"account_verified": verified} if verified is not None else {}),
-                # What each Antigravity account had left when the run began, each named by a digest.
-                **({"quotas": {
-                    account_label(alias) or alias: {family: row.get(family) for family in ("gemini-pro", "gemini-flash", "other")}
-                    for alias, row in sorted((self.agy_accounts.get(name) or {}).items())
-                }} if self.agy_accounts.get(name) and turn == 0 else {}),
             })
             if verified is None:
                 break
@@ -1246,7 +1244,7 @@ class Run:
         """Why the guard would not make a call on this backend and model now, or an empty string."""
         if self.calls >= self.budget["calls_per_run"]:
             return f"the run reached its limit of {int(self.budget['calls_per_run'])} calls"
-        # Where agm reads the accounts' quotas, they decide, and the ledger's count of the smaller pool is not needed.
+        # Where agm keeps several accounts, their refusals decide, and the ledger's count of the smaller pool is not needed.
         if model and self.agy_accounts.get(name):
             return self.choose_account(name, model)
         if model and (name, self.quota_pool(name, model)) in self.rejected_models:

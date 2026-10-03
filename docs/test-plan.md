@@ -767,17 +767,19 @@ gives each role's cap in force beside its most expensive answered call, and ever
 stopped. Since 2026-09-28 both window limits stand at 100%, the person's
 decision to be reviewed later: a call is deferred only when its window is full, so the
 pipeline no longer leaves room for the person's own work on the same subscription. Where
-agm keeps several Antigravity accounts (its multi-account switcher), each run reads what every
-account has left of each quota, Gemini Pro, Gemini Flash and the one Claude and GPT share, and
-moves agy alone, never the person's IDE, to the account with the most left once the one in use
-is down to the share the Test Plan keeps free; a call its quota rejects is asked again on
-another account, and when the run ends agy is back on the account it used before. Which account
+agm keeps several Antigravity accounts (its multi-account switcher), a run reads no quota:
+reading one would call Antigravity's own service from a tool other than agy, which
+Antigravity's terms forbid, so a refusal alone says that a quota (Gemini Pro, Gemini Flash or
+the one Claude and GPT share) is spent, and a refusal costs no tokens. The run works on the
+account agy was left on and, once a call is refused, moves agy alone, never the person's IDE,
+to the next account in alias order and asks the call again there; when the run ends agy is
+back on the account it used before. Which account
 agy uses is what its own credential store holds, as `agm sync` reads it, not agm's list, which
 on 2026-09-29 named the second account while the store still held the first: a switch counts once
 the store holds the new account, and a refusal counts against the account the store confirms. An
 account agm reports switched while the store keeps the account it had (two of five on 2026-10-01) is
-passed over for the next one with quota left, for the rest of the run.
-agm reads an account's short window, not its week: a confirmed refusal that says when its quota
+passed over for the next one, for the rest of the run.
+A confirmed refusal that says when its quota
 resets keeps that quota spent on its account until then, in the next runs too. Every account has
 a weekly quota of its own. The accounts are alike: a run works on the one agy was left on and
 moves only when that one cannot answer. An account Antigravity does not let in, such as one its
@@ -785,7 +787,8 @@ owner has yet to verify, takes no call of the run, not even the probe that start
 of it counts as spent, the call goes to another account, and the next runs skip it without a call
 for six hours. A canary no answer judged (an account or backend that could not be used) has not
 failed: the model waits for its canaries to be asked again. A ledger row
-names the account by a digest, and the probe's row records what each account had left. Without
+names the account by a digest. Keeping a share of an Antigravity quota free would need the quota
+reads, so the share stays at 0%; a larger one defers every Antigravity call and says why. Without
 agm the CLI reports neither quota, so the smaller pool is bounded by its calls in the last seven
 days, counted from the ledger's calls actually made: 30 is about half of that pool's week and
 leaves the rest to the person's own work on it. Independent questions (the assessors of
