@@ -90,6 +90,12 @@ if IMPL_FAULTS_SPEC is None or IMPL_FAULTS_SPEC.loader is None:
     raise RuntimeError("Could not load implementation fault helpers")
 IMPL_FAULTS=importlib.util.module_from_spec(IMPL_FAULTS_SPEC)
 IMPL_FAULTS_SPEC.loader.exec_module(IMPL_FAULTS)
+# The Code map's facts (ADR_0008): every function with the requirement it serves, its tests and its unrun lines.
+CODE_MAP_SPEC=importlib.util.spec_from_file_location("code_map",ROOT/".ai-bridge/code_map.py")
+if CODE_MAP_SPEC is None or CODE_MAP_SPEC.loader is None:
+    raise RuntimeError("Could not load the code map")
+CODE_MAP=importlib.util.module_from_spec(CODE_MAP_SPEC)
+CODE_MAP_SPEC.loader.exec_module(CODE_MAP)
 # The engine extension implements the Test Plan's arid-code rules; the policy must name exactly those.
 MUTATION_EXTENSION_SPEC=importlib.util.spec_from_file_location(
   "ternforge_mutation",ROOT/".ai-bridge/pytest_plugins/ternforge_mutation.py"
@@ -3681,6 +3687,7 @@ def current_evidence_qualification_environment():
       "pin_subsumption_sha256":code(ROOT/".ai-bridge/pin_subsumption.py"),
       "pin_oracle_sha256":code(ROOT/".ai-bridge/pin_oracle.py"),
       "callee_cards_sha256":code(ROOT/".ai-bridge/callee_cards.py"),
+      "code_map_sha256":code(ROOT/".ai-bridge/code_map.py"),
       "qualification_harness_sha256":code(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":code(ROOT/"tests/conftest.py"),
     }
@@ -9181,6 +9188,7 @@ def requirement_monitor_model(base_model):
     scenario_faults=scenario_mutant_actual()
     triage_faults=survivor_triage_actual()
     campaigned=current_campaign_contracts()
+    code_actual=contract_code_actual(code_map_facts())
     fault_model=json.loads(ASSURANCE_FACTS_PATH.read_text()) if ASSURANCE_FACTS_PATH.exists() else {}
     result={
       "schema":"ternforge-requirement-monitor-p34-2",
@@ -9378,6 +9386,8 @@ def requirement_monitor_model(base_model):
           # What the contract's survivors say about its requirement and its code (ADR_0007): judged
           # only where its campaign is current.
           "completeness_actual":{"applicable":contract_id in campaigned,"findings":completeness_findings(contract_id)},
+          # The code that serves it and whether its own tests run it (ADR_0008).
+          "code_actual":code_actual.get(contract_id) or {"functions":[],"run":0,"not_run":0,"lines":{cause:0 for cause in CODE_MAP.CAUSES}},
         }
     # Tests that claim to verify a contract but serve none of the profile's cases
     # (and are not goal/capability scenarios or fault challenges) are kept visible:
@@ -10335,6 +10345,165 @@ def render_model_roles_page():
     return facts
 
 
+CODE_MAP_PAGE=ROOT/"docs/_build/html/code-map.html"
+CODE_MAP_FACTS_PATH=ROOT/"docs/_build/html/code-map-facts.json"
+# The functions the owner's delegate decided need no requirement, each with its reason, and the numbers the gate
+# holds the map to; both live beside the monitor while the owner keeps the product unchanged (ADR_0008).
+CODE_EXEMPTIONS_PATH=ROOT/".ai-bridge/code-exemptions.json"
+CODE_MAP_BASELINE_PATH=ROOT/".ai-bridge/code-map-baseline.json"
+CODE_MAP_CACHE_PATH=ROOT/"test-results/code-map/facts.json"
+CODE_RUN_SNAPSHOTS=ROOT/"test-results/code-map/runs"
+CODE_MAP_PACKAGE="llm_router"
+
+
+def code_map_inputs():
+    """What the Code map's facts are made of: the retained run's coverage and JUnit records, the requirements, the
+    product's code, the exemptions and the code map itself."""
+    return memo_key(CODE_MAP.VULTURE,files_state(
+      str(COVERAGE_JSON_PATH.relative_to(ROOT)),str(JUNIT_PATH.relative_to(ROOT)),"docs/_build/html/needs.json",
+      "src/**/*.py",str(CODE_EXEMPTIONS_PATH.relative_to(ROOT)),".ai-bridge/code_map.py",
+    ))
+
+
+def code_map_facts():
+    """Every function and class of the product with whom it serves and how, the tests that run it, what nothing
+    uses and why its unexecuted lines stay unrun (ADR_0008); read back while its inputs are unchanged, since the
+    retained run's coverage is hundreds of MB."""
+    key=code_map_inputs()
+    try:
+        kept=json.loads(CODE_MAP_CACHE_PATH.read_text())
+    except (OSError,ValueError):
+        kept={}
+    if kept.get("inputs")==key:
+        return kept["facts"]
+    needs=current_needs()
+    coverage=json.loads(COVERAGE_JSON_PATH.read_text())
+    facts=CODE_MAP.code_map(
+      ROOT,coverage,IMPL_FAULTS.resolve_impl_scopes(ROOT,needs),IMPL_FAULTS.descendants_map(needs),
+      junit_depth_rows(),CODE_MAP.load_exemptions(CODE_EXEMPTIONS_PATH),CODE_MAP_PACKAGE,
+    )
+    del coverage
+    CODE_MAP_CACHE_PATH.parent.mkdir(parents=True,exist_ok=True)
+    CODE_MAP_CACHE_PATH.write_text(json.dumps({"inputs":key,"facts":facts},sort_keys=True)+"\n")
+    return facts
+
+
+def contract_code_actual(facts):
+    """Per contract, the functions that serve it (ADR_0008): by its marker or as helpers, how many of its own tests
+    run each one and why its unrun lines stay unrun. Its tests are those that verify it or a contract derived from it.
+    A function its marker names is confirmed only by the contract's own tests; a helper, as on the map, by a test of
+    any contract it serves."""
+    by_contract=defaultdict(list)
+    for row in facts["functions"]:
+        for owner in row["owners"]:
+            own=int((row.get("tests_by_owner") or {}).get(owner) or 0)
+            by_contract[owner].append({
+              "id":f"{row['module']}.{row['qualname']}","qualname":row["qualname"],"path":row["path"],"start":row["start"],"end":row["end"],
+              "via":row["via"],"tests":row["tests"],"contract_tests":own,
+              "confirmed":bool(own) if row["via"]=="direct" else bool(row["confirmed"]),
+              "owners":len(row["owners"]),"causes":{cause:len(lines) for cause,lines in row["causes"].items() if lines},
+              "source":repo_blob_url(row["path"])+f"#L{row['start']}-L{row['end']}",
+            })
+    result={}
+    for contract_id,functions in by_contract.items():
+        functions.sort(key=lambda item:(item["confirmed"],item["via"]!="direct",item["path"],item["start"]))
+        result[contract_id]={
+          "functions":functions,"run":sum(item["confirmed"] for item in functions),
+          "not_run":sum(not item["confirmed"] for item in functions),
+          "lines":{cause:sum(item["causes"].get(cause,0) for item in functions) for cause in CODE_MAP.CAUSES},
+        }
+    return result
+
+
+def code_map_ratchet(facts):
+    """The numbers the map may only lower (ADR_0008): the baseline drops with every number that falls and keeps
+    a rise, which the gate fails until a reason recorded in the baseline names it."""
+    baseline=json.loads(CODE_MAP_BASELINE_PATH.read_text()) if CODE_MAP_BASELINE_PATH.is_file() else {}
+    lowered,rises=CODE_MAP.ratchet(facts["counts"],baseline)
+    if lowered!=baseline:
+        CODE_MAP_BASELINE_PATH.write_text(json.dumps(lowered,indent=2,sort_keys=True)+"\n")
+    return {"held":lowered["numbers"],"rises":rises,"reasons":lowered.get("reasons") or {}}
+
+
+def code_area(module):
+    """The area a module sits in: its subpackage of the package's private code, or the private API package."""
+    parts=module.split(".")
+    if len(parts)>3 and parts[1]=="_internal":
+        return ".".join(parts[:3])
+    if len(parts)>2:
+        return ".".join(parts[:2])
+    return parts[0]+".__root__"
+
+
+def code_area_label(area):
+    name=area.rsplit(".",1)[-1]
+    return {"_api":"Public API","__root__":"Package root"}.get(name) or name.lstrip("_").replace("_"," ").capitalize()
+
+
+def code_changes(before,after):
+    """Up: a function or class a layer fails on now and did not before; down: one it failed on and no longer does."""
+    def fails(values,key):
+        return {row_id for row_id,value in values.items() if value.get(key) in CODE_MAP.FAILING[key]}
+    return {
+      key:{"up":sorted(fails(after,key)-fails(before,key)),"down":sorted(row_id for row_id in fails(before,key)-fails(after,key) if row_id in after)}
+      for key in CODE_MAP.LAYERS
+    }
+
+
+def code_map_model(facts,health_payload):
+    """The Code map as the shared map draws a tree: the package, its areas, their modules and the functions and
+    classes inside, in source order; each function with what every layer says of it. A contract it serves links
+    to its evidence page, as on the Health Map."""
+    contracts={
+      row["id"]:{"title":row.get("label") or row["id"],"href":((row.get("layers") or {}).get("overall") or {}).get("href") or ""}
+      for row in health_payload["rows"] if row.get("level") in {"requirement","treq"}
+    }
+    source=f"src/{CODE_MAP_PACKAGE}"
+    rows=[{"id":CODE_MAP_PACKAGE,"level":"product","label":CODE_MAP_PACKAGE,"short":CODE_MAP_PACKAGE,"href":repo_blob_url(source).replace("/blob/","/tree/",1)}]
+    functions=sorted(facts["functions"],key=lambda row:(row["path"],row["start"],row["qualname"]))
+    areas=sorted({code_area(row["module"]) for row in functions},key=lambda area:(not area.endswith("._api"),area))
+    for area in areas:
+        folder=area.removesuffix(".__root__").replace(".","/")
+        rows.append({"id":area,"level":"goal","parent":CODE_MAP_PACKAGE,"label":code_area_label(area),"short":code_area_label(area),"href":repo_blob_url(f"src/{folder}").replace("/blob/","/tree/",1)})
+        for module in sorted({row["module"] for row in functions if code_area(row["module"])==area}):
+            inside=[row for row in functions if row["module"]==module]
+            path=inside[0]["path"]
+            rows.append({"id":module,"level":"feature","parent":area,"label":Path(path).stem,"short":Path(path).stem,"href":repo_blob_url(path)})
+            for row in inside:
+                rows.append({
+                  "id":f"{module}.{row['qualname']}","level":"requirement" if row["kind"]=="function" else "treq","parent":module,
+                  "label":row["qualname"],"short":row["qualname"],"weight":max(int(row["statements"]),1),
+                  "href":repo_blob_url(row["path"])+f"#L{row['start']}-L{row['end']}",
+                  "ref":row["id"],"path":row["path"],"start":row["start"],"end":row["end"],"kind":row["kind"],
+                  "layers":row["layers"],"owners":row["owners"],"via":row["via"],"tests":row["tests"],"owner_tests":row["owner_tests"],
+                  "causes":row["causes"],"unused":(row.get("unused") or {}).get("what") or "",
+                  "markers":[[marker["impl_id"],marker["kind"],marker["start"],marker["end"]] for marker in row.get("markers") or []],
+                  "exemption":(row.get("exemption") or {}).get("reason") or "",
+                })
+    run=health_payload["insights"]["run"]
+    values={row["id"]:row["layers"] for row in rows if row.get("layers")}
+    # The map's facts count only while their producer passes its control for the current code map (061).
+    qualified=_producer_qualified("PRODUCER_CODE_MAP")
+    stamp={**run,**({} if qualified else {"note":"code map producer not qualified"})}
+    return {
+      "qualified":qualified,
+      "rows":rows,"counts":facts["counts"],"failing":CODE_MAP.failing(facts["counts"]),"loose":facts.get("loose") or [],
+      "contracts":{contract_id:contracts.get(contract_id) or {"title":contract_id,"href":""} for contract_id in sorted({owner for row in functions for owner in row["owners"]})},
+      "insights":{"run":stamp,"delta":run_delta(CODE_RUN_SNAPSHOTS,"code-map-run-1",run,values,code_changes)},
+    }
+
+
+def render_code_map_page(health_payload):
+    """The Code map: the product bottom-up, function by function, on the Health Map's own map."""
+    facts=code_map_facts()
+    ratchet=code_map_ratchet(facts)
+    model=code_map_model(facts,health_payload)
+    model["ratchet"]=ratchet
+    CODE_MAP_FACTS_PATH.write_text(json.dumps({**facts,"ratchet":ratchet},indent=1,sort_keys=True)+"\n")
+    CODE_MAP_PAGE.write_text(portal_map_shell(CODE_MAP_PAGE,"Code map",MAP_PAGES.code_map_article(stable_json(model),vendored_d3_hierarchy())))
+    return model
+
+
 def integrate_mutation_portal():
     ensure_root_favicon()
     remove_retired_mutation_artifacts()
@@ -10353,6 +10522,7 @@ def integrate_mutation_portal():
     health_payload,_depth_payload=render_health_map_page()
     explorer=render_explorer_page(health_payload)
     render_model_roles_page()
+    render_code_map_page(health_payload)
     patch_monitor_history(explorer)
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()

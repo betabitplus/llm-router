@@ -1,0 +1,13 @@
+{
+  "accepted": [],
+  "numbers": {
+    "lines:extraneous": 6,
+    "lines:no-requirement": 72,
+    "lines:no-test": 299,
+    "owner:none": 61,
+    "run:not-run": 46,
+    "used:unused": 7
+  },
+  "reasons": {},
+  "schema": "ternforge-code-map-baseline-1"
+}

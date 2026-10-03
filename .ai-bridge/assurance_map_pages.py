@@ -458,7 +458,7 @@ const MAP_OPENS={product:"Product / System assurance",goal:"Outcome assurance",f
 const MAP_SECTIONS=[["cross-capability-integration","Cross-capability integration"],["capability-integration","Capability integration"],["outcome-validation","Outcome validation"],["requirement-support","Requirement support"],["capability-support","Capability support"],["goal-support","Goal support"],["technical-support","Technical support"],["ce-coverage-","Verification matrix"],["ce-faults-","Fault model"]];
 function mapOpens(row,href){
  const anchor=String(href||"").split("#")[1]||"",section=MAP_SECTIONS.find(([mark])=>anchor.includes(mark));
- return MAP_OPENS[row.level]+(section?" › "+section[1]:"");
+ return mapWords.opens[row.level]+(section?" › "+section[1]:"");
 }
 function mapRunLabel(iso){
  const date=new Date(iso);
@@ -476,7 +476,8 @@ function mapStamp(run){
  return"Retained run <b>"+escapeHtml(mapRunLabel(run.started_at))+"</b> ("+mapRunAge(run.started_at)+")"
    +(run.checks?" · "+run.checks+" checks":"")
    +(run.commit?" · commit <code>"+escapeHtml(run.commit)+"</code>":"")
-   +(fresh?' · evidence <span class="'+(stale?"failed":"passed")+'">'+(stale?stale+" stale":"all current")+"</span>":"");
+   +(fresh?' · evidence <span class="'+(stale?"failed":"passed")+'">'+(stale?stale+" stale":"all current")+"</span>":"")
+   +(run.note?' · <span class="failed">'+escapeHtml(run.note)+"</span>":"");
 }
 // Hints: one plain sentence for anything with data-tip, above it, or below it when there is no room.
 function mapHint(hint){
@@ -533,7 +534,18 @@ const MAP_HEALTH_LAYERS=[
 ];
 // Every kind has its glyph wherever a mark is named: the Kind switch, the card, the contracts table and Find.
 const MAP_KIND_ICON={product:"fa-cubes",goal:"fa-bullseye",feature:"fa-puzzle-piece",requirement:"fa-file-contract",treq:"fa-gear"};
-const mapKindIcon=level=>'<i class="fa-solid '+MAP_KIND_ICON[level]+' tf-map-kind-icon" aria-hidden="true"></i>';
+// What a map calls its marks, the groups they sit in and where a click goes: the Health Map's words are every map's
+// defaults, and another map (the Code map) gives its own to mapPage before anything is drawn. The explorer runs on the
+// defaults.
+const MAP_TERMS={kind:MAP_KIND,icon:MAP_KIND_ICON,opens:MAP_OPENS,one:"contract",many:"contracts",goal:"Goal",tree:"Goal › capability",noGoal:"No goal",
+ name:["Contract","Contract, grouped as chosen"],csv:["goal","capability"],
+ kinds:[["","fa-list-check","All","Every contract: requirements and technical requirements."],
+   ["requirement",MAP_KIND_ICON.requirement,"Requirements","Only requirements: what the product must do for the people who use it."],
+   ["treq",MAP_KIND_ICON.treq,"Technical requirements","Only technical requirements: the engineering rules behind the requirements."]],
+ tileHelp:"Each tile is a contract with its technical requirements beside it; ",
+ stripFoot:"Pick a row to open its map. Each column is one contract, grouped by goal: point at it to compare layers."};
+let mapWords=MAP_TERMS;
+const mapKindIcon=level=>'<i class="fa-solid '+mapWords.icon[level]+' tf-map-kind-icon" aria-hidden="true"></i>';
 function mapTree(rows){
  const root=rows[0],rowById=new Map(rows.map(row=>[row.id,row])),children=new Map();
  rows.slice(1).forEach(row=>{if(!children.has(row.parent))children.set(row.parent,[]);children.get(row.parent).push(row)});
@@ -553,6 +565,7 @@ function mapDelta(delta,key,words){
 }
 function mapChanges(button,delta,apply){
  let on=false;
+ if(!button)return{on:()=>on};
  if(delta.baseline)button.dataset.tip="Outline what changed since the run of "+mapRunLabel(delta.baseline.started_at)+".";
  else{button.setAttribute("aria-disabled","true");button.dataset.tip="No earlier retained run to compare with yet."}
  button.addEventListener("click",()=>{if(!delta.baseline)return;on=!on;button.setAttribute("aria-pressed",String(on));apply(on)});
@@ -591,7 +604,7 @@ function mapStrip(o){
  const narrow=matchMedia("(max-width:640px)");
  const edges={left:bar.querySelector(".tf-map-edge.left"),right:bar.querySelector(".tf-map-edge.right")};
  const byKey=new Map(o.layers.map(layer=>[layer[0],layer]));
- const FOOT_IDLE="Pick a row to open its map. Each column is one contract, grouped by goal: point at it to compare layers.";
+ const FOOT_IDLE=mapWords.stripFoot;
  const motion=()=>matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
  let pinWidth=0,edgeFrame=0,hold=null,picked=null,drag=null,dropped=false,folded=null,full=null,lastLayer=null;
  const order=()=>o.groups().flatMap(group=>group.keys);
@@ -979,7 +992,8 @@ function mapTreemap(root,children,inset){
    if(!kids.length)return{kind:"leaf",row};
    return{kind:row.level,row,children:kids.map(build)};
  };
- const hierarchy=d3.hierarchy(build(root)).sum(node=>node.kind==="leaf"?1:(HEAD_UNITS[node.kind]||0));
+ // A leaf weighs one unit unless its row says otherwise (a function weighs its statements).
+ const hierarchy=d3.hierarchy(build(root)).sum(node=>node.kind==="leaf"?node.row.weight||1:(HEAD_UNITS[node.kind]||0));
  const map={hierarchy,compact:new Set(),tiled:0,width:0,height:0};
  const splits=new Map();
  let squeeze=1,record=false;
@@ -1348,7 +1362,7 @@ function mapFilters(o){
  const lead=$("tf-map-lead"),box=$("tf-map-filters"),chips=$("tf-map-chips"),badge=$("tf-map-filter-badge"),count=$("tf-map-total");
  const body=$("tf-map-body"),panel=$("tf-map-panel"),toggleButton=$("tf-map-panel-toggle"),panelBody=$("tf-map-panel-body");
  const help=text=>' <span class="tf-map-help" aria-hidden="true" data-tip="'+escapeHtml(text)+'">?</span>';
- const counted=o.leaves.length,noun=o.noun||"contracts";
+ const counted=o.leaves.length,noun=o.noun||mapWords.many;
  let chipsHtml="";
  // Chips and how many rows they keep in place of the run stamp, and the badge on Filters.
  f.render=()=>{
@@ -1467,9 +1481,7 @@ function mapFilters(o){
 //   leaves, filters
 function mapKinds(o){
  const box=document.getElementById("tf-map-kinds");
- const KINDS=[["","fa-list-check","All","Every contract: requirements and technical requirements."],
-   ["requirement",MAP_KIND_ICON.requirement,"Requirements","Only requirements: what the product must do for the people who use it."],
-   ["treq",MAP_KIND_ICON.treq,"Technical requirements","Only technical requirements: the engineering rules behind the requirements."]];
+ const KINDS=mapWords.kinds;
  // The switch is drawn once; a filter changes only its counts and which kind is chosen, so it never shifts.
  box.innerHTML=KINDS.map(([value,icon,name,tip])=>'<button type="button" class="tf-map-kind" data-facet="kind" data-value="'+value+'" aria-pressed="false" data-tip="'+escapeHtml(tip)+'">'
    +'<span class="tf-map-kind-name"><i class="fa-solid '+icon+'" aria-hidden="true"></i>'+name+"</span><b></b></button>").join("");
@@ -1553,7 +1565,7 @@ function mapTable(o){
    summary.title=summary.textContent;
    const header=headerHtml();
    let html="";
-   if(!visible.length)html='<tr><td colspan="'+o.columns.length+'" class="tf-map-list-empty">No contract matches the filters.</td></tr>';
+   if(!visible.length)html='<tr><td colspan="'+o.columns.length+'" class="tf-map-list-empty">No '+mapWords.one+' matches the filters.</td></tr>';
    else if(t.group==="tree"){
      o.tree.goals.forEach(goal=>{
        const inGoal=visible.filter(row=>o.tree.goalOf(row)===goal.id);
@@ -1749,8 +1761,8 @@ function mapFind(o){
 //     mapPage returns for its own drawing
 // Nothing runs until start().
 const MAP_TABLE_HELP="Click a cell or an option to narrow the table; the same filters apply to every layer.";
-const MAP_TILE_HELP="Each tile is a contract with its technical requirements beside it; ";
 function mapPage(o){
+ mapWords={...MAP_TERMS,...(o.terms||{})};
  const $=id=>document.getElementById(id);
  const tree=o.tree,delta=o.insights?.delta||{};
  const LAYER_KEYS=o.layers.map(layer=>layer[0]);
@@ -1766,7 +1778,7 @@ function mapPage(o){
  const card=mapCard($("tf-map-card")),hint=mapHint($("tf-map-hint"));
  const deltaOf=key=>(delta.layers||{})[key]||{up:[],down:[]};
  const labelOf=key=>o.layers.find(layer=>layer[0]===key)[1];
- const ariaOf=(row,projection)=>{const says=o.says(row,projection);return MAP_KIND[row.level]+": "+row.label+(says?", "+says.text:"")};
+ const ariaOf=(row,projection)=>{const says=o.says(row,projection);return mapWords.kind[row.level]+": "+row.label+(says?", "+says.text:"")};
  // What a mark shows: a ring cell its own layer, a ring its ring set's projection, a tile the projection of the tiles.
  const projectionOf=entry=>entry.layer||(entry.radial?entry.set.projection:page.tiled);
  // Hover and focus: the outline or the arc and the lineage show at once and stay while the card is open; the card
@@ -1787,7 +1799,7 @@ function mapPage(o){
  // The card: kind and what the view says, the name and where it sits, the page's rows, and where a click goes.
  function cardHtml(entry){
    const row=entry.row,projection=projectionOf(entry),says=o.says(row,projection),part=o.describe(row,projection,entry),path=tree.ancestors(row);
-   return'<div class="tf-map-card-head"><span class="tf-map-card-kind">'+mapKindIcon(row.level)+MAP_KIND[row.level]+"</span>"+(says?'<span class="tf-map-pill'+(says.tone?" "+says.tone:"")+'">'+escapeHtml(says.text)+"</span>":"")+"</div>"
+   return'<div class="tf-map-card-head"><span class="tf-map-card-kind">'+mapKindIcon(row.level)+mapWords.kind[row.level]+"</span>"+(says?'<span class="tf-map-pill'+(says.tone?" "+says.tone:"")+'">'+escapeHtml(says.text)+"</span>":"")+"</div>"
      +'<div class="tf-map-card-title">'+escapeHtml(row.label)+"</div>"
      +(path.length?'<div class="tf-map-card-path">'+path.map(item=>escapeHtml(clip(item.short||item.label,42))).join(" › ")+"</div>":"")
      +'<div class="tf-map-card-rows">'+part.body+"</div>"+(part.extra||"")
@@ -1850,14 +1862,14 @@ function mapPage(o){
    const view=viewOf(key),words=o.words(view.projection),legend=o.legend(view.projection);
    return(view.ask?'<span class="tf-map-ask" title="'+escapeHtml(view.ask)+'">'+escapeHtml(view.ask)+"</span>":"")+legend.items
      +(page.changesOn&&delta.baseline?'<span class="tf-map-changes-key"><i class="up"></i>'+escapeHtml(words[0])+'<i class="down"></i>'+escapeHtml(words[1])+" since "+escapeHtml(mapRunLabel(delta.baseline.started_at))+"</span>":"")
-     +'<span class="tf-map-help" data-tip="'+escapeHtml((view.form==="tiles"?MAP_TILE_HELP:"")+legend.help)+'">?</span>';
+     +'<span class="tf-map-help" data-tip="'+escapeHtml((view.form==="tiles"?mapWords.tileHelp:"")+legend.help)+'">?</span>';
  }
  // Kind and goal narrow the contracts in every view: kind opens every panel as a switch and goal closes it. The panel
  // follows the view; the table keeps the panel of the view it tabulates, and only its hint says a click narrows the
  // table.
  const facets={...o.facets,
-   kind:{label:"Kind",switch:true,options:[["requirement","Requirement"],["treq","Technical requirement"]],test:(row,value)=>tree.isLeaf(row)&&(!value||row.level===value)},
-   goal:{label:"Goal",options:tree.goals.map(goal=>[goal.id,goal.short||goal.label]),test:(row,value)=>tree.isLeaf(row)&&tree.goalOf.get(row.id)===value}};
+   kind:{label:"Kind",switch:true,options:mapWords.kinds.filter(([value])=>value).map(([value])=>[value,mapWords.kind[value]]),test:(row,value)=>tree.isLeaf(row)&&(!value||row.level===value)},
+   goal:{label:mapWords.goal,options:tree.goals.map(goal=>[goal.id,goal.short||goal.label]),test:(row,value)=>tree.isLeaf(row)&&tree.goalOf.get(row.id)===value}};
  const panelOf=key=>{
    const view=viewOf(key),panel=o.panels[view.key]||(view.form==="table"?{...o.panels[view.projection],help:MAP_TABLE_HELP}:o.panels[view.projection]);
    return{...panel,facets:[...panel.facets,"goal"]};
@@ -1867,16 +1879,16 @@ function mapPage(o){
  const kinds=mapKinds({leaves:tree.leaves,filters});
  // Every table starts with the contract, groups it by goal and capability, by goal or not at all, and downloads the same
  // first columns; the page adds its own columns and groups.
- const goalName=key=>tree.rowById.get(key)?.short||tree.rowById.get(key)?.label||"No goal";
+ const goalName=key=>tree.rowById.get(key)?.short||tree.rowById.get(key)?.label||mapWords.noGoal;
  const table=mapTable({...o.table,
-   columns:[["name","Contract","Contract, grouped as chosen","name"],...o.table.columns],
-   groups:[["tree","Goal › capability"],["goal","Goal"],...o.table.groups,["none","None"]],
+   columns:[["name",...mapWords.name,"name"],...o.table.columns],
+   groups:[["tree",mapWords.tree],["goal",mapWords.goal],...o.table.groups,["none","None"]],
    keys:(row,group)=>group==="goal"?[tree.goalOf.get(row.id)]:o.table.keys(row,group),
    name:(group,key)=>group==="goal"?goalName(key):o.table.name(group,key),
    order:(group,keys)=>group==="goal"?tree.goals.map(goal=>goal.id).filter(key=>keys.includes(key)):o.table.order(group,keys),
    sortValue:(row,key)=>key==="name"?(row.short||row.label).toLowerCase():o.table.sortValue(row,key),
-   stats:list=>plural(list.length,"contract","contracts")+" · "+o.table.stats(list),
-   csv:{file:o.table.csv.file,head:["id","title","kind","goal","capability",...o.table.csv.head],line:row=>{const path=tree.ancestors(row);return[row.id,row.label,MAP_KIND[row.level],path.find(item=>item.level==="goal")?.label||"",path.find(item=>item.level==="feature")?.label||"",...o.table.csv.line(row)]}},
+   stats:list=>plural(list.length,mapWords.one,mapWords.many)+" · "+o.table.stats(list),
+   csv:{file:o.table.csv.file,head:["id","title","kind",...mapWords.csv,...o.table.csv.head],line:row=>{const path=tree.ancestors(row);return[row.id,row.label,mapWords.kind[row.level],path.find(item=>item.level==="goal")?.label||"",path.find(item=>item.level==="feature")?.label||"",...o.table.csv.line(row)]}},
    rows:()=>{const shown=filters.shown(false);return tree.leaves.filter(row=>!shown||shown.has(row.id))},
    tree:{goals:tree.goals,goalOf:row=>tree.goalOf.get(row.id),features:goal=>(tree.children.get(goal.id)||[]).filter(item=>item.level==="feature"),inside:feature=>new Set(tree.inside(feature).map(row=>row.id))},
    href:row=>o.href(row,"overall"),height:()=>frame.viewH,changed:()=>writeHash(),
@@ -1921,7 +1933,7 @@ function mapPage(o){
    const shown=filters.shown(false),rows=tree.leaves.filter(row=>!shown||shown.has(row.id));
    if(!rows.length||!rows.every(row=>o.blank(row,view.projection)))return"";
    const label=o.tone?.(rows[0],view.projection)?.label||"blank";
-   const kept=rows.length===1?"the one contract they keep is":rows.length===2?"both contracts they keep are":"all "+rows.length+" contracts they keep are";
+   const kept=rows.length===1?"the one "+mapWords.one+" they keep is":rows.length===2?"both "+mapWords.many+" they keep are":"all "+rows.length+" "+mapWords.many+" they keep are";
    return"Nothing to show under the filters: "+kept+" “"+label+"”.";
  }
  function thumbOf(key){const view=openingView(key);return viewThumb(view).replace("<svg ",'<svg data-view="'+view.key+'" ')}
@@ -1945,7 +1957,7 @@ function mapPage(o){
    foot:row=>strip.order().map(key=>{const says=o.says(row,key);return'<span class="tf-map-mark'+(says?.tone?" "+says.tone:"")+'">'+escapeHtml(labelOf(key))+": "+escapeHtml(says?.text||"–")+"</span>"}).join(" · "),
    current:()=>page.layer,currentRow:()=>viewOf(page.view).form==="table"||LAYER_KEYS.includes(page.view)?page.layer:page.view,
    select:(key,focus)=>select(opening(key),focus),focus:focusRow});
- const find=mapFind({hint,pick:focusRow,items:()=>tree.rows.filter(row=>row.level!=="product").map(row=>({row,path:tree.ancestors(row).map(item=>item.short||item.label).join(" › "),kind:MAP_KIND[row.level],...o.find(row)}))});
+ const find=mapFind({hint,pick:focusRow,items:()=>tree.rows.filter(row=>row.level!=="product").map(row=>({row,path:tree.ancestors(row).map(item=>item.short||item.label).join(" › "),kind:mapWords.kind[row.level],...o.find(row)}))});
  function select(key,focus,keepFocus){
    const view=viewOf(key);
    if(!view)return;
@@ -2149,20 +2161,27 @@ def map_find(label: str, placeholder: str, foot: str) -> str:
     )
 
 
-def map_frame(rings_label: str, tiles_label: str) -> str:
+def map_frame(
+    rings_label: str,
+    tiles_label: str,
+    *,
+    marks: tuple[str, str] = ("Contracts", "Contracts by kind"),
+    find: str = "Find a goal, capability or contract by name or ID",
+) -> str:
     """The legend bar and the body: the side panel, then the stage with the rings, the map and the
     contracts table; then Find and the hover card. The legend bar is one line aligned with the view, whose overflow
     opens from a +N at its end; a layer's views are on its open card in the strip. The side panel starts with the
-    Kind switch, the same in every view, above the view's own filters."""
+    Kind switch, the same in every view, above the view's own filters. A map without rings (no rings_label) has no
+    rings view; marks names its marks in the panel and find the place holder of Find."""
     return (
         '<div class="tf-map-legendbar" id="tf-map-legendbar">'
         '<div class="tf-map-legend" id="tf-map-legend" aria-hidden="true"></div>'
         '<div class="tf-map-more-pop" id="tf-map-more-pop" aria-hidden="true" hidden></div></div>'
         '<div class="tf-map-body" id="tf-map-body">'
-        + map_panel("Contracts", "Contracts by kind", "Filters for the current layer")
+        + map_panel(marks[0], marks[1], "Filters for the current layer")
         + '<div class="tf-map-stage" id="tf-map-stage">'
-        f'<svg class="tf-map-view tf-map-rings" id="tf-map-rings" role="group" aria-label="{rings_label}"></svg>'
-        f'<svg class="tf-map-view tf-map-tiles" id="tf-map-tiles" role="group" aria-label="{tiles_label}" hidden></svg>'
+        + (f'<svg class="tf-map-view tf-map-rings" id="tf-map-rings" role="group" aria-label="{rings_label}"></svg>' if rings_label else "")
+        + f'<svg class="tf-map-view tf-map-tiles" id="tf-map-tiles" role="group" aria-label="{tiles_label}" hidden></svg>'
         '<div class="tf-map-list-view" id="tf-map-list-view" hidden><div class="tf-map-list-bar">'
         '<span class="tf-map-list-bar-label">Group by</span><span class="tf-map-seg" id="tf-map-group-by"></span>'
         '<span class="tf-map-summary" id="tf-map-summary"></span>'
@@ -2172,15 +2191,16 @@ def map_frame(rings_label: str, tiles_label: str) -> str:
         "</div></div>"
         + map_find(
             "Find on the map",
-            "Find a goal, capability or contract by name or ID",
+            find,
             "↑ ↓ move · Enter shows it in the current layer · Esc closes",
         )
         + '<div id="tf-map-card" class="tf-map-card" role="tooltip" aria-hidden="true"></div>'
     )
 
 
-def map_strip(page: str, legend: str) -> str:
-    """The layer strip: cards, scroll edges, the All layers table and a narrow page's views row."""
+def map_strip(page: str, legend: str, unit: str = "contract") -> str:
+    """The layer strip: cards, scroll edges, the All layers table and a narrow page's views row. unit names what a
+    column of the All layers table stands for."""
     return (
         '<div class="tf-map-layerbar" id="tf-map-layerbar">'
         '<div class="tf-map-scroller" id="tf-map-scroller">'
@@ -2191,7 +2211,7 @@ def map_strip(page: str, legend: str) -> str:
         '<button type="button" tabindex="-1" data-map-scroll="1"></button></div>'
         '<button type="button" class="tf-map-table-toggle" id="tf-map-table-toggle" aria-expanded="false" '
         'aria-controls="tf-map-table" aria-haspopup="dialog" '
-        'data-tip="Every layer as one row and every contract as one column; a row opens its map (T).">'
+        f'data-tip="Every layer as one row and every {unit} as one column; a row opens its map (T).">'
         '<i class="fa-solid fa-table-list" aria-hidden="true"></i>All layers'
         '<i class="fa-solid fa-chevron-down tf-map-chevron" aria-hidden="true"></i></button>'
         f'<div class="tf-map-table" id="tf-map-table" role="dialog" aria-label="All {page.lower()} layers" hidden>'
@@ -4054,4 +4074,273 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
         ".ai-bridge/survivor-verdicts, the survivor triage, the canary results, the assessors' calibration and the model ledger. "
         "Every stored question and answer a record names is published beside this page, and the explorer links each survivor's.</p>\n"
         f'<script type="application/json" id="tf-model-roles-facts">{embedded}</script>\n</section>'
+    )
+
+
+CODE_MAP_CSS = r"""/* The Code map's palette: each layer's values. What a layer fails on is health's red, the unrun lines' other causes
+   amber (no test) and violet (extraneous); what passes is health's green, a function marked for a requirement a deeper
+   one; what passes with a reason is a cool grey and what a layer does not judge is health's N/A grey. */
+#verification-health-map{--tf-cm-marked:#4fae6e;--tf-cm-helper:var(--tf-hm-pass);--tf-cm-exempt:#a7b6c4;--tf-cm-none:var(--tf-hm-fail);--tf-cm-run:var(--tf-hm-pass);--tf-cm-not-run:var(--tf-hm-fail);--tf-cm-na:var(--tf-hm-na);--tf-cm-used:var(--tf-hm-pass);--tf-cm-unused:var(--tf-hm-fail);--tf-cm-clean:var(--tf-hm-pass);--tf-cm-deactivated:#a7b6c4;--tf-cm-no-test:#e8a33d;--tf-cm-no-requirement:var(--tf-hm-fail);--tf-cm-extraneous:#8f63c4}
+html[data-theme=dark] #verification-health-map{--tf-cm-marked:#2f8a52;--tf-cm-exempt:#4d5b69;--tf-cm-deactivated:#4d5b69;--tf-cm-no-test:#c98a2a;--tf-cm-extraneous:#9a74cf}
+#verification-health-map .tf-map-tile.cm-marked{fill:var(--tf-cm-marked)}
+#verification-health-map .tf-map-tile.cm-helper{fill:var(--tf-cm-helper)}
+#verification-health-map .tf-map-tile.cm-exempt{fill:var(--tf-cm-exempt)}
+#verification-health-map .tf-map-tile.cm-none{fill:var(--tf-cm-none)}
+#verification-health-map .tf-map-tile.cm-run{fill:var(--tf-cm-run)}
+#verification-health-map .tf-map-tile.cm-not-run{fill:var(--tf-cm-not-run)}
+#verification-health-map .tf-map-tile.cm-na{fill:var(--tf-cm-na)}
+#verification-health-map .tf-map-tile.cm-used{fill:var(--tf-cm-used)}
+#verification-health-map .tf-map-tile.cm-unused{fill:var(--tf-cm-unused)}
+#verification-health-map .tf-map-tile.cm-clean{fill:var(--tf-cm-clean)}
+#verification-health-map .tf-map-tile.cm-deactivated{fill:var(--tf-cm-deactivated)}
+#verification-health-map .tf-map-tile.cm-no-test{fill:var(--tf-cm-no-test)}
+#verification-health-map .tf-map-tile.cm-no-requirement{fill:var(--tf-cm-no-requirement)}
+#verification-health-map .tf-map-tile.cm-extraneous{fill:var(--tf-cm-extraneous)}
+/* The card names every layer's value for the mark, one chip per layer. */
+.tf-cm-strip{grid-template-columns:repeat(4,minmax(0,1fr))}
+/* The table: each layer's value as its swatch and a short word, the requirements a function serves as links. */
+.tf-cm-cell{width:1%;white-space:nowrap}
+.tf-cm-cell .tf-map-sw{margin-right:.35rem;vertical-align:-1px}
+.tf-cm-cell.failed{color:var(--tf-hm-fail-ink);font-weight:650}
+.tf-cm-serves{min-width:12rem;max-width:22rem;font-size:.7rem}
+.tf-cm-serves a{font-family:var(--pst-font-family-monospace);font-size:.66rem}
+.tf-cm-causes{font-size:.7rem;white-space:nowrap;color:var(--pst-color-text-muted)}
+.tf-cm-causes b{font-weight:700;color:var(--tf-hm-fail-ink)}
+#verification-health-map .tf-map-list-table .name small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* A layer's panel opens with the numbers it may only lower. */
+.tf-cm-ratchet{margin:0 0 .7rem;font-size:.76rem;color:var(--pst-color-text-muted)}
+.tf-cm-ratchet b{font-weight:700;color:var(--pst-color-text-base)}
+.tf-cm-ratchet b.failed{color:var(--tf-hm-fail-ink)}"""
+
+CODE_MAP_JS = r"""// The Code map: the product bottom-up, drawn as the Health Map draws contracts. Areas and modules hold the functions,
+// and the classes nothing uses; four layers ask four questions of each (ADR_0008), every layer as a map and a table.
+const CODE_LAYERS=[
+ ["owner","Owner","Does every function serve a requirement? A function serves the requirements whose @impl marker sits on it or inside it, and a helper those of the functions that call it; one that serves none needs a requirement or a recorded reason.","Owner"],
+ ["run","Run by its tests","Do a requirement's own tests run its code? A test counts for a requirement when it verifies the requirement or one derived from it.","Run"],
+ ["used","Used","Is there code nothing uses? Vulture names the functions and classes that nothing in the package uses; what the package exports counts as used by its callers.","Used"],
+ ["lines","Unexecuted lines","Why does no test run these lines? Each takes one cause (DO-178C 6.4.4.3): no test of the requirement that owns them, no requirement, extraneous code, or code deactivated on purpose.","Lines"]
+];
+// Each layer's values in legend order, passing first: [value, name, tone, short word for the table].
+const CODE_VALUES={
+ owner:[["marked","Marked for a requirement","passed","Marked"],["helper","Helper of a requirement","passed","Helper"],["exempt","No requirement needed","passed","Exempt"],["none","Serves no requirement","failed","None"]],
+ run:[["run","Run by its tests","passed","Run"],["not-run","Not run by its tests","failed","Not run"],["na","No requirement to test it","na","–"]],
+ used:[["used","Used","passed","Used"],["unused","Nothing uses it","failed","Unused"]],
+ lines:[["clean","Every line runs","passed","–"],["deactivated","Deactivated on purpose","passed","Deactivated"],["no-test","No test","failed","No test"],["no-requirement","No requirement","failed","No requirement"],["extraneous","Extraneous","failed","Extraneous"]]
+};
+const CODE_ASK={owner:"Which requirement does each function serve?",run:"Do its requirement's tests run it?",used:"Does anything use it?",lines:"Why does no test run its lines?"};
+// What a layer's failing marks are, for a card and a group: "61 of 452 serve none".
+const CODE_FAILS={owner:"serve none",run:"not run",used:"unused",lines:"with unrun lines"};
+const CODE_CAUSES=[["no-test","No test"],["no-requirement","No requirement"],["extraneous","Extraneous"],["deactivated","Deactivated"]];
+const CODE_TERMS={
+ kind:{product:"Package",goal:"Area",feature:"Module",requirement:"Function",treq:"Class"},
+ icon:{product:"fa-cubes",goal:"fa-layer-group",feature:"fa-file-code",requirement:"fa-code",treq:"fa-shapes"},
+ opens:{product:"Source on GitHub",goal:"Source on GitHub",feature:"Source on GitHub",requirement:"Source on GitHub",treq:"Source on GitHub"},
+ one:"function or class",many:"functions and classes",goal:"Area",tree:"Area › module",noGoal:"No area",
+ name:["Function","Function or class, grouped as chosen"],csv:["area","module"],
+ kinds:[["","fa-list-check","All","Every function, and every class nothing uses."],
+   ["requirement","fa-code","Functions","Only functions and methods."],
+   ["treq","fa-shapes","Classes","Only the classes nothing uses: they have no function to show them by."]],
+ tileHelp:"Each tile is a function, as large as its statements, in its module and area; ",
+ stripFoot:"Pick a row to open its map. Each column is one function, grouped by area: point at it to compare layers."
+};
+function codeMap(model){
+let map=null;
+const tree=mapTree(model.rows),{root}=tree,leaves=tree.leaves;
+const META=Object.fromEntries(Object.entries(CODE_VALUES).map(([key,values])=>[key,new Map(values.map(([value,label,tone,word],rank)=>[value,{label,tone,word,rank}]))]));
+const labelOf=key=>CODE_LAYERS.find(layer=>layer[0]===key)[1];
+const valueOf=(row,key)=>row.layers?.[key];
+const toneOfValue=(key,value)=>META[key].get(value)?.tone||"na";
+const fill=value=>"var(--tf-cm-"+value+")";
+const failsIn=(row,key)=>toneOfValue(key,valueOf(row,key))==="failed";
+const failing=key=>Number(model.failing[key]||0);
+const owned=leaves.filter(row=>(row.owners||[]).length).length;
+const unrunLines=row=>["no-test","no-requirement","extraneous"].reduce((sum,cause)=>sum+((row.causes||{})[cause]||[]).length,0);
+const verdict=key=>failing(key)?"failed":"passed";
+const word=value=>value==="passed"?"PASS":value==="failed"?"FAIL":"N/A";
+function countLine(key,short){
+ const n=failing(key);
+ if(key==="lines"){const where=leaves.filter(row=>failsIn(row,"lines")).length;return n?"<b>"+n+"</b>"+(short?" lines":" lines no test runs, in "+where):"every line runs"}
+ const of=key==="run"?owned:leaves.length;
+ return n?"<b>"+n+"</b>"+(short?"/"+of:" of "+of+" "+CODE_FAILS[key]):"all "+of+" pass";
+}
+function verdictHtml(key,row){
+ const value=verdict(key);
+ return'<span class="tf-health-verdict '+value+'"><i class="fa-solid '+(value==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i>'+(row?'<span class="tf-map-row-word"> '+word(value)+"</span>":" "+word(value))+"</span>";
+}
+// Failing layers first, most failing marks first; passing layers behind them. No layer is pinned: the four stand side
+// by side.
+function layerGroups(){
+ const keys=CODE_LAYERS.map(layer=>layer[0]);
+ return[{tone:"",keys:[]},{tone:"failed",icon:"fa-circle-xmark",label:"Failing",keys:keys.filter(key=>failing(key))},{tone:"passed",icon:"fa-circle-check",label:"Passing",keys:keys.filter(key=>!failing(key))}];
+}
+// What a layer says about a mark: a function or class its value; an area or module how many inside it fail there.
+function says(row,key){
+ if(tree.isLeaf(row)){const value=valueOf(row,key);return{text:META[key].get(value)?.label||value,tone:toneOfValue(key,value)}}
+ const inside=tree.inside(row),n=inside.filter(item=>failsIn(item,key)).length;
+ return{text:n?n+" of "+inside.length+" "+CODE_FAILS[key]:"all "+inside.length+" pass",tone:n?"failed":"passed"};
+}
+const contractLink=id=>{const contract=model.contracts[id]||{};return contract.href?'<a href="'+escapeHtml(contract.href)+'" title="'+escapeHtml(contract.title||id)+'">'+escapeHtml(id)+"</a>":escapeHtml(id)};
+function causesText(row){
+ return CODE_CAUSES.map(([cause,label])=>{const lines=(row.causes||{})[cause]||[];return lines.length?label+" "+lines.length:""}).filter(Boolean).join(" · ");
+}
+// The hover card: whom the mark serves and how, the tests that run it, why its lines stay unrun; every layer's value
+// as one chip each. An area or module counts its marks by the layer's values.
+function describe(row,key){
+ let body="";
+ if(tree.isLeaf(row)){
+   const owners=row.owners||[];
+   body+='<div class="sub">Lines '+row.start+"–"+row.end+"</div>";
+   body+='<span class="note">'+(owners.length?"Serves "+escapeHtml(owners.slice(0,4).join(", "))+(owners.length>4?" and "+(owners.length-4)+" more":"")+(row.via==="inherited"?", as a helper of the functions that call it":", by its @impl marker"):row.exemption?"Needs no requirement: "+escapeHtml(row.exemption):"No @impl marker sits on it or on a function that calls it")+"</span>";
+   // What a marker covers: the lines it sits on, and for ownership the whole function (ADR_0008).
+   (row.markers||[]).forEach(([impl,kind,start,end])=>{const whole=kind==="function"||kind==="method";body+='<span class="note">'+escapeHtml(impl)+(start===end?" sits on line "+start:" sits on lines "+start+"–"+end)+(whole?", the whole function":(kind==="class"?", its class":", a "+escapeHtml(kind))+"; for its owner it covers the whole function")+"</span>"});
+   body+="<span>Tests that run it</span><span class=\"value\">"+row.tests+"</span>";
+   if(owners.length)body+='<span>Of its requirements</span><span class="value '+(row.owner_tests?"passed":"failed")+'">'+row.owner_tests+"</span>";
+   const unrun=CODE_CAUSES.map(([cause,label])=>{const lines=(row.causes||{})[cause]||[];return lines.length?label+": "+(lines.length===1?"line ":"lines ")+lines.slice(0,6).join(", ")+(lines.length>6?" and "+(lines.length-6)+" more":""):""}).filter(Boolean);
+   body+=unrun.length?'<div class="sub">Unexecuted lines</div>'+unrun.map(text=>'<span class="note">'+escapeHtml(text)+"</span>").join(""):"<span>Unexecuted lines</span><span class=\"value\">none</span>";
+   if(row.unused)body+='<span class="note">Vulture: '+escapeHtml(row.unused)+"</span>";
+ }else{
+   const inside=tree.inside(row);
+   body+='<div class="sub">Inside</div>'+CODE_VALUES[key].map(([value,label,tone])=>{const n=inside.filter(item=>valueOf(item,key)===value).length;return n?"<span>"+escapeHtml(label)+'</span><span class="value '+(tone==="failed"?"failed":"")+'">'+n+"</span>":""}).join("");
+ }
+ const chips='<div class="tf-health-strip tf-cm-strip">'+CODE_LAYERS.map(([layer,label,,short])=>{const said=says(row,layer);return'<span class="tf-health-chip '+said.tone+(layer===key?" current":"")+'" title="'+escapeHtml(label+": "+said.text)+'">'+escapeHtml(short)+"</span>"}).join("")+"</div>";
+ return{body,extra:chips};
+}
+function paint(entries,key){
+ entries.forEach(entry=>{if(entry.kind==="leaf")entry.shape.setAttribute("class","tf-map-tile cm-"+valueOf(entry.row,key))});
+}
+function legendHtml(key){
+ const counts=model.counts.layers[key]||{};
+ const help={
+   owner:"its colour is whom it serves: a requirement by its own marker, the requirements of the functions that call it, none with a recorded reason, or none at all.",
+   run:"its colour says whether a test of a requirement it serves runs it; a function that serves none has nothing to be run by.",
+   used:"its colour says whether anything in the package uses it; a class nothing uses has a tile of its own.",
+   lines:"its colour is the worst cause among the lines no test runs in it: extraneous, no requirement, no test, then deactivated on purpose. The card counts the lines; "+(model.counts.lines["no-test"]+model.counts.lines["no-requirement"]+model.counts.lines.extraneous)+" lines in all."
+ }[key];
+ return{items:CODE_VALUES[key].map(([value,label])=>mapLegendItem(mapSwatch("",fill(value)),label,counts[value]||0)).join(""),help};
+}
+function toneOf(row,key){
+ if(!tree.isLeaf(row))return null;
+ const value=valueOf(row,key),meta=META[key].get(value);
+ return{key:value,fill:fill(value),rank:meta?.rank??9,label:meta?.label||value};
+}
+const FACETS={};
+CODE_LAYERS.forEach(([key,label])=>{
+ FACETS[key]={label,options:CODE_VALUES[key].map(([value,name])=>[value,name]),swatch:value=>mapSwatch("",fill(value)),test:(row,value)=>tree.isLeaf(row)&&valueOf(row,key)===value};
+});
+// The requirement a function serves: a contract page's Code links here with it chosen.
+FACETS.req={label:"Requirement",title:"Serves",help:"The requirements the functions serve, by their marker or as helpers.",
+ options:Object.keys(model.contracts).map(id=>[id,id]),tip:value=>model.contracts[value]?.title||"",test:(row,value)=>tree.isLeaf(row)&&(row.owners||[]).includes(value)};
+// The numbers each layer may only lower (ADR_0008): the gate holds them to a baseline that drops with them, and a rise
+// fails it until the baseline records a reason.
+const RATCHET_KEYS={owner:["owner:none"],run:["run:not-run"],used:["used:unused"],lines:["lines:no-test","lines:no-requirement","lines:extraneous"]};
+function ratchetLine(key){
+ const held=model.ratchet?.held||{},rises=model.ratchet?.rises||{};
+ const parts=RATCHET_KEYS[key].map(name=>{
+   const cause=name.split(":")[1],label=key==="lines"?CODE_CAUSES.find(item=>item[0]===cause)[1]+" ":"",rise=rises[name];
+   return rise?'<b class="failed">'+escapeHtml(label)+"rose from "+rise[0]+" to "+rise[1]+"</b>":escapeHtml(label)+"held at <b>"+held[name]+"</b>";
+ });
+ return'<p class="tf-cm-ratchet" data-tip="The gate holds these numbers to a baseline that falls with them; a rise fails it until a reason is recorded.">May only fall: '+parts.join(" · ")+"</p>";
+}
+const PANELS=Object.fromEntries(CODE_LAYERS.map(([key,label])=>[key,{title:label,help:"Point at a value or a requirement to light its functions on the map, or click it to keep only them.",before:()=>ratchetLine(key),facets:[key,"req"]}]));
+// The table: every function or class with what each layer says, the requirements it serves and its tests. A group row
+// counts what fails in every column.
+const COLUMNS=[
+ ["owner","How",labelOf("owner")+": "+CODE_ASK.owner,"",["Owner"]],
+ ["serves","Serves","The requirements it serves","",["Owner"]],
+ ["run","Run",labelOf("run")+": "+CODE_ASK.run,"",[labelOf("run")]],
+ ["tests","Tests","Tests of its requirements that run it, of all the tests that run it","tf-map-num",[labelOf("run")]],
+ ["used","Used",labelOf("used")+": "+CODE_ASK.used,"",[labelOf("used")]],
+ ["lines","Causes","The lines no test runs, by cause","",[labelOf("lines")]]
+];
+function valueCell(row,key){
+ const value=valueOf(row,key),meta=META[key].get(value)||{};
+ return'<td class="tf-cm-cell'+(meta.tone==="failed"?" failed":"")+'" title="'+escapeHtml(labelOf(key)+": "+(meta.label||value))+'">'+mapSwatch("",fill(value))+escapeHtml(meta.word||value)+"</td>";
+}
+function cells(row){
+ return COLUMNS.map(([key])=>{
+   if(key==="serves"){const owners=row.owners||[];return'<td class="tf-cm-serves">'+(owners.length?owners.slice(0,3).map(contractLink).join(", ")+(owners.length>3?' <span class="tf-map-muted" title="'+escapeHtml(owners.join(", "))+'">+'+(owners.length-3)+"</span>":"")+(row.via==="inherited"?' <span class="tf-map-muted">helper</span>':""):row.exemption?'<span class="tf-map-muted">'+escapeHtml(row.exemption)+"</span>":'<span class="tf-map-muted">–</span>')+"</td>"}
+   if(key==="tests")return'<td class="tf-map-num">'+((row.owners||[]).length?row.owner_tests+" / ":"")+row.tests+"</td>";
+   if(key==="lines"){const text=causesText(row);return'<td class="tf-cm-causes">'+(text?escapeHtml(text).replace(/(\d+)/g,"<b>$1</b>"):"–")+"</td>"}
+   return valueCell(row,key);
+ }).join("");
+}
+function groupCells(list){
+ return COLUMNS.map(([key])=>{
+   if(key==="serves"||key==="tests")return"<td></td>";
+   const n=key==="lines"?list.reduce((sum,row)=>sum+unrunLines(row),0):list.filter(row=>failsIn(row,key)).length;
+   return'<td class="tf-health-cell">'+(n?'<span class="tf-health-fails" title="'+escapeHtml(labelOf(key)+": "+n+(key==="lines"?" lines":" fail"))+'">✕ '+n+"</span>":'<span class="tf-map-muted" title="All pass">✓</span>')+"</td>";
+ }).join("");
+}
+const sortRank=(row,key)=>META[key].get(valueOf(row,key))?.rank??9;
+const TABLE={
+ columns:COLUMNS,
+ groups:[["owner","Owner"],["req","Requirement"]],
+ keys:(row,group)=>group==="owner"?[valueOf(row,"owner")]:(row.owners||[]).length?row.owners:["none"],
+ name:(group,key)=>group==="owner"?META.owner.get(key)?.label||key:key==="none"?"Serves no requirement":key+" · "+(model.contracts[key]?.title||""),
+ order:(group,keys)=>group==="owner"?CODE_VALUES.owner.map(item=>item[0]).filter(key=>keys.includes(key)):[...keys].sort((a,b)=>(a==="none")-(b==="none")||a.localeCompare(b)),
+ sortValue:(row,key)=>key==="serves"?(row.owners||[]).length:key==="tests"?row.owner_tests:key==="lines"?unrunLines(row):sortRank(row,key),
+ stats:list=>{
+   const parts=CODE_LAYERS.map(([key])=>{const n=key==="lines"?list.reduce((sum,row)=>sum+unrunLines(row),0):list.filter(row=>failsIn(row,key)).length;return n?(key==="lines"?plural(n,"line","lines")+" unrun":n+" "+CODE_FAILS[key]):""}).filter(Boolean);
+   return parts.length?parts.join(" · "):"all pass";
+ },
+ cells,groupCells,
+ csv:{file:"code-map.csv",head:["path","start","end","owner","serves","run","tests_of_its_requirements","tests","used","lines_no_test","lines_no_requirement","lines_extraneous","lines_deactivated"],
+   line:row=>[row.path,row.start,row.end,valueOf(row,"owner"),(row.owners||[]).join(" "),valueOf(row,"run"),row.owner_tests,row.tests,valueOf(row,"used"),...["no-test","no-requirement","extraneous","deactivated"].map(cause=>((row.causes||{})[cause]||[]).length)]}
+};
+const VIEWS=CODE_LAYERS.flatMap(([key])=>[
+ {key,layer:key,projection:key,form:"tiles",label:"Map",ask:CODE_ASK[key]},
+ {key:key+"/table",layer:key,projection:key,form:"table",label:"Table",ask:"Every function with what each layer says of it"}
+]);
+return{
+ tree,layers:CODE_LAYERS,views:VIEWS,insights:model.insights,terms:CODE_TERMS,words:()=>["newly failing","fixed"],
+ href:row=>row.href,says,describe,paint,legend:legendHtml,tone:toneOf,blank:(row,key)=>tree.isLeaf(row)&&valueOf(row,key)==="na",
+ facets:FACETS,panels:PANELS,filterRows:leaves,
+ strip:{groups:layerGroups,card:key=>({status:verdictHtml(key,false),count:countLine(key,false)}),row:key=>({status:verdictHtml(key,true),count:countLine(key,true)})},
+ table:TABLE,
+ tiles:{dots:false,leaf:(row,key)=>'class="tf-map-tile cm-'+valueOf(row,key)+'"',mark:()=>""},
+ ringSets:{},
+ find:row=>{
+   const marks=CODE_LAYERS.map(([key])=>says(row,key).tone);
+   return{rank:-marks.filter(tone=>tone==="failed").length,badge:()=>'<span class="tf-health-find-marks">'+marks.map((tone,index)=>'<i class="'+tone+(index?"":" first")+'" title="'+escapeHtml(CODE_LAYERS[index][1])+'"></i>').join("")+"</span>"};
+ },
+ attach:page=>{map=page}
+};
+}"""
+
+
+def code_map_article(model_json: str, d3_hierarchy: str) -> str:
+    """The Code map: the product bottom-up on the Health Map's own map, with the package's areas and modules for goals
+    and capabilities and its functions for contracts. One section holds the heading, the shared styles with health's
+    palette and the map's own, the markup (tools line, layer strip, frame with the map and the table), d3-hierarchy and
+    one script: the shared map, the facts and the code map that describes its layers."""
+    legend = (
+        '<span><i class="tf-map-sw failed"></i>Fails</span>'
+        '<span><i class="tf-map-sw passed"></i>Passes</span>'
+        '<span class="tf-map-help" data-tip="A row\'s marks are its functions, in the layer\'s own colours.">?</span>'
+    )
+    markup = (
+        map_tools(
+            "Every function of the product, bottom-up: which requirement it serves and how, whether that requirement's "
+            "tests run it, what nothing uses, and why the lines no test runs stay unrun.",
+            find_tip="Find an area, module or function and show it in the current layer (/).",
+            copy_tip="Copy a link to this layer, its filters and the selected function.",
+        )
+        + map_strip("Code", legend, unit="function")
+        + map_frame(
+            "",
+            "The product's functions by area and module",
+            marks=("Functions", "Functions and classes by kind"),
+            find="Find an area, module or function by name or path",
+        )
+    )
+    css = "\n".join((MAP_SHARED_CSS, HEALTH_MAP_CSS, CODE_MAP_CSS)).replace("#verification-health-map", "#code-map")
+    script = "\n".join(
+        (MAP_SHARED_JS, f"const model={model_json};", CODE_MAP_JS, "mapPage(codeMap(model)).start();")
+    )
+    return (
+        '<section id="code-map">\n<h1>Code map'
+        '<a class="headerlink" href="#code-map" title="Link to this heading">#</a></h1>\n'
+        f'<style id="tf-code-map-style">\n{css}\n</style>\n'
+        f"{markup}\n<script>{d3_hierarchy}</script>\n"
+        f"<script>\n(()=>{{\n{script}\n}})();\n</script>\n</section>"
     )

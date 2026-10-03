@@ -1995,42 +1995,42 @@
  "SM-A1CB8BE4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T215820Z-3a7ae1",
+   "call_id": "20261003T081135Z-7789a9",
    "confirmed": true,
    "effort": "xhigh",
    "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only skips validation for dict or list values. Both project callers pass strings only: one passes the candidates returned by `_structured_candidates` (typed `tuple[str, ...]`), the other passes `result.output_text` (typed `str`). So the schema validation that the requirement asks for still runs on every structured output a caller can produce.",
-   "response_sha256": "b094a8abd267dfd77c9e4603fb2b5890272d5e47d1ad1468851daae1d92452f0",
+   "reason": "The mutant only adds a shortcut for dict or list values. Both callers pass strings only: candidates from `_structured_candidates(text)`, typed `tuple[str, ...]`, and `result.output_text`, typed `str`. So the structured result the requirement covers never reaches the new branch.",
+   "response_sha256": "8e295f77b39666449a6b3ad13b767718a8944fa6ecabe0bfb8d4cebb1aa646c2",
    "sources": [
-    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
-    "if isinstance(value, (dict, list)):",
-    "return SchemaValidationResult(valid=True, value=value)",
+    "if isinstance(value, (dict, list)):\n        return SchemaValidationResult(valid=True, value=value)",
+    "for candidate in _structured_candidates(text):\n        result = validate_schema_output(spec, candidate)",
     "_structured_candidates(text: str) -> tuple[str, ...]",
     "validation = validate_schema_output(plan.schema, result.output_text)",
-    "provider_model: str, output_text: str"
+    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "2bd71813c0e9d809356790203fe3a33c0b6b718dcaee935ebe967487fdc116f1",
+  "prompt_sha256": "9378eeb39d0c82a4d52d1b842fbbcf65f5049ded34c72af48a1cb5036cc0e8d4",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261002T215828Z-e14515",
+   "call_id": "20261003T081148Z-e413d4",
    "confirmed": true,
    "effort": "",
    "finding": "",
    "level": "implementation",
    "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "2bd71813c0e9d809356790203fe3a33c0b6b718dcaee935ebe967487fdc116f1",
-   "reason": "The mutant only adds behavior for dict and list inputs, but all callers in the project pass string values to validate_schema_output. Because no caller ever hands a dict or list to the function, the added behavior cannot be observed by any caller.",
-   "response_sha256": "a4060e6ec3d282b2fbe5f6d38927c5a9f11cdb803ee4f82f2f155d73de87c97a",
+   "prompt_sha256": "9378eeb39d0c82a4d52d1b842fbbcf65f5049ded34c72af48a1cb5036cc0e8d4",
+   "reason": "The mutant only adds an early return for dict and list inputs, but all project callers pass strings obtained from text extraction or model output text. Because no caller ever passes a dictionary or list to validate_schema_output, the added branch is unreachable in practice and cannot affect public structured results.",
+   "response_sha256": "8157c01e80246a0f062f1f4a52064426a639cfea5a92a20a9212ca957eb3917a",
    "sources": [
-    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema.",
+    "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema. Provider-specific response formatting shall not change the public structured result.",
     "    if isinstance(value, (dict, list)):",
     "        return SchemaValidationResult(valid=True, value=value)",
     "        result = validate_schema_output(spec, candidate)",
@@ -3020,9 +3020,9 @@
   "prompt_sha256": "f1d1298f3832071145d97d5e35e1f86ce5bde16e7b661ac3491c4a5cb01bcb17",
   "rechecks": {
    "verdict_review": {
-    "asked_at": "2026-10-02T23:16:34.363193Z",
+    "asked_at": "2026-10-03T08:13:35.627133Z",
     "backend": "antigravity-cli",
-    "call_id": "20261002T231535Z-65abcf",
+    "call_id": "20261003T081246Z-959541",
     "confirmed": false,
     "effort": "",
     "finding": "",
@@ -3030,8 +3030,8 @@
     "model": "gemini-3.8-flash-high",
     "problems": [],
     "prompt_sha256": "f1d1298f3832071145d97d5e35e1f86ce5bde16e7b661ac3491c4a5cb01bcb17",
-    "reason": "Because first_arr != -1 implies first_arr >= 0, the condition last_arr > first_arr guarantees last_arr >= 1, making last_arr != -1 strictly redundant. Removing it produces a logically equal expression that preserves identical behavior across all inputs.",
-    "response_sha256": "8417bc570c08812a1cf18e0d1d495c62093fa454714bd1dde5824a758944c6f0",
+    "reason": "The check `last_arr != -1` is redundant because `first_arr != -1` implies `first_arr >= 0`, which together with `last_arr > first_arr` guarantees `last_arr >= 1` and thus `last_arr != -1`. Because the condition evaluates identically for all inputs, the mutant is an equal expression that preserves identical behavior.",
+    "response_sha256": "987c233b37cf72d59b2527273ad58ace2dfe2345ac1bb8b44345b5152aeb99c8",
     "sources": [
      "A supported text route shall return provider-independent structured data that parses and validates against the caller-requested schema. Provider-specific response formatting shall not change the public structured result.",
      "    if first_arr != -1 and last_arr > first_arr:"

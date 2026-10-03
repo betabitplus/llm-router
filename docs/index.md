@@ -45,6 +45,10 @@ models; {doc}`Model roles <model-roles>` shows whether each of them does its job
 when a draft test fails, whether the model misread the task or its question lacked
 what it needed.
 
+The {doc}`Code map <code-map>` reads the product the other way, bottom-up: every function
+with the requirement it serves, whether that requirement's tests run it, what nothing uses
+and why the lines no test runs stay unrun.
+
 ## The normal reading direction
 
 Goal → Capability → Requirement → Technical requirement → Implementation / Verification
@@ -160,6 +164,7 @@ requirements/index
 traceability-reader
 verification-health-map
 verification-explorer
+code-map
 model-roles
 experiments/index
 decisions/index

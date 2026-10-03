@@ -246,9 +246,9 @@
   "prompt_sha256": "240c804c56fb4cc93126b42b4c0b3bd180c84026cf3041323c539a3cd1ea078c",
   "rechecks": {
    "verdict_review": {
-    "asked_at": "2026-10-02T23:16:34.361405Z",
+    "asked_at": "2026-10-03T08:13:35.625423Z",
     "backend": "antigravity-cli",
-    "call_id": "20261002T231535Z-3a670d",
+    "call_id": "20261003T081246Z-a15c4c",
     "confirmed": true,
     "effort": "",
     "finding": "",
@@ -256,10 +256,13 @@
     "model": "gemini-3.8-flash-high",
     "problems": [],
     "prompt_sha256": "240c804c56fb4cc93126b42b4c0b3bd180c84026cf3041323c539a3cd1ea078c",
-    "reason": "The change only alters the order of internal logging calls and omits an internal event on tool execution error, which affects neither the public orchestration contract nor tool runtime safety. Callers of the public API cannot rely on internal observability log lines or the order of internal steps.",
-    "response_sha256": "03a645098861718a36409404bf7b53b0613671e79c205ec15b75684ff8c8b077",
+    "reason": "The mutation only changes the order of internal logging steps relative to tool execution and changes the unhandled exception on malformed inputs from AttributeError to KeyError. Neither difference affects the returned state, error propagation, or runtime safety guarantees that a caller can rely on.",
+    "response_sha256": "ba582ad5f1c5c38662672b2038fdf1b5337ad41526206b2a65c0512a17274b3a",
     "sources": [
      "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
+     "A local tool failure surfaces through the public tool-execution error without a further provider turn or sensitive values.; Tool execution stops at the configured round limit and preserves the outstanding tool call in the public response.",
+     "    if state.can_execute_tools():",
+     "        for call in result.tool_calls:",
      "            _log_tool_called(request=request, state=state, tool_name=call.name)"
     ],
     "test_focus": "",
@@ -358,9 +361,9 @@
   "prompt_sha256": "528333011bf70271c9e0b39064febf8bfe39f4325fc36731bb49a3c08ed5b20b",
   "rechecks": {
    "verdict_review": {
-    "asked_at": "2026-10-02T23:16:34.367019Z",
+    "asked_at": "2026-10-03T08:13:35.630475Z",
     "backend": "antigravity-cli",
-    "call_id": "20261002T231535Z-e81356",
+    "call_id": "20261003T081246Z-95136e",
     "confirmed": true,
     "effort": "",
     "finding": "",
@@ -368,11 +371,10 @@
     "model": "gemini-3.8-flash-high",
     "problems": [],
     "prompt_sha256": "528333011bf70271c9e0b39064febf8bfe39f4325fc36731bb49a3c08ed5b20b",
-    "reason": "The mutant defers tool execution from an eager tuple instantiation to tuple unpacking inside ToolLoopState, changing only the order of internal steps. On valid inputs the behavior and result are identical, and no caller should rely on which error is raised when passing an invalid state with steps=None.",
-    "response_sha256": "4e4d74cfd26a4c9a7323e572184ab162de6c31d8cfb4954ff5074f8603e52c5b",
+    "reason": "The mutant replaces eager tuple construction of steps with a generator expression that is immediately unpacked when constructing ToolLoopState. This changes only the internal order of evaluation steps during error handling for invalid state, which no caller should rely on.",
+    "response_sha256": "c63649211510e5069783ef3db11ec50cebd6b16ce01fccabc87d175c9cce08d5",
     "sources": [
      "Local tool failures shall surface as the public tool-execution error without leaking sensitive arguments, and tool execution shall stop at the configured maximum round count.",
-     "    steps = tuple(registry.execute(call) for call in parsed_calls)",
      "    steps = (registry.execute(call) for call in parsed_calls)"
     ],
     "test_focus": "",

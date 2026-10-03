@@ -89,6 +89,7 @@ def environment() -> dict[str, str | None]:
         "pin_subsumption_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/pin_subsumption.py"),
         "pin_oracle_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/pin_oracle.py"),
         "callee_cards_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/callee_cards.py"),
+        "code_map_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/code_map.py"),
         "qualification_harness_sha256": FINGERPRINTS["code_digest"](Path(__file__)),
         "trace_bridge_sha256": FINGERPRINTS["code_digest"](ROOT / "tests/conftest.py"),
     }
@@ -4145,6 +4146,7 @@ CONTROL_INPUTS = {
     "survivor_judgement_controls": (".ai-bridge/survivor_equivalence.py", ".ai-bridge/callee_cards.py", ".ai-bridge/semantic-mutants/calibration/equivalence/**/*"),
     "scenario_mutant_controls": (".ai-bridge/scenario_mutants.py",),
     "architecture_mutant_controls": (".ai-bridge/architecture_mutants.py",),
+    "code_map_controls": (".ai-bridge/code_map.py",),
 }
 
 
@@ -4235,6 +4237,153 @@ def architecture_mutant_controls() -> dict[str, dict[str, object]]:
     }
 
 
+# The control package of the code map (061): one function for every answer the map gives. Its tests
+# verify a technical requirement derived from REQ_A, REQ_B, REQ_C and REQ_W; coverage.py runs them for real.
+# A subpackage imports across the package by its absolute name, as the product's private code does.
+CODE_MAP_CONTROL_FILES = {
+    "src/app/__init__.py": 'from .api import Client, entry\n\n__all__ = ["Client", "entry"]\n',
+    "src/app/api.py": (
+        "from .core import both, deactivated, exempted, marked\n\n\n"
+        "def entry(flag=False):\n    if flag:\n        return 0\n    return marked(1) + exempted() + deactivated(0) + both()\n\n\n"
+        "class Client:\n    def ping(self):\n        return 'pong'\n"
+    ),
+    "src/app/core.py": (
+        "from .service import Service\n\n\n"
+        "# @impl Marked, IMPL_A, [REQ_A[revision==1]]\n"
+        "def marked(value):\n    return helper(value) + Service().double(value)\n\n\n"
+        "def helper(value):\n    return value * 2\n    print('never')\n\n\n"
+        "# @impl Lonely, IMPL_B, [REQ_B[revision==1]]\n"
+        "def lonely(value):\n    if value:\n        return 1\n    return 2\n\n\n"
+        "def exempted():\n    return 3\n\n\n"
+        "# @impl Both, IMPL_D, [REQ_A[revision==1], REQ_B[revision==1]]\n"
+        "def both():\n    return 1\n\n\n"
+        "def registered():\n    return 5\n\n\n"
+        "def _dead():\n    return 4\n\n\n"
+        "def deactivated(value):\n    if value:  # pragma: no cover\n        return 6\n    return 7\n\n\n"
+        "class _Unused:\n    \"\"\"Nothing uses it.\"\"\"\n\n\n"
+        "# @impl Registry, IMPL_C, [REQ_C[revision==1]]\n"
+        "REGISTRY = {'registered': registered}\n"
+    ),
+    "src/app/service.py": (
+        "# @impl Service, IMPL_S, [TREQ_A1[revision==1]]\n"
+        "class Service:\n    def double(self, value):\n        return value * 2\n\n"
+        "    def triple(self, value):\n        return value * 3\n"
+    ),
+    "src/app/tools.py": "def shared():\n    return 9\n",
+    "src/app/web/__init__.py": "",
+    "src/app/web/handler.py": (
+        "from app.tools import shared\n\n\n"
+        "# @impl Handler, IMPL_W, [REQ_W[revision==1]]\n"
+        "def handle():\n    return shared()\n"
+    ),
+    "tests/test_a.py": "from app import entry\n\n\ndef test_entry():\n    assert entry() == 15\n",
+    "tests/test_w.py": "from app.web.handler import handle\n\n\ndef test_handle():\n    assert handle() == 9\n",
+    "tests/test_b.py": "from app.core import marked\n\n\ndef test_marked():\n    assert marked(2) == 8\n",
+    "tests/test_c.py": "from app.core import registered\n\n\ndef test_registered():\n    assert registered() == 5\n",
+    "pyproject.toml": '[tool.pytest.ini_options]\npythonpath = ["src"]\n',
+}
+# What every function must come out as: state, then each layer's value.
+CODE_MAP_EXPECTED = {
+    "src/app/api.py::entry": ("unowned", "none", "na", "used", "no-requirement"),
+    "src/app/api.py::Client.ping": ("unowned", "none", "na", "used", "no-requirement"),
+    "src/app/core.py::marked": ("served", "marked", "run", "used", "clean"),
+    "src/app/core.py::helper": ("inherited", "helper", "run", "used", "extraneous"),
+    "src/app/core.py::lonely": ("untested", "marked", "not-run", "used", "no-test"),
+    "src/app/core.py::exempted": ("exempt", "exempt", "na", "used", "clean"),
+    "src/app/core.py::both": ("untested", "marked", "not-run", "used", "clean"),
+    "src/app/tools.py::shared": ("inherited", "helper", "run", "used", "clean"),
+    "src/app/web/handler.py::handle": ("served", "marked", "run", "used", "clean"),
+    "src/app/core.py::registered": ("inherited", "helper", "run", "used", "clean"),
+    "src/app/core.py::_dead": ("unused", "none", "na", "unused", "extraneous"),
+    "src/app/core.py::deactivated": ("unowned", "none", "na", "used", "deactivated"),
+    "src/app/core.py::_Unused": ("unused", "none", "na", "unused", "clean"),
+    "src/app/service.py::Service.double": ("served", "marked", "run", "used", "clean"),
+    "src/app/service.py::Service.triple": ("untested", "marked", "not-run", "used", "no-test"),
+}
+
+
+def code_map_controls() -> dict[str, dict[str, object]]:
+    """Qualify the code map (061) on a small package whose every function has a known answer: a marked function, its
+    helper with unreachable code, a marked one its requirement's tests never run, an exempt one, one a registration
+    names, an unused private one, an unused class, an unowned one with an untaken branch, one with a branch excluded
+    on purpose, and a class whose marker covers its methods. Real pytest and coverage.py runs give the line contexts;
+    a test that verifies a technical requirement derived from REQ_A counts for REQ_A."""
+    tool = runpy.run_path(str(ROOT / ".ai-bridge/code_map.py"), run_name="evidence_confidence_code_map")
+    with tempfile.TemporaryDirectory(prefix="ternforge-code-map-qualification-") as temp_dir:
+        tmp = Path(temp_dir)
+        for name, text in CODE_MAP_CONTROL_FILES.items():
+            (tmp / name).parent.mkdir(parents=True, exist_ok=True)
+            (tmp / name).write_text(text)
+        env: dict[str, str] = {**os.environ, "COVERAGE_FILE": str(tmp / ".coverage"), "PYTHONDONTWRITEBYTECODE": "1"}
+        env.pop("PYTHONPATH", None)
+        run = subprocess.run(
+            [str(ROOT / ".venv/bin/python"), "-m", "pytest", "-q", "-p", "no:cacheprovider", "--cov=app", "--cov-context=test", "--cov-report=", "tests"],
+            cwd=tmp, env=env, capture_output=True, text=True, timeout=300, check=False,
+        )
+        report = subprocess.run(
+            [str(ROOT / ".venv/bin/coverage"), "json", "--show-contexts", "-o", "coverage.json"],
+            cwd=tmp, env=env, capture_output=True, text=True, timeout=120, check=False,
+        )
+        coverage = json.loads((tmp / "coverage.json").read_text()) if (tmp / "coverage.json").is_file() else {"files": {}}
+        lines = {name: text.splitlines() for name, text in CODE_MAP_CONTROL_FILES.items()}
+
+        def marker(path: str, impl_id: str) -> str:
+            return f"{path}#L{next(index for index, line in enumerate(lines[path], 1) if f', {impl_id},' in line)}"
+
+        needs = {
+            "IMPL_A": {"type": "impl", "implements": ["REQ_A[revision==1]"], "source_url": marker("src/app/core.py", "IMPL_A")},
+            "IMPL_B": {"type": "impl", "implements": ["REQ_B[revision==1]"], "source_url": marker("src/app/core.py", "IMPL_B")},
+            "IMPL_C": {"type": "impl", "implements": ["REQ_C[revision==1]"], "source_url": marker("src/app/core.py", "IMPL_C")},
+            "IMPL_S": {"type": "impl", "implements": ["TREQ_A1[revision==1]"], "source_url": marker("src/app/service.py", "IMPL_S")},
+            "IMPL_D": {"type": "impl", "implements": ["REQ_A[revision==1]", "REQ_B[revision==1]"], "source_url": marker("src/app/core.py", "IMPL_D")},
+            "IMPL_W": {"type": "impl", "implements": ["REQ_W[revision==1]"], "source_url": marker("src/app/web/handler.py", "IMPL_W")},
+            "REQ_A": {"type": "req"}, "REQ_B": {"type": "req"}, "REQ_C": {"type": "req"}, "REQ_W": {"type": "req"},
+            "TREQ_A1": {"type": "treq", "derives": ["REQ_A[revision==1]"]},
+        }
+        test_rows = [
+            {"nodeid": "tests/test_a.py::test_entry", "verifies": ["TREQ_A1"]},
+            {"nodeid": "tests/test_b.py::test_marked", "verifies": ["REQ_B"]},
+            {"nodeid": "tests/test_c.py::test_registered", "verifies": ["REQ_C"]},
+            {"nodeid": "tests/test_w.py::test_handle", "verifies": ["REQ_W"]},
+        ]
+        exemptions = {"src/app/core.py::exempted": {"reason": "A constant the entry point adds; no behaviour of its own.", "by": "delegate"}}
+        facts = tool["code_map"](
+            tmp, coverage, FINGERPRINTS["resolve_impl_scopes"](tmp, needs), FINGERPRINTS["descendants_map"](needs), test_rows, exemptions, "app"
+        )
+    got = {row["id"]: (row["state"], *(row["layers"][layer] for layer in tool["LAYERS"])) for row in facts["functions"]}
+    rows = {row["id"]: row for row in facts["functions"]}
+    helper_line = next(index for index, line in enumerate(lines["src/app/core.py"], 1) if "print('never')" in line)
+    lowered, rises = tool["ratchet"](facts["counts"], {"numbers": {"owner:none": 3, "used:unused": 9}})
+    raised, unexplained = tool["ratchet"](facts["counts"], {"numbers": {"owner:none": 3}, "reasons": {"owner:none": "a planted rise"}})
+    ok = (
+        run.returncode == 0 and report.returncode == 0
+        and got == CODE_MAP_EXPECTED
+        and rows["src/app/core.py::marked"]["owners"] == ["REQ_A"] and rows["src/app/core.py::marked"]["tests_by_owner"] == {"REQ_A": 1}
+        and rows["src/app/core.py::helper"]["owners"] == ["REQ_A"] and rows["src/app/core.py::helper"]["via"] == "inherited"
+        and rows["src/app/core.py::helper"]["causes"].get("extraneous") == [helper_line]
+        and rows["src/app/core.py::registered"]["owners"] == ["REQ_C"]
+        and rows["src/app/core.py::both"]["tests_by_owner"] == {"REQ_A": 1, "REQ_B": 0}
+        and rows["src/app/tools.py::shared"]["owners"] == ["REQ_W"]
+        and rows["src/app/service.py::Service.triple"]["owners"] == ["TREQ_A1"]
+        and rows["src/app/core.py::_Unused"]["kind"] == "class"
+        and rows["src/app/api.py::entry"]["public"] is True
+        and rows["src/app/core.py::deactivated"]["causes"].get("deactivated")
+        and facts["counts"]["layers"]["owner"] == {"marked": 6, "helper": 3, "exempt": 1, "none": 5}
+        and facts["counts"]["functions"] == 14 and facts["counts"]["classes"] == 1
+        and rises == {"owner:none": [3, 5]} and lowered["numbers"]["used:unused"] == 2 and lowered["numbers"]["owner:none"] == 3
+        and not unexplained and raised["numbers"]["owner:none"] == 5 and not raised["reasons"]
+        and raised["accepted"] == [{"number": "owner:none", "from": 3, "to": 5, "reason": "a planted rise"}]
+    )
+    return {
+        "PRODUCER_CODE_MAP": {
+            "status": "QUALIFIED" if ok else "NOT QUALIFIED",
+            "intended_use": "name the requirement each function serves (by its marker, as a helper of its callers or by a registration), whether that requirement's tests run it, what nothing uses and the cause of every line no test runs, from coverage.py's report with test contexts, the @impl scopes and vulture; and hold the failing numbers to a baseline that only falls",
+            "false_green_control": "a marked function its requirement's tests never run must fail even when another requirement's test runs it; a helper must take its caller's owner, also across subpackages by an absolute import; an unowned function must fail unless an exemption gives a reason; private code nothing uses and a class nothing uses must fail as unused while owned code and the methods of an exported class stay used; unreachable statements must count as extraneous though coverage.py drops them; a line excluded on purpose is deactivated; a test of a derived technical requirement counts for its parent; a number above the baseline must be reported as a rise, and held at its new value only once a reason is recorded",
+            "control": {"got": got, "pytest": run.returncode, "coverage": report.returncode, "rises": rises},
+        }
+    }
+
+
 def control_code_digest(name: str) -> str:
     """A control group's code by meaning, with every function, class and constant of this script it reaches."""
     tree = ast.parse(Path(__file__).read_text())
@@ -4283,10 +4432,10 @@ def cached_result(name: str, key: str) -> dict[str, dict[str, object]] | None:
 # change environment variables, which threads would share), as pytest-xdist runs tests.
 CONTROL_GROUPS = (
     "implementation_fault_controls", "semantic_mutant_controls", "survivor_judgement_controls", "external_controls",
-    "scenario_mutant_controls", "architecture_mutant_controls", "internal_controls", "project_sdk_controls",
+    "scenario_mutant_controls", "architecture_mutant_controls", "code_map_controls", "internal_controls", "project_sdk_controls",
     "model_generation_controls", "assessor_ensemble_controls", "model_canary_controls",
 )
-CACHED_GROUPS = {"implementation_fault_controls", "semantic_mutant_controls", "survivor_judgement_controls", "scenario_mutant_controls", "architecture_mutant_controls"}
+CACHED_GROUPS = {"implementation_fault_controls", "semantic_mutant_controls", "survivor_judgement_controls", "scenario_mutant_controls", "architecture_mutant_controls", "code_map_controls"}
 # Groups at once: enough to overlap the heavy ones, few enough that their own time limits hold.
 CONTROL_PROCESSES = 4
 

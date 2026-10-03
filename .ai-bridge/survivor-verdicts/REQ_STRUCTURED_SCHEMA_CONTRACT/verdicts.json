@@ -946,46 +946,46 @@
  "SM-2AE24515": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T215744Z-0d4bac",
+   "call_id": "20261003T081135Z-efae7d",
    "confirmed": true,
    "effort": "xhigh",
    "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only adds a None-stripping branch for dict values, but both callers pass strings. The prompted provider passes candidates from `_structured_candidates(text)` (tuple of str) and the executor passes `result.output_text` (str). Router-side validation therefore never reaches the added branch.",
-   "response_sha256": "88b576afe0d31c51bc8391690592ae2c0e1958b0d243e5ee889380cd22a59055",
+   "reason": "The mutant only changes dictionary inputs by dropping None-valued keys. Both project callers pass strings (the executor passes `result.output_text`; the prompted helper passes candidates from `_structured_candidates`, which returns a tuple of strings), so router-side validation behaves identically wherever the requirement can be observed.",
+   "response_sha256": "870395cdfdfc7fe38b89ed9b4a62ed0c6e88b354fcef2a7c35da1d235c7706b4",
    "sources": [
     "if isinstance(value, dict):",
     "validation = validate_schema_output(plan.schema, result.output_text)",
-    "for candidate in _structured_candidates(text):\n        result = validate_schema_output(spec, candidate)",
     "_structured_candidates(text: str) -> tuple[str, ...]",
+    "result = validate_schema_output(spec, candidate)",
     "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "5a65fb1b5d731113023a75d10b77585eb4f7e8cc01f997063286d4e0400c8df8",
+  "prompt_sha256": "4553d064d3d8237e23990e61c8bb31d08917dbb0adda1d1daa766008ff2d9e32",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261002T215922Z-dff621",
+   "call_id": "20261003T081206Z-43094d",
    "confirmed": true,
    "effort": "",
    "finding": "",
    "level": "implementation",
    "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "5a65fb1b5d731113023a75d10b77585eb4f7e8cc01f997063286d4e0400c8df8",
-   "reason": "The mutant only alters behavior when `value` is a dictionary, but all callers in the codebase pass a string to `validate_schema_output`. Because no caller ever hands the function a dictionary, the added behavior cannot be observed.",
-   "response_sha256": "89886bcbf36a1d376785833cdecdda2b79f3e0aa567b6a2e99faca9d44a5d000",
+   "prompt_sha256": "4553d064d3d8237e23990e61c8bb31d08917dbb0adda1d1daa766008ff2d9e32",
+   "reason": "Both callers pass string outputs (`_structured_candidates` produces `tuple[str, ...]` and `result.output_text` is `str`), so `value` is never a dictionary. Because the mutant only adds behavior for dictionary inputs that no caller ever hands the function, the change cannot be observed by any caller.",
+   "response_sha256": "eaa8881c91d6bc174ff73a6e2a46a797780cffa130c4d6ec8271698fa4143324",
    "sources": [
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
-    "    if isinstance(value, dict):",
-    "        result = validate_schema_output(spec, candidate)",
-    "- `_structured_candidates` (from llm_router._internal.providers._prompted): _structured_candidates(text: str) -> tuple[str, ...]",
-    "    validation = validate_schema_output(plan.schema, result.output_text)",
-    "- `ProviderResult` (from llm_router._internal.providers.base): ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
+    "if isinstance(value, dict):",
+    "_structured_candidates(text: str) -> tuple[str, ...]",
+    "result = validate_schema_output(spec, candidate)",
+    "validation = validate_schema_output(plan.schema, result.output_text)",
+    "output_text: str",
+    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -1866,9 +1866,9 @@
   "prompt_sha256": "060c2ac7813151847ba6b16c6f42eb4396c87211009e17ed4a13752ecc0e05ac",
   "rechecks": {
    "verdict_review": {
-    "asked_at": "2026-10-02T23:16:34.365816Z",
+    "asked_at": "2026-10-03T08:13:35.629199Z",
     "backend": "antigravity-cli",
-    "call_id": "20261002T231524Z-237303",
+    "call_id": "20261003T081246Z-3f9251",
     "confirmed": false,
     "effort": "",
     "finding": "",
@@ -1876,12 +1876,11 @@
     "model": "gemini-3.8-flash-high",
     "problems": [],
     "prompt_sha256": "060c2ac7813151847ba6b16c6f42eb4396c87211009e17ed4a13752ecc0e05ac",
-    "reason": "Because schema validation ensures that any present 'title' or '$id' in a valid JSON Schema mapping is already a string, and the fallback is a string literal, the expression always evaluates to a string. Removing the redundant str() call is a conversion that changes nothing, so no input can distinguish the two versions.",
-    "response_sha256": "e20aa63d786bc80e1fb1ba82880991e80e70ab14d2519f9b37d1eb468c2940f2",
+    "reason": "Because _validate_mapping_schema_definition enforces that any present 'title' or '$id' in a valid JSON Schema mapping is a string, and the fallback 'structured_response' is a string literal, the expression for name always evaluates to a str. Removing the redundant str() conversion does not alter the output for any valid or invalid input, making the mutant equivalent.",
+    "response_sha256": "94944a3853686c62b6653d526a5970bc2085af56f8b1e8b1bc7c6f1a8cd2dd27",
     "sources": [
      "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
      "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
-     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
      "name = copied.get('title') or copied.get('$id') or 'structured_response'"
     ],
     "test_focus": "",

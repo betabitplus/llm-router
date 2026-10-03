@@ -7,6 +7,7 @@ import importlib.util
 import json
 import tomllib
 import re
+import runpy
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
@@ -1315,6 +1316,127 @@ def check_architecture_mutants() -> None:
         f"every one of the {len(declared)} import-linter rules has its architecture mutant result: "
         + ", ".join(f"{name} {sum(row.get('outcome') == name for row in results.values())}" for name in ("caught", "survived", "invalid")),
     )
+
+
+def check_code_map(module: str, monitor_facts: dict) -> None:
+    """The Code map (061, ADR_0008): its facts recount, every function keeps the state and layer values its rules
+    give, the page draws every function once with those values, the numbers that may only fall did not rise without
+    a recorded reason, the exemptions are current, the producer is qualified, and contract pages and the map link
+    both ways."""
+    tool = runpy.run_path(str(BRIDGE / "code_map.py"), run_name="gate_code_map")
+    facts_path = HTML / "code-map-facts.json"
+    page_path = HTML / "code-map.html"
+    facts = load(facts_path) if facts_path.is_file() else {}
+    rows = facts.get("functions") or []
+    counts = facts.get("counts") or {}
+    check(
+        facts.get("schema") == "ternforge-code-map-1" and bool(rows)
+        and counts == tool["map_counts"](rows, facts.get("loose") or [])
+        and len({row["id"] for row in rows}) == len(rows)
+        and all(row["kind"] in {"function", "class"} for row in rows),
+        f"the code map's facts recount: {counts.get('functions')} functions and {counts.get('classes')} classes nothing uses, every count from its rows",
+    )
+
+    def expected_state(row: dict) -> str:
+        if row["unused"]:
+            return "unused"
+        if row["owners"]:
+            return ("served" if row["via"] == "direct" else "inherited") if row["confirmed"] else "untested"
+        return "exempt" if (row.get("exemption") or {}).get("reason") else "unowned"
+
+    def confirmed(row: dict) -> bool:
+        runs = [int((row.get("tests_by_owner") or {}).get(owner) or 0) for owner in row["owners"]]
+        return bool(runs) and (all(runs) if row["via"] == "direct" else any(runs))
+
+    wrong = [
+        row["id"] for row in rows
+        if row["state"] != expected_state(row) or row["layers"] != tool["layer_values"](row) or row["confirmed"] != confirmed(row)
+        or (row["unused"] and (row["owners"] or row["public"]))
+        or any(not (row["start"] <= line <= row["end"]) for lines in row["causes"].values() for line in lines)
+        or len({line for lines in row["causes"].values() for line in lines}) != sum(len(lines) for lines in row["causes"].values())
+    ]
+    check(
+        not wrong,
+        "every function keeps the state and the layer values its rules give (a marked one confirmed only when the tests of each "
+        "contract its marker names run it, a helper when any contract's tests do; unused only when private and owned by none), "
+        "and every unrun line has one cause inside its function"
+        + (f"; wrong: {wrong[:5]}" if wrong else ""),
+    )
+    baseline = load(BRIDGE / "code-map-baseline.json") if (BRIDGE / "code-map-baseline.json").is_file() else {}
+    numbers = tool["ratchet_numbers"](counts) if counts else {}
+    held = baseline.get("numbers") or {}
+    rises = {key: [held.get(key), value] for key, value in numbers.items() if key in held and value > held[key]}
+    unexplained = {key: value for key, value in rises.items() if not str((baseline.get("reasons") or {}).get(key) or "").strip()}
+    check(
+        baseline.get("schema") == "ternforge-code-map-baseline-1" and set(held) == set(numbers)
+        and all(held[key] == value for key, value in numbers.items() if key not in rises)
+        and all(str(row.get("reason") or "").strip() and row.get("to", 0) > row.get("from", 0) for row in baseline.get("accepted") or [])
+        and not unexplained,
+        "the numbers the code map may only lower are held at "
+        + ", ".join(f"{key} {value}" for key, value in sorted(held.items()))
+        + (f"; rose without a recorded reason: {unexplained}" if unexplained else ""),
+    )
+    exemptions = load(BRIDGE / "code-exemptions.json") if (BRIDGE / "code-exemptions.json").is_file() else None
+    by_id = {row["id"]: row for row in rows}
+    check(
+        isinstance(exemptions, dict)
+        and all(
+            key in by_id and not by_id[key]["owners"] and str((value or {}).get("reason") or "").strip() and (value or {}).get("by")
+            for key, value in exemptions.items()
+        ),
+        f"every one of the {len(exemptions or {})} exemptions names a function that serves no requirement, with its reason and who decided",
+    )
+    qualification = load(HTML / "evidence-confidence-qualification.json") if (HTML / "evidence-confidence-qualification.json").is_file() else {}
+    check(
+        str(((qualification.get("producers") or {}).get("PRODUCER_CODE_MAP") or {}).get("status") or "") == "QUALIFIED",
+        "the code map's producer passed its control: every answer of a package built to give each one, and a rise of the ratchet",
+    )
+    page = page_path.read_text() if page_path.is_file() else ""
+    shared_js = module.split('MAP_SHARED_JS = r"""', 1)[-1].split('"""', 1)[0]
+    code_js = module.split('CODE_MAP_JS = r"""', 1)[-1].split('"""', 1)[0]
+    model: dict = {}
+    if "const model=" in page:
+        start = page.index("const model=") + len("const model=")
+        model, _end = json.JSONDecoder().raw_decode(page, start)
+    check(
+        page.count('<section id="code-map">') == 1 and "<h1>Code map" in page and '<style id="tf-code-map-style">' in page
+        and "#code-map{--tf-map-ease" in page and "#verification-health-map" not in page.split('<section id="code-map">', 1)[-1]
+        and shared_js in page and code_js in page and "mapPage(codeMap(model)).start();" in page,
+        "the Code map is one section on the Health Map's shared map and styles, scoped to itself, with its own description of its layers",
+    )
+    leaves = [row for row in model.get("rows") or [] if row.get("level") in {"requirement", "treq"}]
+    ids = [row.get("id") for row in model.get("rows") or []]
+    check(
+        bool(leaves) and len(ids) == len(set(ids)) and all(":" not in str(item) for item in ids)
+        and sorted(row.get("ref") for row in leaves) == sorted(by_id)
+        and all(row.get("layers") == by_id[row["ref"]]["layers"] and row.get("owners") == by_id[row["ref"]]["owners"] for row in leaves)
+        and model.get("failing") == tool["failing"](counts)
+        and (model.get("ratchet") or {}).get("held") == held
+        and model.get("qualified") is True,
+        f"the map draws each of the {len(by_id)} functions and classes once, with the facts' owners and layer values, the failing "
+        f"counts {model.get('failing')} and the held numbers",
+    )
+    contracts = monitor_facts.get("contracts") or {}
+    served = {owner for row in rows for owner in row["owners"]}
+    missing_pages, one_way = [], []
+    for contract_id in sorted(served & set(contracts)):
+        href = ((model.get("contracts") or {}).get(contract_id) or {}).get("href") or ""
+        target = HTML / href.split("#", 1)[0] if href else None
+        if target is None or not target.is_file():
+            missing_pages.append(contract_id)
+            continue
+        text = target.read_text()
+        code = (contracts[contract_id].get("code_actual") or {}).get("functions") or []
+        if f'id="ce-code-{contract_id.lower()}"' not in text or f"code-map.html#run?req={contract_id}" not in text or len(code) != sum(contract_id in row["owners"] for row in rows):
+            one_way.append(contract_id)
+    check(
+        not missing_pages and not one_way,
+        f"the map links every one of the {len(served)} contracts its functions serve to its page, and each page lists its code "
+        "and links back to the map filtered to it"
+        + (f"; no page: {missing_pages[:5]}" if missing_pages else "") + (f"; no way back: {one_way[:5]}" if one_way else ""),
+    )
+    index_nav = (HTML / "index.html").read_text().split('<main id="main-content"', 1)[0] if (HTML / "index.html").is_file() else ""
+    check('href="code-map.html"' in index_nav, "the portal navigation lists the Code map")
 
 
 def check_model_roles_page(budget: dict) -> None:
@@ -6866,7 +6988,8 @@ def main() -> None:
         "the map keeps one tiling and one height: the side panel narrows it frame by frame, the legend is one line whose overflow opens from a +N, the table keeps its place when it redraws, and a filter, a layer or a view never moves the page",
     )
     check(
-        'groups:[["tree","Goal › capability"]' in health_section
+        'groups:[["tree",mapWords.tree],["goal",mapWords.goal]' in health_section
+        and 'tree:"Goal › capability"' in health_section
         and "const table=mapTable({" in health_section
         and "link.download=o.csv.file;" in health_section
         and 'data-sort="' in health_section
@@ -6929,8 +7052,10 @@ def main() -> None:
         and ".tf-map-sw{" in map_pages_css
         and 'kind:{label:"Kind",' in map_pages_js
         and "function mapKinds(o){" in map_pages_js
-        and 'columns:[["name","Contract","Contract, grouped as chosen","name"],...o.table.columns],' in map_pages_js
-        and '"id","title","kind","goal","capability",...o.table.csv.head' in map_pages_js
+        and 'columns:[["name",...mapWords.name,"name"],...o.table.columns],' in map_pages_js
+        and '"id","title","kind",...mapWords.csv,...o.table.csv.head' in map_pages_js
+        and 'name:["Contract","Contract, grouped as chosen"],csv:["goal","capability"],' in map_pages_js
+        and "mapWords={...MAP_TERMS,...(o.terms||{})};" in map_pages_js
         and "data-cell" not in map_pages_js
         and all(
             "mapMatrix({" in own
@@ -7314,6 +7439,7 @@ def main() -> None:
     )
     check_verification_explorer(map_pages_module)
     check_model_roles_page(((monitor_facts.get("policy") or {}).get("model_generation") or {}).get("budget") or {})
+    check_code_map(map_pages_module, monitor_facts)
     # The roadmap page is retired: the owner keeps the plan in the development history (060).
     check(
         not (HTML / "assurance-roadmap.html").exists()
@@ -7326,13 +7452,14 @@ def main() -> None:
         "'<section id=\"verification-health-map\">\\n<h1>Verification Health Map'" in map_pages_module
         and "f'<style id=\"tf-health-map-style\">\\n{css}\\n</style>\\n'" in map_pages_module
         and re.findall(r"^def (\w+)\(", map_pages_module, flags=re.MULTILINE)
-        == ["map_tools", "map_panel", "map_find", "map_frame", "map_strip", "health_map_article", "explorer_article", "_palette", "model_roles_article"]
+        == ["map_tools", "map_panel", "map_find", "map_frame", "map_strip", "health_map_article", "explorer_article", "_palette", "model_roles_article", "code_map_article"]
         and "verification-depth-map" not in map_pages_module
         and '<section id="verification-health-map">' not in health_builder_source
         and "MAP_PAGES.health_map_article(" in health_builder_source
         and "MAP_PAGES.explorer_article(" in health_builder_source
         and "MAP_PAGES.model_roles_article(" in health_builder_source
-        and health_builder_source.count("MAP_PAGES.") == 3
+        and "MAP_PAGES.code_map_article(" in health_builder_source
+        and health_builder_source.count("MAP_PAGES.") == 4
         and "assurance_map_pages" not in qualification_harness_source
         and "assurance_monitor_ui" not in qualification_harness_source
         and '"assurance_monitor_ui_sha256"' not in health_builder_source
@@ -7345,6 +7472,7 @@ def main() -> None:
                 "assurance_monitor_domain.py",
                 "assurance_monitor_registry.py",
                 "implementation_faults.py",
+                "code_map.py",
             )
         ),
         "page markup lives outside the evidence-producer fingerprint: the builder passes only facts, every file that computes facts stays fingerprinted",
@@ -7476,6 +7604,10 @@ def main() -> None:
         "callee_cards.py",
         "qualify-evidence-confidence.py",
         "validate-mutation-pilot.py",
+        # The Code map (061): its facts, the exemptions the delegate records and the numbers that may only fall.
+        "code_map.py",
+        "code-exemptions.json",
+        "code-map-baseline.json",
         "mutation-testing-integration-plan.md",
         "mutation-testing-practice-audit.md",
         "mutation-testing-platform-extraction-manifest.md",
@@ -7581,6 +7713,9 @@ def main() -> None:
         ".ai-bridge/mutation-testing-integration-plan.md",
         ".ai-bridge/qualify-evidence-confidence.py",
         ".ai-bridge/validate-mutation-pilot.py",
+        ".ai-bridge/code_map.py",
+        ".ai-bridge/code-exemptions.json",
+        ".ai-bridge/code-map-baseline.json",
         ".ai-bridge/verification-health-map-local-prototype.md",
         ".ai-bridge/verification-depth-map-local-prototype.md",
         ".ai-bridge/verification-explorer-local-prototype.md",
@@ -7607,6 +7742,8 @@ def main() -> None:
         "docs/decisions/0005-survivor-judgement.md",
         "docs/decisions/0006-survivor-verdicts.md",
         "docs/decisions/0007-survivor-dispositions.md",
+        "docs/decisions/0008-code-ownership.md",
+        "docs/code-map.md",
         "docs/test-plan.md",
         "docs/verification-health-map.md",
         "docs/verification-explorer.md",

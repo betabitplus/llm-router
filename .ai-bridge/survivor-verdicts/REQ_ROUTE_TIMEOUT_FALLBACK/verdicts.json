@@ -418,9 +418,9 @@
   "prompt_sha256": "dd9641cf56bd174ea70ce89692741a4b474255dafd28aa82c5a370f415590e3c",
   "rechecks": {
    "verdict_review": {
-    "asked_at": "2026-10-02T23:16:34.367808Z",
+    "asked_at": "2026-10-03T08:13:35.631862Z",
     "backend": "antigravity-cli",
-    "call_id": "20261002T231535Z-1b68e7",
+    "call_id": "20261003T081246Z-d00cd2",
     "confirmed": false,
     "effort": "",
     "finding": "",
@@ -428,12 +428,12 @@
     "model": "gemini-3.8-flash-high",
     "problems": [],
     "prompt_sha256": "dd9641cf56bd174ea70ce89692741a4b474255dafd28aa82c5a370f415590e3c",
-    "reason": "Moving left.set() to the finally block after pool.shutdown only changes the order of internal cleanup steps during a timeout. Both actions still execute before TimeoutError is raised to the caller, producing no observable difference.",
-    "response_sha256": "951580636fb774f48787d9c50cec9b93da82c910ce2e3b2609df69315cb7ceb1",
+    "reason": "Moving left.set() to after pool.shutdown in the finally block only alters the order of internal steps during a timeout. Both actions still execute upon timeout, producing the exact same behavior and error to any caller.",
+    "response_sha256": "fb2a7b954cabb6bf52d8c695b84451a867cc69d93a0b44951eb0081dc05cbc27",
     "sources": [
      "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-     "            if timed_out:",
-     "                left.set()"
+     "            left.set()",
+     "            if timed_out:"
     ],
     "test_focus": "",
     "verdict": "irrelevant"

@@ -1793,7 +1793,7 @@
   }
  },
  "below_floors": [],
- "calibrated_at": "2026-10-02T22:34:14.140457Z",
+ "calibrated_at": "2026-10-03T08:08:23.541839Z",
  "complete": true,
  "configurations": [
   {
@@ -1862,7 +1862,7 @@
    }
   },
   "observed": 97,
-  "observed_pending": 27,
+  "observed_pending": 28,
   "pairs": 28
  },
  "missing": [],
@@ -3736,7 +3736,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: typing.Literal['auto', 'none', 'required', 'named', 'raw'] is not a module, class, method, or function.",
-    "seconds": 2.9,
+    "seconds": 2.5,
     "status": "error"
    }
   },
@@ -3836,7 +3836,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: typing.Literal['auto', 'none', 'required', 'named', 'raw'] is not a module, class, method, or function.",
-    "seconds": 2.9,
+    "seconds": 2.7,
     "status": "error"
    }
   },
@@ -3931,7 +3931,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: typing.Literal['auto', 'none', 'required', 'named', 'raw'] is not a module, class, method, or function.",
-    "seconds": 4.1,
+    "seconds": 2.4,
     "status": "error"
    }
   },
@@ -4003,7 +4003,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "reason": "TypeError: cannot pickle 'mappingproxy' object",
-    "seconds": 4.4,
+    "seconds": 4.0,
     "status": "error"
    }
   },
@@ -4551,7 +4551,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
-    "seconds": 6.6,
+    "seconds": 6.5,
     "status": "none"
    }
   },
@@ -4631,7 +4631,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
-    "seconds": 7.6,
+    "seconds": 4.9,
     "status": "none"
    }
   },
@@ -4733,7 +4733,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
-    "seconds": 5.0,
+    "seconds": 4.1,
     "status": "none"
    }
   },
@@ -4829,7 +4829,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
-    "seconds": 7.3,
+    "seconds": 4.2,
     "status": "none"
    }
   },
@@ -4931,7 +4931,7 @@
    "symbolic": {
     "crosshair": "0.0.110",
     "paths": 298,
-    "seconds": 5.1,
+    "seconds": 6.6,
     "status": "none"
    }
   },
@@ -11430,6 +11430,7 @@
     "verdict": "distinct"
    }
   },
+  "TREQ_TIMED_OUT_ATTEMPT_STOPS:698b8ee7e7d54a5c": {},
   "TREQ_TOOL_REGISTRY:77252785424d95f7": {},
   "TREQ_TOOL_REGISTRY:77986b22a0ac6322": {},
   "TREQ_USAGE_NORMALIZATION:516ee0826f5a2224": {},
@@ -11459,6 +11460,7 @@
   "TREQ_ROUTE_ORDER:9aa5ae42eb7bf0e0",
   "TREQ_ROUTE_ORDER:eec518360ab2e988",
   "TREQ_TIMED_OUT_ATTEMPT_STOPS:39d5d1ce764651c8",
+  "TREQ_TIMED_OUT_ATTEMPT_STOPS:698b8ee7e7d54a5c",
   "TREQ_TOOL_REGISTRY:77252785424d95f7",
   "TREQ_TOOL_REGISTRY:77986b22a0ac6322",
   "TREQ_USAGE_NORMALIZATION:516ee0826f5a2224",

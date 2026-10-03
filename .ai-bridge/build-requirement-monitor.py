@@ -56,6 +56,8 @@ CONTRACT_ID = PRIMARY_CONTRACT_ID
 CONTRACT_URL = "requirements/configuration.html#REQ_INVALID_CONFIGURATION_ERRORS"
 PROFILE_URL = "verification-profiles/invalid-configuration.html"
 HEALTH_MAP_URL = "verification-health-map.html"
+CODE_MAP_URL = "code-map.html"
+CODE_CAUSES = (("no-test", "No test"), ("no-requirement", "No requirement"), ("extraneous", "Extraneous"), ("deactivated", "Deactivated"))
 MODEL_URL = "test-plan.html#test-plan-configuration-validation-model"
 
 LEVELS = [
@@ -622,6 +624,56 @@ def render_current() -> None:
             + "</section>"
         )
 
+    # The code that serves the contract (ADR_0008): by its marker or as helpers, and whether its own tests run each
+    # function. It informs; the verdict stays with the matrix, the fault model, completeness and technical support.
+    code = contract.get("code_actual") or {}
+    code_functions = code.get("functions") or []
+    code_status = "N/A" if not code_functions else ("NOT MET" if code.get("not_run") else "MET")
+    code_section = ""
+    if code_functions:
+        marked = sum(item["via"] == "direct" for item in code_functions)
+        unrun = sum(int(value) for cause, value in (code.get("lines") or {}).items() if cause != "deactivated")
+
+        def code_row(item: dict) -> str:
+            causes = " · ".join(f"{label} {item['causes'][cause]}" for cause, label in CODE_CAUSES if item["causes"].get(cause))
+            missing = not item["confirmed"]
+            return (
+                f'<tr class="{"not-met" if missing else ""}">'
+                f'<td><a href="{esc(CODE_MAP_URL)}#run:{esc(item["id"])}?req={esc(CONTRACT_ID)}">{esc(item["qualname"])}</a>'
+                f'<small>{esc(item["path"])}:{item["start"]}</small></td>'
+                f'<td>{"Marked" if item["via"] == "direct" else "Helper"}</td>'
+                f'<td class="num{" not-met" if missing else ""}"'
+                + ("" if item["contract_tests"] or missing else ' title="A helper: the tests of another contract it serves run it"')
+                + f'>{item["contract_tests"]}</td>'
+                f'<td class="num">{item["tests"]}</td>'
+                f"<td>{esc(causes) or '–'}</td>"
+                f'<td><a href="{esc(item["source"])}">Source ↗</a></td></tr>'
+            )
+
+        code_section = (
+            f'<section class="section" id="ce-code-{contract_key}">'
+            + ui.section_head(
+                title="Code",
+                links=(
+                    ("Code map ↗", f"{CODE_MAP_URL}#run?req={CONTRACT_ID}"),
+                    ("Table ↗", f"{CODE_MAP_URL}#run/table?req={CONTRACT_ID}"),
+                    ("Raw ↗", "code-map-facts.json"),
+                ),
+            )
+            + ui.support_summary(
+                noun="functions",
+                parts=(("Run by its tests", code_status, int(code.get("run") or 0), int(code.get("not_run") or 0), len(code_functions)),),
+            )
+            + f'<p class="code-note">{len(code_functions)} functions serve this {contract_noun.lower()}: {marked} by its @impl marker, '
+            f"{len(code_functions) - marked} as helpers of the functions that call them. Its own tests are those that verify it "
+            f"or a contract derived from it: they must run each function its marker names, while a helper counts as run when "
+            f"the tests of any contract it serves run it. {unrun} {'line' if unrun == 1 else 'lines'} in these functions no test runs.</p>"
+            + '<div class="panel code-panel"><table><thead><tr><th>Function</th><th>How</th><th>Its tests</th><th>All tests</th>'
+            "<th>Unexecuted lines</th><th></th></tr></thead><tbody>"
+            + "".join(code_row(item) for item in code_functions)
+            + "</tbody></table></div></section>"
+        )
+
     history_section = ui.history_section(
         section_id=f"ce-history-{contract_key}",
         status=overall,
@@ -670,6 +722,7 @@ def render_current() -> None:
 {verdict_header}
 <section class="section" id="ce-coverage-{contract_key}">{coverage_section_head}<div class="dashboard-layout"><div class="panel matrix-wrap"><table><thead><tr><th>Test level</th>{"".join(f"<th>{esc(label)}</th>" for _, label in BOUNDARIES)}</tr></thead><tbody>{"".join(matrix_rows)}</tbody></table>{linked_note}</div><aside class="inspector" id="cell-inspector">{cell_inspectors[default_cell]}</aside></div></section>
 <section class="section" id="ce-faults-{contract_key}">{fault_section_head}<div class="{fault_layout_class}"><div class="fault-grid">{"".join(fault_tiles)}</div>{fault_inspector_markup}</div></section>
+{code_section}
 {technical_support_section}
 {history_section}
 </div>"""
@@ -690,7 +743,7 @@ def render_current() -> None:
     )
     nav_selector = (
         f'a[href="#ce-coverage-{contract_key}"],a[href="#ce-faults-{contract_key}"],'
-        f'a[href="#ce-technical-support-{contract_key}"],a[href="#ce-history-{contract_key}"]'
+        f'a[href="#ce-technical-support-{contract_key}"],a[href="#ce-history-{contract_key}"],a[href="#ce-code-{contract_key}"]'
     )
     init_js = f"selectCell({json.dumps(default_cell)});selectFault({json.dumps(default_fault)});"
     script = ui.monitor_script(
@@ -704,6 +757,8 @@ def render_current() -> None:
         ("Verification matrix", f"#ce-coverage-{CONTRACT_ID.lower()}"),
         ("Fault model", f"#ce-faults-{CONTRACT_ID.lower()}"),
     ]
+    if code_section:
+        toc_items.append(("Code", f"#ce-code-{CONTRACT_ID.lower()}"))
     if technical_support_rows:
         toc_items.append(
             (
