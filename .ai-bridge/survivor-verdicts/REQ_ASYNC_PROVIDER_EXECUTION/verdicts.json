@@ -65,40 +65,42 @@
  "06f20fb109d3fe21": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085831Z-4513b0",
+   "call_id": "20261002T201413Z-138324",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The success trace is only built after the `if wait_seconds > 0:` branch has already skipped every blocked route. At that point `wait_seconds` is never positive, so it is 0, which matches the default of 0.0 used when the argument is left out. The trace and the async response contract therefore come out the same.",
-   "response_sha256": "700b90f721cb54d4ef5a0c3d1980493188fe87b4718a9604bbb03123604eef33",
+   "reason": "Any request with `wait_seconds > 0` is set aside by `continue` before the success trace is built, so on that path `wait_seconds` is always 0. Leaving the argument out falls back to the default `wait_seconds=0.0`, which gives the same trace, so callers see no difference in the async response contract.",
+   "response_sha256": "b4be0dbc675338ee0597feaf38180870b1929eb767638816cdf3528fded39a68",
    "sources": [
-    "if wait_seconds > 0:",
-    "wait_seconds=wait_seconds,",
     "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)",
+    "if wait_seconds > 0:",
+    "without `wait_seconds`, the call takes `wait_seconds=0.0`.",
     "Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "argument",
-  "prompt_sha256": "0bbc6d1b110eca291b390251f22c093b82f959a8e6a411d7b03115c58afbb0fe",
+  "prompt_sha256": "8c8a64a367c93772c6518245ba5c3c93ed5569383a53fdc98163530c6b6b7ef0",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261002T091039Z-865001",
+   "call_id": "20261002T201519Z-c18f43",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "0bbc6d1b110eca291b390251f22c093b82f959a8e6a411d7b03115c58afbb0fe",
-   "reason": "Because the execution only reaches the successful trace path if wait_seconds is not greater than 0 (due to the continue statement on wait_seconds > 0), the value is effectively 0 at that point. Thus, omitting the explicit argument and falling back to the default wait_seconds: float = 0.0 produces identical runtime behavior and traces, making the versions equivalent.",
-   "response_sha256": "0d300a1a70a7629055b1f8ab0c897177d38201ddedc74e56cff75e8a9cbc4f2d",
+   "prompt_sha256": "8c8a64a367c93772c6518245ba5c3c93ed5569383a53fdc98163530c6b6b7ef0",
+   "reason": "Any route with wait_seconds greater than zero is caught by the earlier guard and diverted to blocked_requests, so wait_seconds is always 0.0 when this line is reached. Omitting wait_seconds falls back to its default value of 0.0 in build_attempt_trace, making the mutant an equal expression that produces identical traces across all inputs.",
+   "response_sha256": "ac9504c76f23c1db701d9e4d6329ef9d30d0cd054cf4cd6315f739ea39384d78",
    "sources": [
     "Requirement REQ_ASYNC_PROVIDER_EXECUTION (Asynchronous provider execution): Asynchronous requests shall support text, structured output, and media-capable provider routes without changing the public response contract.",
-    "if wait_seconds > 0:",
-    "wait_seconds=wait_seconds,"
+    "wait_seconds=wait_seconds,",
+    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)"
    ],
    "test_focus": "",
    "verdict": "equivalent"

@@ -1,0 +1,62 @@
+{
+ "3637e50b07cabf61": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261002T221958Z-403b5f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Both versions identically schedule a task in the thread pool and return a Future object; the removal of the `left` keyword argument only changes the deferred execution within the thread, which does not affect the function's immediate behaviour, exceptions, or observable state.",
+    "response_sha256": "a056209877ab6efade3b31f5fbd37e867cd33a270b26529651e62b3182b4a538",
+    "sources": [
+     "    return pool.submit(\n        contextvars.copy_context().run, executor.execute, request, left=left\n    )",
+     "    return pool.submit(contextvars.copy_context().run, executor.execute, request)"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {
+     "executor": "RouteExecutor()",
+     "left": "threading.Event()",
+     "pool": "ThreadPoolExecutor()",
+     "request": "ResolvedRequest(request_id='r1', route=ExpandedRoute(route_index=0, model=Model.GEMINI_FLASH, provider=Provider.GOOGLE, provider_model='gemini-flash', defaults=RouteGenerationDefaults(key_id=1)), settings=EffectiveSettings(key_id=1, temperature=None, seed=None, response_schema=None, tools=None, tool_choice=None, max_tool_rounds=None, kwargs={}, max_attempts=None, attempt_timeout_seconds=None, wait_for_cooldown_if_all_blocked=False, round_robin_start=False, shuffle_fallbacks=False, default_limits=ProviderLimits(rps=1.0, rpm=60.0, cooldown_seconds=10.0, cooldown_after_failures=1), limits_by_provider={}), key=ResolvedKey(key_id=1, env_var='KEY', value='val'), messages=(), content=None)"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261002T221958Z-e47262",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "The original version forwards the cancellation event left as a keyword argument to executor.execute via pool.submit, whereas the changed version omits left, altering the arguments passed to executor.execute and the work item stored in pool.",
+    "response_sha256": "1fa0057fb6e98a36fc61a9c96fc5df7038782ec6aeb00628b0e09e7bdd37542c",
+    "sources": [
+     "        contextvars.copy_context().run, executor.execute, request, left=left",
+     "    return pool.submit(contextvars.copy_context().run, executor.execute, request)"
+    ],
+    "verdict": "distinct"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "executor": "a RouteExecutor whose execute(self, request, left=None) returns left",
+     "left": "threading.Event()",
+     "pool": "ThreadPoolExecutor(max_workers=1)",
+     "request": "any ResolvedRequest"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261002T215716Z-27d408",
+    "confidence": 0.9,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "The change drops the left=left argument, so execute no longer receives the event: it gets the default or raises TypeError if left is required, instead of the caller's event.",
+    "response_sha256": "2b4cb1434a993a50a3b42307e730f63a5cbe8a58d744c63ac63a78ace3b5eb15",
+    "sources": [
+     "pool.submit(\n        contextvars.copy_context().run, executor.execute, request, left=left\n    )",
+     "return pool.submit(contextvars.copy_context().run, executor.execute, request)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "0a9cf8978355851f6e18f6050359fc0939df784e827a3897a70a548879fc326b"
+ }
+}

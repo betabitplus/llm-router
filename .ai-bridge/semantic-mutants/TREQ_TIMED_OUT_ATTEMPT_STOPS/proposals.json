@@ -1,0 +1,166 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_TIMED_OUT_ATTEMPT_STOPS",
+ "proposals": [
+  {
+   "id": "SM-AEDEA662",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/executor.py::_stop_if_left",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Returning early instead of raising an exception, which fails to enforce the boundary and allows execution to continue past the timeout.",
+   "original_sha256": "a5369e107a46a270594753a93e721bf59f43decf7f652c97e570e640399273f5",
+   "context_sha256": "f6d7516239fad643079ef9000203cde362ad73cb815f10feeb1597f0270883f1",
+   "prompt_sha256": "5807231df699e2e8b9de9c9d9908c44efcb4dc46a500cc15db085c87014e6ead",
+   "replacement": "def _stop_if_left(left: threading.Event | None) -> None:\n    \"\"\"Stop an attempt the router left at its timeout.\n\n    A running thread cannot be stopped from outside, so the attempt checks before\n    every step it would start.\n    \"\"\"\n    if left is not None and left.is_set():\n        return",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-c3e85a",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "234e9dd96bfbe9309f3d12bff1c562a30a5851dd53d12266635c0711845e7056",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-1B0ED761",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/executor.py::_stop_if_left",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Checking the truthiness of the Event object itself instead of calling its is_set() method, causing the attempt to stop immediately before any timeout boundary.",
+   "original_sha256": "a5369e107a46a270594753a93e721bf59f43decf7f652c97e570e640399273f5",
+   "context_sha256": "f6d7516239fad643079ef9000203cde362ad73cb815f10feeb1597f0270883f1",
+   "prompt_sha256": "5807231df699e2e8b9de9c9d9908c44efcb4dc46a500cc15db085c87014e6ead",
+   "replacement": "def _stop_if_left(left: threading.Event | None) -> None:\n    \"\"\"Stop an attempt the router left at its timeout.\n\n    A running thread cannot be stopped from outside, so the attempt checks before\n    every step it would start.\n    \"\"\"\n    if left:\n        msg = \"The router left this attempt at its timeout.\"\n        raise AttemptLeftError(msg)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-c3e85a",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "234e9dd96bfbe9309f3d12bff1c562a30a5851dd53d12266635c0711845e7056",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-5E109C65",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/executor.py::_LeftAttemptAdapter.execute",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Executes the request before checking if the attempt was left, breaking the before/after boundary.",
+   "original_sha256": "20083284a90dd2a02d1677805c147e7e0f57b262529ec41fa4aa86652c5bfabd",
+   "context_sha256": "00548db36635864fb9393d43836ff14f240173095b80b3afd42ca29489807262",
+   "prompt_sha256": "e67da2a0c3a77b28fe9c1106b922ca30670ad2a04d642630d29b2bdb3e950621",
+   "replacement": "    def execute(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Start the request only while the attempt is not left.\"\"\"\n        result = self._adapter.execute(request)\n        _stop_if_left(self._left)\n        return result",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-443f5e",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "ae7246d4e989b35527943099dca3e2f6edb3d29989209ab6d203c5b140626284",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-5BEF46E5",
+   "class": "spec.wrong-ordering-boundary",
+   "target": "src/llm_router/_internal/runtime/executor.py::_LeftAttemptAdapter.execute",
+   "risk": "an order or a before/after boundary its requirement names is broken",
+   "rationale": "Omits the check entirely, allowing requests to be started even if the attempt was left.",
+   "original_sha256": "20083284a90dd2a02d1677805c147e7e0f57b262529ec41fa4aa86652c5bfabd",
+   "context_sha256": "00548db36635864fb9393d43836ff14f240173095b80b3afd42ca29489807262",
+   "prompt_sha256": "e67da2a0c3a77b28fe9c1106b922ca30670ad2a04d642630d29b2bdb3e950621",
+   "replacement": "    def execute(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Start the request only while the attempt is not left.\"\"\"\n        return self._adapter.execute(request)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-443f5e",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "ae7246d4e989b35527943099dca3e2f6edb3d29989209ab6d203c5b140626284",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-9E074F06",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::_stop_if_left",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Returns early instead of raising the exception, which fails to stop the execution flow.",
+   "original_sha256": "a5369e107a46a270594753a93e721bf59f43decf7f652c97e570e640399273f5",
+   "context_sha256": "2cb7689447d9ae8e00c79de7822f06d6ce301ec8a86d4fec61534f886cf43842",
+   "prompt_sha256": "520c84890f6d6b850b6709e8cd746714af17b82b8790da4eb70703d6e835c16e",
+   "replacement": "def _stop_if_left(left: threading.Event | None) -> None:\n    \"\"\"Stop an attempt the router left at its timeout.\n\n    A running thread cannot be stopped from outside, so the attempt checks before\n    every step it would start.\n    \"\"\"\n    if left is not None and left.is_set():\n        msg = \"The router left this attempt at its timeout.\"\n        return\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-31f1a9",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "b6d197161ac886c635f9217ccb8910a797071c2eab8ee991e70c82380a727641",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-68F913B1",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::_stop_if_left",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "The developer clears the event flag instead of raising an error, allowing the execution to proceed.",
+   "original_sha256": "a5369e107a46a270594753a93e721bf59f43decf7f652c97e570e640399273f5",
+   "context_sha256": "2cb7689447d9ae8e00c79de7822f06d6ce301ec8a86d4fec61534f886cf43842",
+   "prompt_sha256": "520c84890f6d6b850b6709e8cd746714af17b82b8790da4eb70703d6e835c16e",
+   "replacement": "def _stop_if_left(left: threading.Event | None) -> None:\n    \"\"\"Stop an attempt the router left at its timeout.\n\n    A running thread cannot be stopped from outside, so the attempt checks before\n    every step it would start.\n    \"\"\"\n    if left is not None and left.is_set():\n        left.clear()\n",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-31f1a9",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "b6d197161ac886c635f9217ccb8910a797071c2eab8ee991e70c82380a727641",
+    "index": 1
+   }
+  },
+  {
+   "id": "SM-5BEF46E5",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::_LeftAttemptAdapter.execute",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Remove the check that stops execution if the attempt is left, allowing provider requests to be started even after a timeout.",
+   "original_sha256": "20083284a90dd2a02d1677805c147e7e0f57b262529ec41fa4aa86652c5bfabd",
+   "context_sha256": "e31409a345df5ef96e65c7a45eec72003d42f89908b56562069718b01d47351e",
+   "prompt_sha256": "16284a0875542e61d60953707a2d8886d3bf2f0f0b7384f4102cb95539aac012",
+   "replacement": "    def execute(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Start the request only while the attempt is not left.\"\"\"\n        return self._adapter.execute(request)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-f2fefe",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "64e7cf50fec674aad1210fdf818157762f4f3d7accd857a09da4172032429588",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-5E109C65",
+   "class": "interface.unexpected-interaction",
+   "target": "src/llm_router/_internal/runtime/executor.py::_LeftAttemptAdapter.execute",
+   "risk": "an external interaction its requirement rules out happens anyway",
+   "rationale": "Execute the request before checking if the attempt is left, violating the requirement that no further request is started.",
+   "original_sha256": "20083284a90dd2a02d1677805c147e7e0f57b262529ec41fa4aa86652c5bfabd",
+   "context_sha256": "e31409a345df5ef96e65c7a45eec72003d42f89908b56562069718b01d47351e",
+   "prompt_sha256": "16284a0875542e61d60953707a2d8886d3bf2f0f0b7384f4102cb95539aac012",
+   "replacement": "    def execute(self, request: ProviderRequest) -> ProviderResult:\n        \"\"\"Start the request only while the attempt is not left.\"\"\"\n        result = self._adapter.execute(request)\n        _stop_if_left(self._left)\n        return result",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T211908Z-f2fefe",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "64e7cf50fec674aad1210fdf818157762f4f3d7accd857a09da4172032429588",
+    "index": 1
+   }
+  }
+ ]
+}

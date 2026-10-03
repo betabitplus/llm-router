@@ -112,46 +112,27 @@
  "SM-2DBB5B58": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T114454Z-b1787e",
+   "call_id": "20261002T215744Z-42a6d9",
    "confirmed": true,
    "effort": "xhigh",
+   "finding": "The `tool_calls` override is meant to let a caller replace the result's tool calls in the public response. No project caller passes an override that differs from `result.tool_calls`, so the removed branch never changes what callers see.",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only ignores an explicitly passed `tool_calls` override. None of the three call sites ever passes `tool_calls`; each gives just `result`, `tool_trace` and sometimes `structured_data`. That means public tool-call semantics always come from `result.tool_calls` in both versions, so no family's normalized response can differ where the requirement is observed.",
-   "response_sha256": "62ffdba77352f67fbc2ffa6c4149de3cbdf3398b8545d4ecb6890a8af24402d5",
+   "reason": "The mutant only drops the explicit `tool_calls` override. The visible callers (executor.py:465 and :526) never pass `tool_calls`. No test-writing attempt found a route that hands it calls different from `result.tool_calls`, so callers see the same public tool calls either way. The override also acts the same for every provider, so cross-family consistency is unaffected.",
+   "response_sha256": "f3a6d93bbbca339af5e873a3e0b0f41ea10a9ce851be77a0a679edf1f95943c9",
    "sources": [
-    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
     "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
     "tool_calls=list(result.tool_calls),",
     "tool_trace=state.tool_state.steps,",
-    "structured_data=validated.value,"
+    "structured_data=validated.value,",
+    "Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "ineffective"
   },
   "operator": "semantic",
-  "prompt_sha256": "3e55f4e367ef2203ea57947d7f1c138763aa2ae53c68bfa696a6b78eab173c57",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T114546Z-92da12",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "3e55f4e367ef2203ea57947d7f1c138763aa2ae53c68bfa696a6b78eab173c57",
-   "reason": "The mutant ignores the `tool_calls` keyword argument, but no caller in the codebase passes this argument to `build_public_response`. Because the changed code is unreachable through the existing callers, the difference cannot be observed and is irrelevant to the requirement.",
-   "response_sha256": "c1248f75fcf49e8bebcac8a6cd77d7f4aad0affe9ceee2eb2f009ff86082e554",
-   "sources": [
-    "Requirement REQ_RESPONSE_NORMALIZATION (Equivalent provider replies normalize consistently): Semantically equivalent successful replies from different provider families shall normalize into the same public response semantics.",
-    "tool_calls=list(result.tool_calls if tool_calls is None else tool_calls),",
-    "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n            ),",
-    "            response=build_public_response(\n                result,\n                tool_trace=state.tool_state.steps,\n                structured_data=validated.value,\n            ),"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "d49364e8c0dbe863a8386842cdc588bc1f4e7df902ed6d47a68b4950704bdd93"
  },
  "SM-44C084CF": {
   "answer": {

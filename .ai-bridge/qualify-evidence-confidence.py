@@ -1212,6 +1212,15 @@ def implementation_fault_controls() -> dict[str, dict[str, object]]:
         and on_caught[faults["CLASS_BY_OPERATOR"]["return"]]["suppressed_by_verdict"] == 0
         and on_caught[faults["CLASS_BY_OPERATOR"]["return"]]["caught"] == classes[faults["CLASS_BY_OPERATOR"]["return"]]["caught"]
     )
+    # A verdict that names a finding takes the survivor out of its class too, and the class names it
+    # as an open finding (ADR_0007).
+    finding = {"verdict": "unspecified", "reason": "r", "by": "m", "finding": "f", "finding_state": "undecided"}
+    with_finding = faults["project_classes"](broad, report, root, {survivor["gremlin_id"]: finding})
+    projection_ok = projection_ok and (
+        with_finding[judged_class]["suppressed_by_verdict"] == 1
+        and with_finding[judged_class]["survived_reached"] == classes[judged_class]["survived_reached"] - 1
+        and (not with_finding[judged_class]["judged"] or "open finding" in with_finding[judged_class]["basis"])
+    )
 
     # Reuse: a retained result counts only while engine, scope, tests and inputs match.
     engine_now = faults["engine_configuration"]()
@@ -4039,12 +4048,17 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
             if role == "generator":
                 passed = semantic["generator_canary_passed"](calibration, question, structured)[0]
             elif role in ("verdict", "verdict_review"):
-                passed = semantic["verdict_canary_passed"](question, structured)[0]
+                passed = semantic["verdict_canary_passed"](question, structured, role)[0]
             else:
                 draft = semantic["draft_from_answer"](question["proposal"]["id"], structured)
                 passed = bool((case.get("cascade") or {}).get("accepted")) and case.get("draft_sha256") == hashlib.sha256(draft.encode()).hexdigest()
             recomputed = recomputed and passed == bool(case.get("passed"))
         recomputed = recomputed and bool(record.get("passed")) == all(bool(case.get("passed")) for case in (record.get("cases") or {}).values())
+    # An answer to the first verdict canary that cites the question as the rules ask.
+    review_sources = {
+        "level": "requirement", "test_focus": "", "finding": "",
+        "sources": ["A retry policy allows at least one attempt and never more than its configured maximum.", "    return used < maximum"],
+    }
     checks = {
         "every canary answer is a stored, ledgered call's answer, by the model its record names": bound,
         "every canary case recomputes to its record": recomputed,
@@ -4054,6 +4068,12 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
             {"verdict": "pin", "level": "requirement", "reason": "as the question shows", "test_focus": "the case", "sources": ["a sentence nobody wrote here"]})[0],
         "an escalation inside a requirement's scope fails its canary": not semantic["verdict_canary_passed"](
             next(question for question in questions["verdict"] if question["expected"] == "escalate"), {"verdict": "escalate", "level": "requirement", "reason": "a product decision", "test_focus": ""})[0],
+        # The review passes on whether it suppresses (ADR_0007): a finding against a known gap is no
+        # suppression, an agreement with one is.
+        "the review passes a known gap it does not suppress and fails one it suppresses": (
+            semantic["verdict_canary_passed"](questions["verdict"][0], {**review_sources, "verdict": "unspecified", "reason": "no requirement settles it", "finding": "the cap"}, "verdict_review")[0]
+            and not semantic["verdict_canary_passed"](questions["verdict"][0], {**review_sources, "verdict": "irrelevant", "reason": "nothing asks for it"}, "verdict_review")[0]
+        ),
         "a proposal that imports fails the generator canary": not semantic["generator_canary_passed"](calibration, questions["generator"][0], {"proposals": [{"defect": "d", "replacement": "    def summary(self) -> dict[str, object]:\n        import os\n        return {\"name\": os.sep}"}]})[0],
     }
     # A run whose call went unanswered keeps the record of the same questions, and only of those.
@@ -4071,6 +4091,23 @@ def model_canary_controls() -> dict[str, dict[str, object]]:
         and reviewed({"prompt_sha256": "q", "answer": answer}) is None
         and reviewed({"prompt_sha256": "q", "answer": answer, "review": {**agree, "prompt_sha256": "other"}}) is None
         and (reviewed({"prompt_sha256": "q", "answer": {**answer, "verdict": "pin"}}) or {}).get("verdict") == "pin"
+    )
+    # A review that names a finding opens it instead of pinning the mutant, and a finding counts as
+    # answered, without a review (ADR_0007).
+    opened = reviewed({"prompt_sha256": "q", "answer": answer, "review": {**agree, "verdict": "unspecified", "reason": "a caller sees it", "finding": "whether a receipt is sent"}}) or {}
+    checks["a review that names a finding opens it instead of pinning, and a finding counts without a review"] = (
+        opened.get("verdict") == "unspecified" and opened.get("finding") == "whether a receipt is sent" and not opened.get("test_focus")
+        and (reviewed({"prompt_sha256": "q", "answer": {**answer, "verdict": "ineffective", "finding": "it cannot cancel"}}) or {}).get("verdict") == "ineffective"
+    )
+    state = judge["finding_state"]
+    checks["a finding names itself, and the delegate's disposition decides whether it stays open"] = (
+        any("naming the finding" in problem for problem in judge["verdict_problems"]({"verdict": "unspecified", "level": "requirement", "reason": "a caller sees it", "test_focus": "", "finding": ""}, False))
+        and state({"verdict": "unspecified"}) == "undecided"
+        and state({"verdict": "unspecified", "disposition": "require"}) == "decided"
+        and state({"verdict": "unspecified", "disposition": "not-required"}) == "closed"
+        and state({"verdict": "ineffective", "disposition": "kept"}) == "closed"
+        and state({"verdict": "ineffective", "disposition": "not-required"}) == "undecided"
+        and state({"verdict": "irrelevant"}) is None
     )
     # A re-check, the role's current model asked the same question again, pins a suppression it does not uphold.
     recheck = {**disagree, "model": "claude-opus-5-5", "effort": "xhigh"}

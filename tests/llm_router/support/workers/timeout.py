@@ -35,6 +35,8 @@ class TimeoutWorkerResult:
     returncode: int
     stdout: str
     stderr: str
+    tool_calls: int = 0
+    tool_values: tuple[str | None, ...] = ()
 
 
 def run_timeout_worker(
@@ -120,4 +122,6 @@ def run_timeout_inprocess(
         returncode=0,
         stdout="",
         stderr="",
+        tool_calls=int(payload.get("tool_calls") or 0),
+        tool_values=tuple(payload.get("tool_values") or ()),
     )

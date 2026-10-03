@@ -1,0 +1,10 @@
+{
+ "SM-518AB7BA": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require: a route may name a provider string the config does not declare (routes.py keeps such a route), and trying it raises a bare ValueError that reaches the caller when it is the last route. A requirement should say such a route fails as the public ProviderNotFoundError, a ConfigurationError that exists for this case and is never raised today, while the router may still try the routes after it. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

@@ -250,44 +250,26 @@
  "307acf14e91902cf": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141739Z-269c64",
+   "call_id": "20261002T201753Z-ca2665",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "The post-loop `raise RuntimeError(msg)` is meant to stop the method returning None if the retry loop ever finishes without a result. That can't happen: each attempt returns or raises, and an exhausted loop raises, so nothing reaches the line.",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only replaces the defensive raise after the retry loop. A normal run never reaches it, because success returns inside the loop and exhaustion raises into the except block. Even if reached, it would return None instead of raising, which has nothing to do with classifying temporary vs permanent failures by status or exception semantics.",
-   "response_sha256": "3aa620cdb13e3f3f4b3d67793df56d01bb7d3f1baff16bc67eb6abd9b26cc751",
+   "reason": "Every attempt either returns `adapter.execute(request)` straight away or raises. When retries run out, the retry loop raises, and the except block turns that error into the boundary error. So execution never gets past the loop, and the guard the mutant replaces with `pass` is never reached.",
+   "response_sha256": "5177dcd0621ce67a016ba3f232e9e7e5e525fdb24b38ddaf4a52d7a1b3602a09",
    "sources": [
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
+    "for attempt in retrying:\n                with attempt:\n                    return adapter.execute(request)",
     "raise RuntimeError(msg)",
-    "msg = \"Provider retry loop ended without a result.\""
+    "msg = 'Provider retry loop ended without a result.'\n    pass",
+    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "ineffective"
   },
   "operator": "statement",
-  "prompt_sha256": "e0ce4e2262bed49d4d065a768745f283b3a02b06c3c160352c49eba4efc62a9a",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T141803Z-53ad88",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "e0ce4e2262bed49d4d065a768745f283b3a02b06c3c160352c49eba4efc62a9a",
-   "reason": "The code modified by the mutant is strictly unreachable. The retry loop either succeeds and directly returns the result, or exhausts attempts and raises an exception that is unconditionally caught and re-raised by the `except` block. Since execution never falls through to the end of the method, no input can ever trigger or observe the difference in behavior.",
-   "response_sha256": "3250fc906e5ce9d0b368e8ab90f99f3ce3540320bbe6da3aaace7beaeef657bf",
-   "sources": [
-    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
-    "raise RuntimeError(msg)",
-    "msg = 'Provider retry loop ended without a result.'"
-   ],
-   "test_focus": "",
-   "verdict": "equivalent"
-  }
+  "prompt_sha256": "b3f85ebbe3b4795c4e76fa7fd32b996e528c79d6fbc5aa94e925a7b6b6b1f90d"
  },
  "3a9ca1148a7ef4b1": {
   "answer": {
@@ -594,39 +576,40 @@
  "SM-AD46F34B": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-d366fa",
+   "call_id": "20261002T202525Z-449373",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The swap only matters for a status that is both in _NON_RETRYABLE_STATUS_CODES and >= _SERVER_ERROR_STATUS_MIN. The non-retryable set holds caller/auth (4xx) codes below the server-error threshold, so every status gets the same classification and reason. The symbolic search also found no differing input after 298 paths.",
-   "response_sha256": "1366f17a1100e468ae1cb3cb1b98eb89e7b0481f8a3c0ca46791336a3c5e2701",
+   "reason": "The swapped checks only differ for a code that is both in the caller/auth non-retryable set and at or above the server-error minimum. The set holds 4xx caller/auth codes, so the two never overlap and every status code gets the same decision and reason. Each check still does its job; only the order changed.",
+   "response_sha256": "88780aa83dccef50c8fe64680f3a19d1237dd05873533f9146e9447843b613c6",
    "sources": [
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
     "if status_code in _NON_RETRYABLE_STATUS_CODES:",
-    "reason=\"caller_or_auth_status\",",
-    "if status_code >= _SERVER_ERROR_STATUS_MIN:"
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+    "reason=\"caller_or_auth_status\","
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "semantic",
-  "prompt_sha256": "b633d0b370d1f6fad6132fab879012f4b3eb818f4d2f2ae7d31b80761f9dffa2",
+  "prompt_sha256": "2fea0835fa35856b64ba3405bb3396a45f228019ff90ad71be71cfe523b14f6d",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T081059Z-cdd303",
+   "call_id": "20261002T202543Z-bacf9c",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "b633d0b370d1f6fad6132fab879012f4b3eb818f4d2f2ae7d31b80761f9dffa2",
-   "reason": "Swapping the evaluation order of these conditional returns does not alter the function's output because the sets of non-retryable status codes and server error status codes are disjoint. The implementation behavior remains completely equivalent.",
-   "response_sha256": "d313929abf04467cb2629b61cf336060fe1569f6a0c5b84302ce3f3c6a32e03f",
+   "prompt_sha256": "2fea0835fa35856b64ba3405bb3396a45f228019ff90ad71be71cfe523b14f6d",
+   "reason": "The conditions checking for non-retryable caller or auth status codes and server error status codes are mutually exclusive. Swapping their evaluation order yields identical results for all inputs, so the mutant is completely equivalent.",
+   "response_sha256": "beba8e8de4be17c2b1e4afdafed136bfcc5a8f5a061692a01fca50c1f34e2226",
    "sources": [
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
     "if status_code in _NON_RETRYABLE_STATUS_CODES:",
     "if status_code >= _SERVER_ERROR_STATUS_MIN:"
    ],
@@ -759,44 +742,47 @@
  "d8f7199ce8dc26c9": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195903Z-283caf",
+   "call_id": "20261002T201753Z-9e8c9e",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Changing `>=` to `>` only matters when status_code equals _SERVER_ERROR_STATUS_MIN. The symbolic search went through 298 paths without finding any input that tells the two versions apart. The one input offered as a difference (most likely that boundary code) was refuted because both versions return the same result for it, so the boundary code is already caught by one of the explicit status sets checked earlier.",
-   "response_sha256": "e8850b94126ab3eb700aa2309e997844e02692767b40c84bc9c7b33f4735f5df",
+   "reason": "Changing `>=` to `>` only matters when the status equals _SERVER_ERROR_STATUS_MIN. That value is caught earlier by the explicit retryable-status check: the symbolic search found no input that tells the versions apart, and the one candidate input behaved the same in both. So every status still gets the same retry decision, and the server-error catch-all still covers all other server statuses.",
+   "response_sha256": "fcdef5ebbfa281463f74c5dec46358a0ad6e2bb49195e9df09ad8b244bbcfcdb",
    "sources": [
     "Retry classification shall use explicit status and exception semantics rather than message substrings.",
     "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
     "if status_code >= _SERVER_ERROR_STATUS_MIN:",
     "if status_code > _SERVER_ERROR_STATUS_MIN:",
-    "the symbolic search ended none after 298 paths",
-    "an input by claude-cli:claude-sonnet-5 was refuted: both versions behave the same on it"
+    "if status_code in _RETRYABLE_STATUS_CODES:"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "comparison",
-  "prompt_sha256": "eacc45b9623e5a2673a0838e9c972a1d58946d56fa4545fd56e64fb1c8f4bb27",
+  "prompt_sha256": "49c102b01bb47e0e5f07d564d229bf4ef0ca2fe7546a0039f9d12a3ce6ff16bd",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200006Z-22119f",
+   "call_id": "20261002T201830Z-39c12b",
    "confirmed": false,
    "effort": "",
+   "finding": "The code intends to classify the minimum server error status code via the boundary check, but it does nothing because that status code is already handled by the earlier retryable status check.",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "eacc45b9623e5a2673a0838e9c972a1d58946d56fa4545fd56e64fb1c8f4bb27",
-   "reason": "The boundary value _SERVER_ERROR_STATUS_MIN is already handled by the preceding status code sets, making the change to a strict inequality functionally identical without altering classification behavior.",
-   "response_sha256": "84e7c7214661a641b06fe27f87e7ba06109d4b7f881566024c0070273bcf8c4f",
+   "prompt_sha256": "49c102b01bb47e0e5f07d564d229bf4ef0ca2fe7546a0039f9d12a3ce6ff16bd",
+   "reason": "The equality check in >= _SERVER_ERROR_STATUS_MIN is rendered ineffective because _SERVER_ERROR_STATUS_MIN is already handled by the preceding _RETRYABLE_STATUS_CODES check. Changing the operator from >= to > makes no observable difference to callers since the boundary status code never reaches this line.",
+   "response_sha256": "274765e032ad58399c337d78c98c87b2debfcfeca8ee4d2cf6de6e204eab8ba1",
    "sources": [
     "Retry classification shall use explicit status and exception semantics rather than message substrings.",
-    "if status_code >= _SERVER_ERROR_STATUS_MIN:"
+    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
+    "if status_code >= _SERVER_ERROR_STATUS_MIN:",
+    "if status_code > _SERVER_ERROR_STATUS_MIN:"
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "ineffective"
   }
  },
  "dad9cc03506dec74": {
@@ -863,43 +849,25 @@
  "f0760cfe8c668b1a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085937Z-d89555",
+   "call_id": "20261002T201753Z-0f0124",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says what a RetryDecision must carry besides its classification. One should say that every decision made from an HTTP status, retryable or not, records the status code it was made from.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant still classifies 400 as NON_RETRYABLE with the same reason, so permanent failures are not retried and the classification still comes from status semantics. The only difference is that the decision's diagnostic status_code field is left empty, which no requirement or criterion here asks for.",
-   "response_sha256": "1ecb25edbbf3b704ba89a82f17af0dbd47e3291050a778633730be23788dc248",
+   "reason": "The mutant still classifies 400 as non-retryable, so retry eligibility is unchanged. What changes is the returned RetryDecision: its status_code is None instead of 400. A caller could use that field for error reporting or fallback decisions, but no requirement says what a decision must carry.",
+   "response_sha256": "0896637406513f225bb5d51a01caca6d0713cec73da43bfd7c4733c8850e575a",
    "sources": [
+    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
     "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "Representative retryable and permanent HTTP statuses are classified from status semantics, not message text.",
     "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "argument",
-  "prompt_sha256": "cbcd9107ec4f451e19db6eef8388cf4e1bcd8f9774cdc043e0f2098071bab593",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T091155Z-1dd44d",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "cbcd9107ec4f451e19db6eef8388cf4e1bcd8f9774cdc043e0f2098071bab593",
-   "reason": "The requirements specify classifying failures as retryable or permanent based on status semantics, which both versions achieve correctly. Omitting the status code in the returned decision object is an implementation detail not mandated by any requirement.",
-   "response_sha256": "2bf4e2bccf8e100c36917ab974c8c5b7c6fe8ba46232d938965be17f49d7285d",
-   "sources": [
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "Retry classification shall use explicit status and exception semantics rather than message substrings.",
-    "return RetryDecision(classification=RetryClassification.NON_RETRYABLE, reason='caller_or_auth_status')"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "d84891a601da7611c2d2ad40d49339e1927d79ef92e2e2a9a362bc3db70d8f17"
  },
  "f49ab970d70faf89": {
   "answer": {

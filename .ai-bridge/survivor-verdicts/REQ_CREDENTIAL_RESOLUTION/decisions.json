@@ -1,0 +1,10 @@
+{
+ "87628559ec5d804c": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: keys[start:] + keys[:start] is the rotation itself; the duplicate tail the mutant adds is never reached because selection takes the first eligible key, but the plain rotation is the correct and readable form. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
+ }
+}

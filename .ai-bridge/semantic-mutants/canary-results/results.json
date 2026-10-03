@@ -369,132 +369,160 @@
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260930T002221Z-7466ef",
+    "call_id": "20261002T195319Z-29f2ca",
     "detail": "expected equivalent, got equivalent",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "daa5d798137d9fddbf96cc2938f6977f9a04c7a01730381c5b453c21883282dd"
+    "response_sha256": "c26780c5ee799c14c3b8c56526cc636f7c933ad61ec538de6334a3a61a521455"
    },
    "V-ESCALATE": {
-    "call_id": "20260930T002234Z-450196",
-    "detail": "expected escalate, got escalate",
+    "call_id": "20261002T195334Z-fe4005",
+    "detail": "expected escalate or another answer that does not suppress, got escalate",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "271bf6c4eb789e964ba4b244c520dea36272884cca74a8172077f390d81e9f22"
+    "response_sha256": "2c201439936f578af865255b42695961e386efdf246fc681a802694c089fba2d"
+   },
+   "V-INEFFECTIVE": {
+    "call_id": "20261002T195319Z-548ead",
+    "detail": "expected ineffective or another answer that does not suppress, got ineffective",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "39b452f0c1533577aaa42fe7fc22801a6f8295a73aaaa87366f58f0520b90fd9"
    },
    "V-PIN": {
-    "call_id": "20260930T002151Z-ee5ed3",
-    "detail": "expected pin, got pin",
+    "call_id": "20261002T195319Z-b41158",
+    "detail": "expected pin or another answer that does not suppress, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "52e7fd77711cebb736dcab81b28d4023eb9f9cb7f0a636fd2d7da16ca9c926a4"
+    "response_sha256": "c574b19255a2bc7679925745d60196ad8d15c363510d5f25fe31d5a6f7a16c02"
    },
-   "V-REAL-EQUIVALENT": {
-    "call_id": "20260930T002321Z-4dc4de",
-    "detail": "expected equivalent, got equivalent",
+   "V-REAL-INEFFECTIVE": {
+    "call_id": "20261002T195331Z-f84fec",
+    "detail": "expected ineffective or another answer that does not suppress, got ineffective",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "c212a44e54429bf610cd92ef5f6cadb0acfde5ee92648253f251fc2b077823c3"
+    "response_sha256": "5f24f98c99e2d3a2fde1b694982c4a745fd779d558d9a166ceab8c9221de9aa0"
    },
    "V-REAL-IRRELEVANT": {
-    "call_id": "20260930T002304Z-73046f",
-    "detail": "expected irrelevant, got irrelevant",
+    "call_id": "20261002T195331Z-ee276a",
+    "detail": "expected irrelevant, got irrelevant (its source \u00abirrelevant: the versions differ only in what no caller should rely on, such as \u2026\u00bb is not in the question)",
     "outcome": "ok",
-    "passed": true,
-    "response_sha256": "6ef24d03148448c347910ff258aa3b4c945198a7fa8bc46b7f3ddaaea4ebd039"
+    "passed": false,
+    "response_sha256": "409338b27ec7f0a8068f1b4aa8a95cf3371f1047a23d7c4dc8444e99798a2c80"
    },
    "V-REAL-PIN": {
-    "call_id": "20260930T002249Z-ffb7ac",
-    "detail": "expected pin, got pin",
+    "call_id": "20261002T195334Z-73bde3",
+    "detail": "expected pin or another answer that does not suppress, got unspecified",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "7ac445a6bccfa6a2a0bb606bb426f831daa893712e6938fd68f0e76a5c52d32e"
+    "response_sha256": "321951c2b57d552ffb95d1e5f4cf282fe1a2b4636d70a2bd48f9c0a2dc43941e"
    },
    "V-RECONSIDER-IRRELEVANT": {
-    "call_id": "20260930T135230Z-787ba9",
-    "detail": "expected irrelevant, got irrelevant",
+    "call_id": "20261002T195334Z-d46252",
+    "detail": "expected irrelevant, got irrelevant (none of its sources quotes the requirement, Feature, Goal or criterion it turns on)",
     "outcome": "ok",
-    "passed": true,
-    "response_sha256": "3af3a02cf588cd5e722a23c582ddb1f1b7c903e4479893282681ca54d98fb5ba"
+    "passed": false,
+    "response_sha256": "7c69d7d781ce7edad6ed9844e91032a4ce3e39dc67d9c7df95363d78b7d2f483"
    },
    "V-RECONSIDER-PIN": {
-    "call_id": "20260930T135234Z-a523c9",
-    "detail": "expected pin, got pin",
+    "call_id": "20261002T195335Z-62a387",
+    "detail": "expected pin or another answer that does not suppress, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "368b504c5df9d044d7e86e8620b5e40b9bc0dc31bf148f4197509ea1fcdd1d36"
+    "response_sha256": "f4c815c91dc0f2b015fe3fe135296e0b2bf87256bc0f87b24d2fd79c9b4fb00c"
+   },
+   "V-UNSPECIFIED": {
+    "call_id": "20261002T195334Z-8af466",
+    "detail": "expected unspecified or another answer that does not suppress, got unspecified",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "6acb8abf31d583ef8eb80ec1893d694737cebdc0d79f93bad9b824fd96fa14b3"
    }
   },
   "model": "gemini-3.1-pro-high",
-  "passed": true,
-  "questions_sha256": "50339395f703cf8656db80ada4b86674db97fb87cb2c7c13b1d92976b0182465",
-  "ran_at": "2026-09-30T13:55:47.767075Z",
+  "passed": false,
+  "questions_sha256": "8e639377c6ea8659e8ac815c5c4f0dfd4887ea99427fb1e6b9f87acb456b8910",
+  "ran_at": "2026-10-02T20:06:45.721147Z",
   "role": "verdict_review"
  },
  "verdict_review|antigravity-cli|gemini-3.8-flash-high": {
   "backend": "antigravity-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260930T002417Z-925469",
+    "call_id": "20261002T195331Z-0bb1f3",
     "detail": "expected equivalent, got equivalent",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "faca1697d92ee3b0702efa0f9b969d924c946d5d286d8fc3ac8d3fe1a7adea37"
+    "response_sha256": "a509bee1b69216d8a8194a4aea4246acbc14501acd36d7b7f48739b06e5c5712"
    },
    "V-ESCALATE": {
-    "call_id": "20260930T002521Z-38f271",
-    "detail": "expected escalate, got escalate",
+    "call_id": "20261002T195319Z-75b317",
+    "detail": "expected escalate or another answer that does not suppress, got escalate",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "25704d9c9676958e81a4096e110d64d2374580f9d259806c7519044f69d644ed"
+    "response_sha256": "6e38f53f2c84b4e1b9ec228b80ceaee7b36837e56c95d227c4782a042905c272"
+   },
+   "V-INEFFECTIVE": {
+    "call_id": "20261002T195331Z-8b7a46",
+    "detail": "expected ineffective or another answer that does not suppress, got ineffective",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "55f537927cbea8f66cb87636b9161daeee628badc0834d995b4b022d7ec8726e"
    },
    "V-PIN": {
-    "call_id": "20260930T002347Z-996f55",
-    "detail": "expected pin, got pin",
+    "call_id": "20261002T195319Z-94a3d6",
+    "detail": "expected pin or another answer that does not suppress, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "05afd325749093ac956659a29224e846613fb8d95561c89b055d222e50fd7b0f"
+    "response_sha256": "b09fcad48696e3d7b02785c6446f748a5fd103d3143af104f5bf0bef7222e4f4"
    },
-   "V-REAL-EQUIVALENT": {
-    "call_id": "20260930T002915Z-fa8b62",
-    "detail": "expected equivalent, got equivalent",
+   "V-REAL-INEFFECTIVE": {
+    "call_id": "20261002T195331Z-62df73",
+    "detail": "expected ineffective or another answer that does not suppress, got ineffective",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "db5aecf723b328466c0636a87d1de8ad1d4fd77c2c40bfd920f01f47bc1da4ba"
+    "response_sha256": "338f8f53ad42ba743615ac7d42d41e8d215f5bf2ebed74f5168e3db9bfe08395"
    },
    "V-REAL-IRRELEVANT": {
-    "call_id": "20260930T002713Z-69effd",
+    "call_id": "20261002T195319Z-b8a3e2",
     "detail": "expected irrelevant, got irrelevant",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "2929e968f5a2935758acfbf444a700b9c0edfae0ced0271ec97ff7e7d4f0a586"
+    "response_sha256": "78f6c5440171c03663b30433d9674a452de3fc0c94e199acb173dd9dd6eec939"
    },
    "V-REAL-PIN": {
-    "call_id": "20260930T002620Z-f3307c",
-    "detail": "expected pin, got irrelevant",
+    "call_id": "20261002T195319Z-43fe54",
+    "detail": "expected pin or another answer that does not suppress, got unspecified",
     "outcome": "ok",
-    "passed": false,
-    "response_sha256": "75e1374a6a80df21edc794e186f25c89cf0f077960cb08e662041fe051849ecf"
+    "passed": true,
+    "response_sha256": "8b75ed1131a7585432d31efe34917851ec22eba65246e328bb89d899e1ace268"
    },
    "V-RECONSIDER-IRRELEVANT": {
-    "call_id": "20260930T135250Z-22ea9b",
+    "call_id": "20261002T195335Z-45d2bc",
     "detail": "expected irrelevant, got irrelevant",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "d91376847b62cbde4186f039237cf734883879db9bfd4ea26976cae9cbe7278d"
+    "response_sha256": "02f42f3ebbb55482ac8cda53c5b5d747a42cc000d8b570ee1415bfadd4872eb7"
    },
    "V-RECONSIDER-PIN": {
-    "call_id": "20260930T135234Z-e8de4f",
-    "detail": "expected pin, got pin",
+    "call_id": "20261002T195319Z-99eee7",
+    "detail": "expected pin or another answer that does not suppress, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "616570ba29d3fa7afcd5a672805969c77696929a5028408fe7f6208a3006e853"
+    "response_sha256": "4437688cf63a0fdbe2e4183ed57d31b9322f3d922866ff310a3c1feb85c6747a"
+   },
+   "V-UNSPECIFIED": {
+    "call_id": "20261002T195334Z-9f619e",
+    "detail": "expected unspecified or another answer that does not suppress, got unspecified",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "46cc9b5a5cfb29ab835dbb49037509ceec501cf8258964c5c21eb572b390a052"
    }
   },
   "model": "gemini-3.8-flash-high",
-  "passed": false,
-  "questions_sha256": "50339395f703cf8656db80ada4b86674db97fb87cb2c7c13b1d92976b0182465",
-  "ran_at": "2026-09-30T13:55:47.772614Z",
+  "passed": true,
+  "questions_sha256": "8e639377c6ea8659e8ac815c5c4f0dfd4887ea99427fb1e6b9f87acb456b8910",
+  "ran_at": "2026-10-02T20:06:45.727684Z",
   "role": "verdict_review"
  },
  "verdict|claude-cli|claude-opus-5-5": {
@@ -532,67 +560,81 @@
   "backend": "claude-cli",
   "cases": {
    "V-EQUIVALENT": {
-    "call_id": "20260929T222707Z-e63ad8",
+    "call_id": "20261002T195319Z-c6822c",
     "detail": "expected equivalent, got equivalent",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "1db46bc16bac686095505aa587f5b30c560a6abb5f507770fdf33c8e752e9c4b"
+    "response_sha256": "69bdb57dd0d48998feb21eb503a15a297321ed8834976ffae0d83585809e9409"
    },
    "V-ESCALATE": {
-    "call_id": "20260929T222713Z-2f9bf1",
+    "call_id": "20261002T195319Z-88746c",
     "detail": "expected escalate, got escalate",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "7e0c2a6406ad513ff32562083fbdef8d06565e709ce147344e3d116ceeafdb08"
+    "response_sha256": "6daf988b1d64280de36b084d69511fb7ad24cc4b5f326b9b2d53bababd5ccd5b"
+   },
+   "V-INEFFECTIVE": {
+    "call_id": "20261002T195335Z-fced82",
+    "detail": "expected ineffective, got ineffective",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "60e350020ab6dac83e81ab5c298fc8eae8af9bcacfa8884e8ddb4228b97edf81"
    },
    "V-PIN": {
-    "call_id": "20260929T222658Z-4f764e",
+    "call_id": "20261002T195319Z-1c8bf0",
     "detail": "expected pin, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "90aecb3527314e86519b3bd8a15b5eee33498d580c992b31cef22884da21d9c0"
+    "response_sha256": "4809489d38f31a0c8aaa75b3aa729ca59e2d842da2953bd748b2cb0fbd37cb67"
    },
-   "V-REAL-EQUIVALENT": {
-    "call_id": "20260929T222734Z-effa23",
-    "detail": "expected equivalent, got equivalent",
+   "V-REAL-INEFFECTIVE": {
+    "call_id": "20261002T195319Z-8c4653",
+    "detail": "expected ineffective, got ineffective",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "1fe429ae6a1b662ea9dbd97df3763f88f25ad26ce86fe2a18e9fbbef215d112d"
+    "response_sha256": "06baf25a032d84451b51f4fa40fa8d3660e40fa2f129da18ef696015a22455a6"
    },
    "V-REAL-IRRELEVANT": {
-    "call_id": "20260929T222729Z-b278a9",
+    "call_id": "20261002T195319Z-69b2ca",
     "detail": "expected irrelevant, got irrelevant",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "c1292ec6dd8623fbd0393031efd0b37c55f874d8a858bc86861805f55d2a78e4"
+    "response_sha256": "19d26804f11f0cbf603d757eeb2fc339ae5161d2453af554a83ea6c125d2106e"
    },
    "V-REAL-PIN": {
-    "call_id": "20260929T222718Z-33acb9",
+    "call_id": "20261002T195319Z-ac4d2d",
     "detail": "expected pin, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "60d819f6f874ace7c6cea5e290bd8c4d837da938e08d86a6e58c4096a840a719"
+    "response_sha256": "52e27e39ba98414bfef6da73c9a19d7c418d0419feaffd50361d69627283b60b"
    },
    "V-RECONSIDER-IRRELEVANT": {
-    "call_id": "20260930T135230Z-ddb943",
+    "call_id": "20261002T195331Z-89ba01",
     "detail": "expected irrelevant, got irrelevant",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "811174c45e20369453d0fd3459824eb6bcfb855149f5513e50ee180f92cf6f60"
+    "response_sha256": "3921bc59c261a745115c95e584b4a38278d7c53f3cddcca1ebdf83954a5fa1d3"
    },
    "V-RECONSIDER-PIN": {
-    "call_id": "20260930T135234Z-c6e529",
+    "call_id": "20261002T195319Z-1727b4",
     "detail": "expected pin, got pin",
     "outcome": "ok",
     "passed": true,
-    "response_sha256": "84804b3792f6672c2705b75cd62270cdd7643aa0f02a7492f7bd5f2685743bb6"
+    "response_sha256": "7a7933050289bd1760aa50eddf2bfc10a2d40cbdee29529330d7d7cac2fbe3fd"
+   },
+   "V-UNSPECIFIED": {
+    "call_id": "20261002T195319Z-28614e",
+    "detail": "expected unspecified, got unspecified",
+    "outcome": "ok",
+    "passed": true,
+    "response_sha256": "4b202ba2fd8dfbd1fdcb1c55e374f4e4c612815e51fd0e0a45d2ba792d5f1079"
    }
   },
   "effort": "xhigh",
   "model": "claude-opus-5-5",
   "passed": true,
-  "questions_sha256": "50339395f703cf8656db80ada4b86674db97fb87cb2c7c13b1d92976b0182465",
-  "ran_at": "2026-09-30T13:55:47.760093Z",
+  "questions_sha256": "8e639377c6ea8659e8ac815c5c4f0dfd4887ea99427fb1e6b9f87acb456b8910",
+  "ran_at": "2026-10-02T19:55:05.291981Z",
   "role": "verdict"
  }
 }

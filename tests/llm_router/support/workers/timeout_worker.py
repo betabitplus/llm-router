@@ -19,10 +19,25 @@ import argparse
 import asyncio
 import json
 import os
+import threading
+from contextvars import ContextVar
 from typing import Any
 
 from tests.llm_router.support.workers._worker_process import ensure_worker_env
 from tests.llm_router.support.workers.worker_patches import prepare_fault_case
+
+# The calls the scenarios' tool received: a left attempt must make none, and a timed
+# attempt's call must see the value the caller set in CALLER_VALUE before the call.
+TOOL_CALLS: list[dict[str, Any]] = []
+CALLER_VALUE: ContextVar[str | None] = ContextVar("timeout_worker_caller", default=None)
+LEFT_SCENARIOS = {"left_attempt_after_timeout", "async_left_attempt_after_timeout"}
+CONTEXT_SCENARIOS = {"caller_context_reaches_tool", "async_caller_context_reaches_tool"}
+
+
+def look_up_weather(city: str) -> str:
+    """Return the weather for a city."""
+    TOOL_CALLS.append({"city": city, "caller_value": CALLER_VALUE.get()})
+    return "sunny"
 
 
 def _build_router(*, scenario: str) -> Any:
@@ -60,6 +75,35 @@ def _build_router(*, scenario: str) -> Any:
             attempt_timeout_seconds=1.0,
         )
 
+    if scenario in LEFT_SCENARIOS:
+        # The first route answers late with a tool call; the router has left it by then.
+        return LLMRouter(
+            [delayed, fast],
+            limits_by_provider={
+                Provider.OPENROUTER: fast_limits,
+                Provider.GROQ: fast_limits,
+            },
+            temperature=0.0,
+            seed=1,
+            tools=[look_up_weather],
+            max_tool_rounds=2,
+            attempt_timeout_seconds=1.0,
+        )
+
+    if scenario in CONTEXT_SCENARIOS:
+        # The route asks for the tool at once: the attempt runs under its timeout.
+        return LLMRouter(
+            delayed,
+            limits_by_provider={
+                Provider.OPENROUTER: fast_limits,
+            },
+            temperature=0.0,
+            seed=1,
+            tools=[look_up_weather],
+            max_tool_rounds=2,
+            attempt_timeout_seconds=1.0,
+        )
+
     if scenario in {"terminal_timeout", "async_terminal_timeout"}:
         return LLMRouter(
             delayed,
@@ -81,12 +125,22 @@ def _run_scenario(*, scenario: str, marker: str = "") -> dict[str, Any]:
     router = _build_router(scenario=scenario)
     # A marker of the run's own lets a test count its requests among any others.
     prompt = "Reply with the timeout marker only." + (f" [{marker}]" if marker else "")
+    TOOL_CALLS.clear()
+    before = set(threading.enumerate())
+    # What the caller sets before the call; the context scenarios' tool reads it back.
+    token = CALLER_VALUE.set(f"caller {marker}")
 
     try:
         if scenario.startswith("async_"):
             response = asyncio.run(router.aquery(prompt))
         else:
             response = router.query(prompt)
+        if scenario in LEFT_SCENARIOS:
+            # The left attempt gets its late answer after the request returned: wait
+            # until it and the server's reply are done, so what it would still start
+            # is counted here.
+            for thread in set(threading.enumerate()) - before:
+                thread.join(timeout=10.0)
     except Exception as exc:
         return {
             "ok": False,
@@ -95,6 +149,8 @@ def _run_scenario(*, scenario: str, marker: str = "") -> dict[str, Any]:
             "error_message": str(exc),
             "routing_trace": [],
         }
+    finally:
+        CALLER_VALUE.reset(token)
 
     return {
         "ok": True,
@@ -102,6 +158,8 @@ def _run_scenario(*, scenario: str, marker: str = "") -> dict[str, Any]:
         "error_type": None,
         "error_message": None,
         "routing_trace": [attempt.model_dump() for attempt in response.routing_trace],
+        "tool_calls": len(TOOL_CALLS),
+        "tool_values": [call["caller_value"] for call in TOOL_CALLS],
     }
 
 

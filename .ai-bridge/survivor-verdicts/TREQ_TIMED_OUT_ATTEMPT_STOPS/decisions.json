@@ -1,0 +1,10 @@
+{
+ "945e435cc8d61652": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: _LeftAttemptAdapter must offer aexecute to be a ProviderAdapter, and only a sync attempt is ever wrapped, since an async attempt is cancelled at its timeout instead; nothing calls it, and it forwards as an adapter should. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
+ }
+}

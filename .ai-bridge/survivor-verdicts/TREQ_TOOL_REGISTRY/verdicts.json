@@ -2,14 +2,15 @@
  "00c3298ebca5c4f4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141922Z-834604",
+   "call_id": "20261002T202135Z-d18987",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Dropping slots only changes how instances store their attributes: they gain a __dict__ and the class loses __slots__. The class stays frozen, so the difference is observable through introspection but not required anywhere. Duplicate rejection, schema derivation, tool-call parsing and execution do not depend on slots.",
-   "response_sha256": "55a5c8619d391f0216cfdfebc91845d6b6beb4277563f5e980fc956da617505d",
+   "reason": "Dropping slots only gives each registry instance a `__dict__` and weakref support and changes its memory layout. Because the class stays `frozen=True`, setting attributes is still blocked. Duplicate rejection, schema derivation, tool-call parsing and execution behave exactly the same, so nothing a caller should rely on changes.",
+   "response_sha256": "aa8e660939d33c3125ea69b7752731f1fdbf795fd04be4b3de02b3752fa45b31",
    "sources": [
     "@dataclass(frozen=True, slots=True)",
     "@dataclass(frozen=True, slots=False)",
@@ -19,20 +20,21 @@
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "69dc2fc69617f59e835313c35cf5322c2f315b6504b3f28384fa700351843df5",
+  "prompt_sha256": "f42660518430b18655d855b1e2439ef58ff912e62b948333507afcdc9a758eea",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141939Z-83aa0a",
+   "call_id": "20261002T202212Z-2c5149",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "69dc2fc69617f59e835313c35cf5322c2f315b6504b3f28384fa700351843df5",
-   "reason": "The requirement specifies behaviors around duplicate rejection, callable schemas, and parsing tool-call shapes, but does not dictate memory footprint constraints or disallow dynamic attribute creation on the ToolRegistry class. Thus, removing slots is an implementation detail that does not violate the requirement.",
-   "response_sha256": "5f16f13a13b83a00071651413784d28e7a16a307e158450fb9ec0658292386e5",
+   "prompt_sha256": "f42660518430b18655d855b1e2439ef58ff912e62b948333507afcdc9a758eea",
+   "reason": "Setting slots=False instead of slots=True alters whether instances use __slots__ or an instance dictionary, which is an internal implementation detail that no caller of the public API should rely on. The registered callable contracts and behaviors specified by TREQ_TOOL_REGISTRY are preserved identically.",
+   "response_sha256": "91ddc99d069f82ad6675c6e9ca2f70acbabd3de4490bfe1d3f1f359aba153868",
    "sources": [
-    "The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.",
+    "Technical requirement TREQ_TOOL_REGISTRY (Tool registry preserves callable contracts): The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.",
     "@dataclass(frozen=True, slots=True)",
     "@dataclass(frozen=True, slots=False)"
    ],
@@ -43,55 +45,39 @@
  "1a51f69ed73ba2aa": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141922Z-cde3d6",
+   "call_id": "20261002T202135Z-b907ea",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether a ToolRegistry is immutable and hashable once built. A requirement would say that its registered tools cannot be reassigned after construction, so the duplicate-name check cannot be bypassed.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Dropping frozen=True makes registry fields reassignable and may change hashing, so the versions differ observably. But the requirement asks only for rejecting duplicate names, deriving schemas that match Python signatures, parsing the provider tool-call shapes and executing callables consistently, not for an immutable or hashable registry object.",
-   "response_sha256": "f3b969cf5396c66eb52d611c4b4c3f9033280eb4bb43b1ae3a5258d3dd6b0976",
+   "reason": "Without frozen=True, a caller can reassign a built registry's fields, and instances lose the generated __hash__, so they can no longer be hashed. Those are differences a caller could see. The requirement only covers rejecting duplicates, deriving schemas, parsing tool calls and executing tools; it never says whether the registry is immutable or hashable.",
+   "response_sha256": "e9028e2642c65c732f2f661167ed77f45be68e54fcd8b3edc1daf1018e52e51f",
    "sources": [
     "@dataclass(frozen=True, slots=True)",
     "@dataclass(slots=True)",
-    "The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently."
+    "The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.",
+    "Duplicate tool names are rejected deterministically."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "argument",
-  "prompt_sha256": "e04e18628927dd19dc35f4a80ab5824c5d9c2d9d8d7181f2b76be21d17ff15b0",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T141939Z-a0b83b",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "e04e18628927dd19dc35f4a80ab5824c5d9c2d9d8d7181f2b76be21d17ff15b0",
-   "reason": "The requirement outlines the ToolRegistry's responsibilities for schema derivation, parsing, execution, and rejecting duplicates, but it does not mandate that the registry class itself be an immutable or frozen data structure.",
-   "response_sha256": "a5bfbc0e8ee861134ea4f6cd5bb68b62aff3d1cbcbe49c05c524964b58790123",
-   "sources": [
-    "The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.",
-    "@dataclass(frozen=True, slots=True)",
-    "@dataclass(slots=True)"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "a98c42db6fdeec28a770a6fb2adfc7920cda5c79c0407dfcbac3c1f93988f4db"
  },
  "671e9bdb0aefc01a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T141922Z-7d4b2f",
+   "call_id": "20261002T202135Z-979e05",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Dropping slots=True changes only instance layout (a __dict__ appears, __slots__ disappears, memory use grows), while frozen=True still blocks attribute assignment. None of this affects duplicate-name rejection, schema derivation, tool-call parsing or callable execution, which are all the requirement asks for.",
-   "response_sha256": "2d64109518d366e90b55dd4360ba69a97a73273d7b5bd10e48fac03f91590865",
+   "reason": "Dropping slots=True only changes how instances store their attributes in memory (an instance __dict__ instead of __slots__). Because frozen=True stays, callers still cannot set or add attributes. Rejecting duplicates, deriving schemas, parsing tool calls and executing callables all behave the same.",
+   "response_sha256": "0a0e00684ed7c8ae455c566cbdcc66dc9509c38a062c4e8918f9a98807a311af",
    "sources": [
     "@dataclass(frozen=True, slots=True)",
     "@dataclass(frozen=True)",
@@ -101,18 +87,19 @@
    "verdict": "irrelevant"
   },
   "operator": "argument",
-  "prompt_sha256": "86385f157c4ed24b73788e36861b9593445e03e228b99abf86a941d1d0269c28",
+  "prompt_sha256": "94d7eb62d7a7e6a31ae293f45482c5c67cba5b76d8140c42bbc3e71598633c80",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T141939Z-0ef2c6",
+   "call_id": "20261002T202212Z-582a39",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "86385f157c4ed24b73788e36861b9593445e03e228b99abf86a941d1d0269c28",
-   "reason": "Removing `slots=True` alters the memory footprint of the dataclass and permits dynamic attribute assignment. These are implementation details that do not affect the registry's ability to reject duplicates, derive schemas, or parse tool shapes as required.",
-   "response_sha256": "38d321fb536fa15b6f903cdaeca5b8fc991d51bb777db941286fbf6abbe4aa34",
+   "prompt_sha256": "94d7eb62d7a7e6a31ae293f45482c5c67cba5b76d8140c42bbc3e71598633c80",
+   "reason": "Removing slots=True only alters the internal memory layout and attribute storage of ToolRegistry without affecting its callable contracts or public behavior. No caller of the public API should rely on whether the dataclass uses slots, making the change irrelevant to the requirement.",
+   "response_sha256": "cc6141a092e36ce072458b8c8b214c555ea202fd837947dd5841973afbf558f0",
    "sources": [
     "The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.",
     "@dataclass(frozen=True, slots=True)",
@@ -205,14 +192,15 @@
  "7a912b65bb0be9c6": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T062733Z-3f4052",
+   "call_id": "20261002T202135Z-9a8f82",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether a ToolStep's args are a separate copy of the call's arguments. A requirement would say whether later changes to call.args or step.args may affect each other, and whether args is always a plain dict.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Since the callable receives **call.args, its call and result are unchanged, and the returned step's args still equal the call's args. The only difference is that step.args now points to the caller's mapping (identity, mutation after the call, or a non-dict type). The requirement asks only that arguments and results are preserved, not for a defensive copy, so the difference is real but outside any requirement.",
-   "response_sha256": "d1fedd27f47a404f5cfa40b37d255f67e8ad53bf2a7c347977619cfad3870977",
+   "reason": "The values match, but the mutant's ToolStep.args is the same object as call.args rather than a separate copy. A change to either one shows up in the other, and a non-dict Mapping keeps its type. \"Execution preserves arguments/results\" covers the values, not whether the trace step holds its own copy.",
+   "response_sha256": "fe71736f0f8bd706f0afc17f2195087d553a27fc42645bf12f76792036c1a037",
    "sources": [
     "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
     "execute registered callables consistently",
@@ -220,29 +208,10 @@
     "            args=dict(call.args),"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "conversion",
-  "prompt_sha256": "03c0126349dd9efba3b14663f7a658803261e69dff29d2fca17e21b1ad38a355",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T064421Z-b05490",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "03c0126349dd9efba3b14663f7a658803261e69dff29d2fca17e21b1ad38a355",
-   "reason": "Whether the public trace step receives a shallow copy of the tool arguments or a direct reference is an implementation detail regarding memory aliasing. Both versions preserve the arguments during execution as requested, and the requirement does not mandate defensive copying.",
-   "response_sha256": "5cacfaedc13fd3abc6116d7ad9ffb8ac565f024a6534327d65c6b68a22678bf3",
-   "sources": [
-    "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
-    "args=dict(call.args),",
-    "args=call.args,"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "7b6c3e9f8fb32146c3a3b4027662ed59a7f12916dee8bdfbb653e13b6959888b"
  },
  "7ebb796581f85dea": {
   "answer": {
@@ -366,84 +335,49 @@
  "ebec939d12750322": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T062733Z-dba480",
+   "call_id": "20261002T202135Z-8209ad",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether ToolExecutionError.args must be an independent plain-dict copy of the call arguments, isolated from later changes to call.args. A requirement would state that failure traces hold their own dict snapshot of the arguments.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The only difference is on the failure path: the error gets `call.args` itself instead of a fresh dict copy. Unless ToolExecutionError copies it anyway, that changes the identity, and possibly the mapping type, of the args attached to the error, but not their values. The requirement asks only that execution keep arguments and results and that registered callables run the same way, and it says nothing about copying args on errors.",
-   "response_sha256": "caf6167d46f1a26f19e896ac53f71bb6f95d91a9284fbc517de7bb5ca04fbc06",
+   "reason": "The original attaches a fresh dict copy of the arguments to ToolExecutionError. The mutant attaches call.args itself, so unless the error copies it, the error's args is the caller's own mapping object and keeps its type. The requirement only asks that execution preserve arguments/results and run callables consistently, and it says nothing about whether the arguments recorded on a failure must be an independent dict.",
+   "response_sha256": "0ec212780d1303956c7d071494b637f4672a7438ed944d03369d773f412d24f4",
    "sources": [
-    "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
     "raise ToolExecutionError(tool_name=call.name, args=call.args, cause=exc) from exc",
-    "args=dict(call.args),"
+    "args=dict(call.args),",
+    "Callable schema derivation matches the Python signature and execution preserves arguments/results.",
+    "execute registered callables consistently"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "conversion",
-  "prompt_sha256": "487c212db1520a170b3392eed62cc10724c01366e82fe98caf543f334f010a85",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T064421Z-ec1a3b",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "487c212db1520a170b3392eed62cc10724c01366e82fe98caf543f334f010a85",
-   "reason": "The mutant passes the tool arguments directly to `ToolExecutionError` instead of creating a shallow dictionary copy. This distinction in how the exception payload is constructed is an implementation detail that does not violate the requirement for execution to preserve arguments and results.",
-   "response_sha256": "5471baf7021f0db0491f777a7ce8d888a02c9eb69a97d9fb9ed6911073dbe1ca",
-   "sources": [
-    "execution preserves arguments/results.",
-    "args=dict(call.args),",
-    "args=call.args,"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "d1ff0078a2af068ad98a26c3a366f2b488484e111d43eb4428b01ac7d53785b9"
  },
  "edd8b5309bb7ee09": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T142003Z-180004",
+   "call_id": "20261002T202135Z-258594",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether a ToolRegistry instance is immutable and hashable. A requirement would need to state that a built registry rejects field reassignment, so its duplicate-free tool set cannot be swapped out after it is built, and that it stays hashable.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Dropping frozen=True only lets code change the registry's fields after creation and makes it unhashable. The requirement asks for rejecting duplicate names, matching schemas, normalising tool-call shapes and consistent execution, and says nothing about immutability or hashability. So the difference is an implementation choice outside every stated contract.",
-   "response_sha256": "dc9c6ec11ebe7b6dc427a73c9f626c0f023a786619b14037755c8219a182b996",
+   "reason": "With frozen=False, callers can reassign fields on a ToolRegistry instance, and the class becomes unhashable (eq=True without frozen sets __hash__ to None). The requirement and its criteria cover duplicate rejection, schema derivation, parsing call shapes and execution. They say nothing about whether the registry is immutable or hashable.",
+   "response_sha256": "b5e8fb06ce48b4fff1c194b3de2979a9ad2bd2e9b1ccef3c9145eb13d313a5a1",
    "sources": [
     "@dataclass(frozen=True, slots=True)",
     "@dataclass(frozen=False, slots=True)",
     "The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.",
-    "Callable schema derivation matches the Python signature and execution preserves arguments/results.; Duplicate tool names are rejected deterministically.; Both supported provider tool-call shapes normalize into the same callable contract."
+    "Tool registry preserves callable contracts"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "boolean",
-  "prompt_sha256": "851a9fb188f1930e78d06a43123ba58cbb1e3c7a770574e41c7ad06c16c5caac",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T142022Z-aa496c",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "851a9fb188f1930e78d06a43123ba58cbb1e3c7a770574e41c7ad06c16c5caac",
-   "reason": "The requirements specify behaviors for rejecting duplicate tool names, deriving callable schemas, and executing callables consistently, but do not mandate that the ToolRegistry object itself must be strictly immutable.",
-   "response_sha256": "e753c47ce321163cc393407e1b80c4eb5f955d481852ecf5ddcd774e68a570cb",
-   "sources": [
-    "The tool registry shall reject duplicate tool names, derive callable schemas that match Python signatures, parse supported provider tool-call shapes, and execute registered callables consistently.",
-    "@dataclass(frozen=True, slots=True)",
-    "@dataclass(frozen=False, slots=True)"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "35cf3c270c0d48d4fdf13926df2a0f6eb57c75b1b3294d2cd5bdbc1dc9dfd299"
  }
 }

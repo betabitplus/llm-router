@@ -1,0 +1,34 @@
+{
+ "1a51f69ed73ba2aa": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: ToolRegistry is internal; no public API returns one or lets a caller hold it, so whether it is frozen or hashable is invisible. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "7a912b65bb0be9c6": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: ToolStep.args holds the same values either way; only a caller that changes a response after the call could tell whether two of its fields share a dict, and responses are results to read, not state to change. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "ebec939d12750322": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: the arguments a ToolExecutionError records equal the call's either way; the tool receives them unpacked, so it cannot change them, and only a caller that changes the error's payload afterwards could tell. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "edd8b5309bb7ee09": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: ToolRegistry is internal; no public API returns one or lets a caller hold it, so whether it is frozen or hashable is invisible. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

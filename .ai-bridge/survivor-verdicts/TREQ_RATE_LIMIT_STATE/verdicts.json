@@ -2,123 +2,129 @@
  "1ea89b29a7c49441": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195903Z-ce045b",
+   "call_id": "20261002T201753Z-9fc845",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only the condition for emitting the \"Route cooldown cleared\" log. Bucket state is identical in both versions: failure_count is still reset and next_available_at is still scheduled. The two versions can still be told apart: after failures whose cooldown has already expired, the original logs and the mutant does not. No requirement or criterion asks for this log event, so the difference doesn't matter to the contract.",
-   "response_sha256": "7b343e39e39fc395f0d45224d2b187d38e324c72cb5a4c030ad260700258b3d9",
+   "reason": "The mutant only changes whether the \"Route cooldown cleared\" log is written, for example when failure_count is above zero but the cooldown has run out. Bucket state (next_available_at, and failure_count reset to 0) and the return value are the same, so the required reset after success still happens.",
+   "response_sha256": "d23988bf30f0c891b6c2afd48a5298b5449fa06700268aa860ee7f1cfa6357d3",
    "sources": [
-    "should_log_cleared = bool(bucket.failure_count and bucket.cooldown_until > current)",
     "reset that state after success",
-    "A success clears transient failure count so a later failure sequence must reach the configured threshold again."
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "should_log_cleared = bool(bucket.failure_count and bucket.cooldown_until > current)",
+    "bucket.failure_count = 0"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "7da3be223727572b8fda8d54fa1ca809bd766c926e415907390bb0eb7a2a92fd",
+  "prompt_sha256": "fc1e36ee0ca8308f58cbe815846a88f04a3ca61fd6f94b8d4afb061340d8dcbe",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195923Z-e9cf35",
+   "call_id": "20261002T201830Z-9659a2",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "7da3be223727572b8fda8d54fa1ca809bd766c926e415907390bb0eb7a2a92fd",
-   "reason": "The mutation changes the logical operator in the condition for emitting a cooldown cleared log message, which affects when the log is printed. Since the requirement only specifies resetting the failure state and does not prescribe logging behavior, this difference falls outside the scope of the requirement.",
-   "response_sha256": "33af0655be21b65895f5c59ec6d2eee20cc6f2d14e4e2d545cc5c3053035b569",
+   "prompt_sha256": "fc1e36ee0ca8308f58cbe815846a88f04a3ca61fd6f94b8d4afb061340d8dcbe",
+   "reason": "The change only alters the condition for emitting an informational log message, leaving bucket state, return value, and exceptions unchanged. Because caller-observable behavior and limiter state transitions remain identical, no input can distinguish the mutant from the original implementation.",
+   "response_sha256": "1d9000b1b060f9954a2c7cd04f598769e4d6be60fba4920881150bb19abdeec4",
    "sources": [
-    "reset that state after success.",
-    "bucket.failure_count or bucket.cooldown_until > current",
-    "should_log_cleared = bool(bucket.failure_count and bucket.cooldown_until > current)"
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "        should_log_cleared = bool(bucket.failure_count and bucket.cooldown_until > current)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  },
  "2e8807d144d81f1d": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-cbd3d2",
+   "call_id": "20261002T201753Z-790254",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The two versions differ only when cooldown_until equals current. In that case the mutant emits the \"Route cooldown cleared\" log line and the original does not. Bucket state (failure_count reset, next_available_at) is identical, and no requirement or criterion asks for this log line, so the difference falls outside the requirement.",
-   "response_sha256": "c4d2083ab56dbb15563c40e7002a8be5927f336fef499135ddf9501ff2768986",
+   "reason": "Changing `>` to `>=` only matters when cooldown_until equals the current time and failure_count is 0. In that one case the mutant also logs \"Route cooldown cleared\". Bucket state, the next allowed time, the failure count reset, the return value and exceptions are the same in both versions, so the only difference is a log line, which callers shouldn't rely on.",
+   "response_sha256": "0ad5086200626de3bf429f7bd5de14020dd5e57dc48f6b569119534fabf95329",
    "sources": [
-    "reset that state after success",
-    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
     "should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until >= current)",
-    "bucket.failure_count or bucket.cooldown_until > current"
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "reset that state after success"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "comparison",
-  "prompt_sha256": "3bd991cc5d794a12c9866e5ab2299d64a3b650fa0ccb7232614569c0de73985c",
+  "prompt_sha256": "932d503d6976c2c8aafc76468d11211648014b228c104635570e0bfd14d7f650",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-fec0c4",
+   "call_id": "20261002T201830Z-1556d6",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "3bd991cc5d794a12c9866e5ab2299d64a3b650fa0ccb7232614569c0de73985c",
-   "reason": "The mutation only changes the condition for emitting a log message when the cooldown exactly equals the current time. The requirements specify how state must be reset but do not mandate any logging behavior, making this difference an implementation detail.",
-   "response_sha256": "1eeec9fc83ad997c1f4ef05e68bf247dd2ef1897c0bed05ae0631ced0356766e",
+   "prompt_sha256": "932d503d6976c2c8aafc76468d11211648014b228c104635570e0bfd14d7f650",
+   "reason": "The change from > to >= only affects whether an informational log line is emitted when cooldown_until equals current. It has no effect on the method's return value, bucket state, or raised exceptions.",
+   "response_sha256": "3a8c2e74f6e0ba2ab1446bbde552d4d27048070e1a54f0ac5424d2136dcd839c",
    "sources": [
     "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
     "bucket.failure_count or bucket.cooldown_until > current",
     "should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until >= current)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  },
  "50264430ac7ff216": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-a840ba",
+   "call_id": "20261002T201753Z-42796f",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only makes the \"Route cooldown opened\" log fire on every failure, including below the threshold. The bucket's failure_count, cooldown_until, per-key isolation and reset behaviour stay the same, and no requirement, Feature or Goal asks anything about log output.",
-   "response_sha256": "343c3290822330e5002a0eee9cfac5363d836c87fd40093a18aa445efbb0c587",
+   "reason": "The mutant only emits the 'Route cooldown opened' log line on every failure instead of only when cooldown opens; bucket failure_count, cooldown_until and reset behaviour are unchanged, so isolation, threshold blocking and success reset behave identically. Log output is not something the requirement or a caller relies on.",
+   "response_sha256": "5cb7f6242a4331446d66684a57bd25637f5b986d83e6fd801bd73541faec4ef9",
    "sources": [
     "record every failed attempt in the transient failure state of its provider and key, and reset that state after success",
     "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked.",
-    "if should_log_opened:",
-    "if True:"
+    "if True:",
+    "logger.info('Route cooldown opened', event_type='llm_router.routing.cooldown.opened', provider=provider.value if isinstance(provider, Provider) else provider, key_id=key_id, wait_seconds=limits.cooldown_seconds)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conditional",
-  "prompt_sha256": "5b5f2b10edc06e806917343a2d39186536a37b3e27464e6a817225797891c005",
+  "prompt_sha256": "47189a10d4f3ef46239b9da541bf92163588594450669c07f1e402840df60c6c",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-13b009",
+   "call_id": "20261002T201830Z-19c417",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "5b5f2b10edc06e806917343a2d39186536a37b3e27464e6a817225797891c005",
-   "reason": "The mutant unconditionally logs the cooldown event on every failure instead of conditionally logging it when the threshold is reached. This difference only alters logging behavior, which is an implementation detail not specified by the requirement.",
-   "response_sha256": "b01a3ce578297af2deaf8ff4e0893b744198f4d1e83b4c59e853e119e77776d8",
+   "prompt_sha256": "47189a10d4f3ef46239b9da541bf92163588594450669c07f1e402840df60c6c",
+   "reason": "The mutant causes the 'Route cooldown opened' log message to be emitted on every failure attempt rather than only when the cooldown threshold is reached. This difference affects only diagnostic logging that no caller should rely on, while the return value and internal limiter state remain identical to the original version.",
+   "response_sha256": "3f01b2bde30644b11ff8a9e0f76a64bb990c249c261bcfdab1b986e4c1b31470",
    "sources": [
-    "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "if should_log_opened:",
-    "if True:"
+    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked.",
+    "        if should_log_opened:",
+    "    if True:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -168,40 +174,42 @@
  "67c1c8b2d1f78261": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-7bef33",
+   "call_id": "20261002T202135Z-415b4c",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only inverts when the 'Route cooldown cleared' log is emitted; bucket state (next_available_at, failure_count reset) is identical, so the versions differ only in log output. No requirement or criterion asks for this log event.",
-   "response_sha256": "f4a61d9bde1e5ee7df80d1eff434b7e52752a52cd60ce0c4b5fbe053f973a6f6",
+   "reason": "The mutant only inverts whether the \"Route cooldown cleared\" log line is emitted. Bucket state is still updated the same way: next_available_at is set and failure_count is reset to 0. Routing, key selection and the reset after success are unchanged. The requirement says nothing about log emission, which no caller of the routing API should rely on.",
+   "response_sha256": "2ba3c22ee1cd31bff2f1f380a0e9884101fc1299523dec2d03cc2df31579925a",
    "sources": [
     "reset that state after success",
     "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
-    "if not should_log_cleared:",
-    "bucket.failure_count = 0"
+    "    if not should_log_cleared:",
+    "        if should_log_cleared:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "negation",
-  "prompt_sha256": "92636780054b3df2f4cb83940abd3a8d28a36fcb7cf2a101933dd0cb5c27a38d",
+  "prompt_sha256": "188f0bb1c8575bd800998b9c5d06efcd80d3a808b9e6207b849524046123a32f",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-8ab690",
+   "call_id": "20261002T202211Z-3631ce",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "92636780054b3df2f4cb83940abd3a8d28a36fcb7cf2a101933dd0cb5c27a38d",
-   "reason": "The mutation only inverts the condition for emitting a log message, which is an implementation detail. The rate-limit state and transient failure reset behavior required by the technical requirement remain unchanged.",
-   "response_sha256": "3869314ba598b889487b2978c48039f833093b23703fda21c79899c4ae7d2a5a",
+   "prompt_sha256": "188f0bb1c8575bd800998b9c5d06efcd80d3a808b9e6207b849524046123a32f",
+   "reason": "The mutation only inverts the condition for emitting an informational log message without affecting bucket state, return value, or cooldown clearing. Callers cannot rely on internal diagnostic log lines, so the difference is irrelevant to the requirement.",
+   "response_sha256": "8ecb318d3ab286637324513f9fe8db5bb9dfb28c928f86e3f765e953e775b239",
    "sources": [
-    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "if should_log_cleared:",
-    "if not should_log_cleared:"
+    "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "    if not should_log_cleared:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -267,39 +275,40 @@
  "753353272439298a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-e89fef",
+   "call_id": "20261002T202135Z-9b172a",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only flips when the \"Route cooldown opened\" log line is written, so it now logs on failures that don't open a cooldown and stays silent on the ones that do. Bucket state (failure_count, cooldown_until), per-key isolation and the reset after success all behave exactly as before. No listed requirement or criterion covers logging, so the versions differ but not in anything the requirements ask for.",
-   "response_sha256": "d0ad645dc7caae35eb5f558be86f79b7d324e381671e0768255ab9478e5b9347",
+   "reason": "The mutant only flips whether the \"Route cooldown opened\" log line is written. Bucket isolation, failure counting, when cooldown opens and the reset are all unchanged, so routing and key selection behave the same. The requirement says nothing about logging, and no caller of the routing API should rely on a log line.",
+   "response_sha256": "831b05a063db43c587c0896c1161640aebbbaba8252dc2247488037f5cc2d693",
    "sources": [
-    "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked.",
-    "if not should_log_opened:",
-    "if should_log_opened:"
+    "    if not should_log_opened:",
+    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "negation",
-  "prompt_sha256": "c9e6a451e301b5149eb152b68b23a588818a97fd01dc46d9431e42217c2be745",
+  "prompt_sha256": "c8d153214cbe14b4c5717b842c3f9977d64d1e6925e887092c8f15fff4e433df",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-2605d8",
+   "call_id": "20261002T202211Z-94930b",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "c9e6a451e301b5149eb152b68b23a588818a97fd01dc46d9431e42217c2be745",
-   "reason": "The change inverts the condition for logging the cooldown event. Since logging is an implementation detail not mandated by the requirements, which only govern rate limit state isolation and threshold counting, the difference is irrelevant.",
-   "response_sha256": "cee334b2851538bcb2b3ddae3609acf9179514f8fda8698cae1d98d6c58a9730",
+   "prompt_sha256": "c8d153214cbe14b4c5717b842c3f9977d64d1e6925e887092c8f15fff4e433df",
+   "reason": "The mutant only alters the condition under which an informational route cooldown log message is emitted, leaving state transitions, bucket isolation, and return values unaffected. A caller of the public API cannot and should not rely on internal log emissions, making the change irrelevant to callers and requirements.",
+   "response_sha256": "2678842d2eabf6e5b4d6fa75c3eb572d68b8eab571e0d3664656201d2b6e88e2",
    "sources": [
-    "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "if should_log_opened:",
+    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked.",
     "if not should_log_opened:"
    ],
    "test_focus": "",
@@ -364,40 +373,41 @@
  "7cd0a40c605b3f65": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-99872a",
+   "call_id": "20261002T202135Z-f4aa8c",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The flipped comparison only changes when the \"Route cooldown cleared\" log is emitted. failure_count is still reset to 0 and next_available_at is still scheduled, so the required reset after success holds. The log is observable, so the versions are not equivalent, but no requirement asks for it.",
-   "response_sha256": "47fe0749f58144d0e72a2d7c80edfbfb951d794410e7b6bf4d8c6709189921b7",
+   "reason": "The flipped comparison only changes when the \"Route cooldown cleared\" log line is emitted. The bucket state stays the same: next_available_at is still set and failure_count is still reset to 0. Return values and errors are also unchanged, so the isolation, interval and reset criteria hold, and no requirement covers logging.",
+   "response_sha256": "1b28e173bfca5581765cf1dc5610b03add468463943d1f43447965dc6565860f",
    "sources": [
-    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
     "should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until < current)",
-    "bucket.failure_count or bucket.cooldown_until > current"
+    "bucket.failure_count = 0",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "comparison",
-  "prompt_sha256": "e9603b7c32e199972b1e7c6b02e3846a6c1d08524e1506a8c3cba84a5370138b",
+  "prompt_sha256": "6636f463b9fc057d486d2983b3cde7115a905a6a5e99fa85e9b6cd39be2c3e46",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-562a39",
+   "call_id": "20261002T202212Z-141d4a",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "e9603b7c32e199972b1e7c6b02e3846a6c1d08524e1506a8c3cba84a5370138b",
-   "reason": "The mutated comparison only alters whether the local `should_log_cleared` variable evaluates to True, which in turn only affects whether a \"Route cooldown cleared\" log is emitted. The method's core behavior\u2014resetting the failure count and updating the availability schedule\u2014remains identical in both versions, making the difference unobservable from the perspective of the object's contract.",
-   "response_sha256": "3d6f6307077b29a8b05416a723d4a2cae154f9a50e2f7e030a0e8883e00127b0",
+   "prompt_sha256": "6636f463b9fc057d486d2983b3cde7115a905a6a5e99fa85e9b6cd39be2c3e46",
+   "reason": "The change alters only the condition under which an informational log message is emitted, leaving the return value, exceptions, and bucket state identical. From the perspective of a public API caller, no input produces different observable behavior.",
+   "response_sha256": "6085d087cf359c11d03939e9b8f124e21d3866961390fb1108d405d38dbe9343",
    "sources": [
     "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
-    "bucket.failure_count or bucket.cooldown_until > current",
-    "should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until < current)"
+    "        should_log_cleared = bool(bucket.failure_count or bucket.cooldown_until < current)"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -458,85 +468,92 @@
  "7d8cf2a980915b49": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-400519",
+   "call_id": "20261002T202135Z-b71e8a",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says when the cooldown-opened event is emitted. A requirement should say that \"llm_router.routing.cooldown.opened\" is emitted only when a provider/key bucket actually enters cooldown, not on every recorded failure.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes whether \"Route cooldown opened\" is logged when no cooldown opens. The bucket's failure_count and cooldown_until, the per-key isolation, the threshold behaviour and the reset stay identical. The log output does differ, so the versions are not equivalent, but no requirement or criterion covers logging.",
-   "response_sha256": "994c6e26ff07daf66156c4e15cc00c3b6ef4f7c07a7e35fe0a16eae48352df36",
+   "reason": "Limiter state, cooldown timing and failure counts are the same in both versions. However, the mutant emits the structured event \"llm_router.routing.cooldown.opened\" on every failure, including failures where no cooldown opens. Monitoring could rely on that machine-readable event, so this is more than a change of log wording, and no requirement says when the event must fire.",
+   "response_sha256": "2140c792206c1017c287bd6b87982ee1ec95bc704ffcf84d1ab18589113d0de2",
    "sources": [
     "record every failed attempt in the transient failure state of its provider and key, and reset that state after success",
-    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked.",
     "should_log_opened = True",
     "logger.info('Route cooldown opened', event_type='llm_router.routing.cooldown.opened', provider=provider.value if isinstance(provider, Provider) else provider, key_id=key_id, wait_seconds=limits.cooldown_seconds)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "boolean",
-  "prompt_sha256": "d998d84c61714fb599c55a4bb00cb4c9d0f36cdfc521b86e3ac7afcd05de0c6b",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-9b9fc9",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "d998d84c61714fb599c55a4bb00cb4c9d0f36cdfc521b86e3ac7afcd05de0c6b",
-   "reason": "The mutant changes the initialization of the `should_log_opened` flag, resulting in a log message being emitted on every failed request rather than only when the failure count threshold is met. Since the requirements only govern rate-limit state tracking and not logging behavior, this difference does not impact requirement compliance.",
-   "response_sha256": "f67169d7d4bea1993d833f04cb20302eb58d6bfa3193c6c9e2791cfdffd1b4a2",
-   "sources": [
-    "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "should_log_opened = False",
-    "should_log_opened = True"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "f03c6ca0ef20ff9ead15f4169fc5e9c79f7dfca4eb2dab524821bbfee8f5c48d"
  },
  "866bbdd87a294337": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-4ba582",
+   "call_id": "20261002T202135Z-0a7243",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only stops the \"Route cooldown cleared\" log from firing when failure_count is 0 but a cooldown is still active. Bucket state after success (next_available_at, failure_count reset, cooldown_until) is unchanged, so isolation, interval, threshold and reset behaviour are the same. The difference is log output only, which no requirement or criterion asks for.",
-   "response_sha256": "51d23c08dbcf5ff42a3dc3bed83c3f5e776403f532e490ea91c3f5b8ade520f2",
+   "reason": "The mutant only changes when the \"Route cooldown cleared\" log fires: it no longer fires when failure_count is 0 but cooldown_until is in the future. The limiter state stays the same: next_available_at, the failure_count reset and cooldown_until. So isolation, spacing, failure counting and the reset after success all behave as before, and no requirement covers log output.",
+   "response_sha256": "8ab740a166f0b84ed4d81d9136debc24c2aaf8bf34c20e7a8bd3aa1ddf1f6c6e",
    "sources": [
-    "should_log_cleared = bool(bucket.failure_count)",
     "should_log_cleared = bool(\n                bucket.failure_count or bucket.cooldown_until > current\n            )",
-    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
-    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success."
+    "should_log_cleared = bool(bucket.failure_count)",
+    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "de91d93dade6106a989e19402df1c1a0248122e0eb4aa4fcd766077fe8afd40c",
+  "prompt_sha256": "ef9224fad8fd623362f65e50578541902e78d4f881dca0d7b3cf096734fee347",
+  "rechecks": {
+   "verdict_review": {
+    "asked_at": "2026-10-02T22:38:41.681986Z",
+    "backend": "antigravity-cli",
+    "call_id": "20261002T223732Z-1c37bf",
+    "confirmed": false,
+    "effort": "",
+    "finding": "",
+    "level": "implementation",
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "prompt_sha256": "ef9224fad8fd623362f65e50578541902e78d4f881dca0d7b3cf096734fee347",
+    "reason": "The change only affects the boolean flag governing whether an informational log line is emitted when failure count is zero and cooldown_until is in the future. It does not alter the method's return value, state mutations, or exception behavior, leaving public API behavior identical.",
+    "response_sha256": "eaf4b55693c5d0d142553d797503eee32823cd406a5be4b0a451871c0dac9768",
+    "sources": [
+     "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+     "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+     "should_log_cleared = bool(bucket.failure_count)",
+     "bucket.failure_count or bucket.cooldown_until > current"
+    ],
+    "test_focus": "",
+    "verdict": "equivalent"
+   }
+  },
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-b4970f",
+   "call_id": "20261002T202212Z-aae932",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "de91d93dade6106a989e19402df1c1a0248122e0eb4aa4fcd766077fe8afd40c",
-   "reason": "The mutation only alters the condition for emitting a log message when a route cooldown is cleared. The actual bucket state resetting and method return value remain completely unchanged, and since no requirement mandates this logging behavior, the difference is immaterial.",
-   "response_sha256": "a3186571bdfbc96a6f8792bbe8bd2c599857237e7c6226b1e935b9d440ddc2b6",
+   "prompt_sha256": "ef9224fad8fd623362f65e50578541902e78d4f881dca0d7b3cf096734fee347",
+   "reason": "The change only alters the local condition for emitting an informational log message without affecting the method's return value or exception behavior. The limiter bucket state, including next availability and reset failure count, remains completely identical.",
+   "response_sha256": "7993dacc399abb718832fc6c675529e09e960593a996db1fa342c6dd830ed755",
    "sources": [
-    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
     "bucket.failure_count or bucket.cooldown_until > current",
     "should_log_cleared = bool(bucket.failure_count)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  },
  "8f336828c0f9c375": {
@@ -859,40 +876,43 @@
  "aa491dc0b51552a2": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-8912bc",
+   "call_id": "20261002T202135Z-362ce8",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant logs a spurious \"Route cooldown cleared\" event on every success, even when there was nothing to clear. It leaves limiter state (next_available_at, failure_count, cooldown) and routing behaviour unchanged. No requirement, feature or goal here covers log events, so the versions differ only in something the contract doesn't ask for.",
-   "response_sha256": "9b4c29a3292962ce4ceae92e9f999f59e0ea66f5b60ace7c2f2a10c694aa3883",
+   "reason": "The mutant only emits the \"Route cooldown cleared\" log on every success, even when nothing was cleared. The limiter state (next_available_at, failure_count) and any routing outcome stay the same. The requirement covers isolation, spacing, counting failures and resetting after success, and says nothing about log output.",
+   "response_sha256": "e8e96ea7acbdc9178c5e5a565563b8f71e952a1fb56ce8b7e18d416103df6531",
    "sources": [
-    "reset that state after success",
     "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "reset that state after success",
     "    if True:",
-    "        if should_log_cleared:"
+    "            bucket.failure_count = 0"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "conditional",
-  "prompt_sha256": "d200fdb6f4c597b87cdea033f698c47e091a72b45b4bf167ef503cc91b086401",
+  "prompt_sha256": "7897783f2f4d6ccbe8fdb288db77d91c4be40f6eb4692939ef36e82c6e5ffe71",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T201343Z-d83fd8",
+   "call_id": "20261002T202211Z-e573c1",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "d200fdb6f4c597b87cdea033f698c47e091a72b45b4bf167ef503cc91b086401",
-   "reason": "The mutant makes the method log the 'Route cooldown cleared' message unconditionally upon every success, rather than conditionally. Since no requirement or verification criterion specifies logging behavior, this change only affects implementation details.",
-   "response_sha256": "4a46d3c9e2a13a63eaf05c42adced67890183653f04c360d233165ee63dea28b",
+   "prompt_sha256": "7897783f2f4d6ccbe8fdb288db77d91c4be40f6eb4692939ef36e82c6e5ffe71",
+   "reason": "The mutant replaces the condition guard with True, causing the cooldown clearance message to be logged on every successful request instead of only when a failure count or active cooldown was present. Because informational log output does not alter the method's return value, state transitions, or any observable behavior a caller should rely on, this difference is irrelevant.",
+   "response_sha256": "4910fca4bfaf16b1cfb3abe259b968bc310bccbca1153bb6bd3396f93693a4f5",
    "sources": [
     "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "if should_log_cleared:",
-    "if True:"
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "        if should_log_cleared:",
+    "    if True:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -901,43 +921,45 @@
  "ccfdc3bcaac9808a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-6f549b",
+   "call_id": "20261002T202135Z-305b58",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The two versions really do differ in one case: when failure_count is nonzero and no cooldown is active, the original writes a \"Route cooldown cleared\" log line and the mutant does not. The mutant still sets failure_count to 0 and still schedules next_available_at, so the promise to \"reset that state after success\" holds, and no requirement or criterion covers this log event.",
-   "response_sha256": "f1a4ab2d596aaa19706b2302f76c034ea438d50f874d284f8fb772d1cf1721d6",
+   "reason": "The bucket state is the same in both versions: next_available_at is set and failure_count is reset to 0. The only difference is whether the informational \"Route cooldown cleared\" log line is written after a success that follows failures below the threshold, when no cooldown is active. Routing and the requirement do not depend on that log line.",
+   "response_sha256": "8b3287d91fd4279856daf2541cc1c86f7d683b17eead635b6e1350974f070993",
    "sources": [
-    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
-    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "reset that state after success",
     "should_log_cleared = bool(bucket.cooldown_until > current)",
-    "bucket.failure_count = 0"
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "fa45d09a44d552407ad5e96291a11e3596f3f4f650600a48381270e58496e6da",
+  "prompt_sha256": "1f26b06c77c20ea3a7cb0f8086cab4a50f4d0f1b99594278472929a55158a92e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T200048Z-b175c3",
+   "call_id": "20261002T202212Z-386177",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "fa45d09a44d552407ad5e96291a11e3596f3f4f650600a48381270e58496e6da",
-   "reason": "The change modifies the condition for when to log that a route cooldown was cleared, skipping the log if failures were cleared without an active cooldown. This affects logging output but preserves the state resetting behavior that the requirement actually mandates.",
-   "response_sha256": "2612a3298d2be16119f7f553f72d8e829ac87e13cf8b6d485a5d4c22d74c72fd",
+   "prompt_sha256": "1f26b06c77c20ea3a7cb0f8086cab4a50f4d0f1b99594278472929a55158a92e",
+   "reason": "The mutation only alters whether an informational log message is emitted without affecting the method's return value, bucket state, or error handling. From the caller's perspective, transient failures are still reset and request scheduling remains identical.",
+   "response_sha256": "7179c59d5941fbd1e9ee353aea79f0d3e471c63d0230b1239bedc9dbc2746f81",
    "sources": [
-    "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A success clears transient failure count so a later failure sequence must reach the configured threshold again.",
+    "reset that state after success.",
     "bucket.failure_count or bucket.cooldown_until > current",
     "should_log_cleared = bool(bucket.cooldown_until > current)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  },
  "cd5c3873436c0d0c": {
@@ -1042,42 +1064,44 @@
  "fe6b5732a0060288": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T200026Z-534aba",
+   "call_id": "20261002T202135Z-5545a3",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only stops the \"Route cooldown opened\" log event from being emitted. The bucket's failure count and cooldown state stay the same, so the key is still blocked at the threshold and the count still resets. The two versions do differ in what gets logged, which is why this isn't equivalent. But no requirement, Feature or Goal here asks for that log event.",
-   "response_sha256": "742b8f1e06c8c4b19ac3628bce95b4901bc4f8f9afa1fdaa2a3b813510a4f0a8",
+   "reason": "The mutant only stops the 'Route cooldown opened' log line from being emitted. Failure counting, the cooldown deadline, the reset of the failure count and per-key blocking stay the same, so routing and limiter state do not change. Requirement REQ_RATE_LIMIT_ROUTING and technical requirement TREQ_RATE_LIMIT_STATE are about blocking and resetting state, not about logging. A log line is something no caller should rely on.",
+   "response_sha256": "0103ff3dc9d196de055f491027ce9da83349230336746fcd94dcbd7b50b308da",
    "sources": [
-    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success",
-    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked.",
     "should_log_opened = False",
-    "logger.info('Route cooldown opened', event_type='llm_router.routing.cooldown.opened', provider=provider.value if isinstance(provider, Provider) else provider, key_id=key_id, wait_seconds=limits.cooldown_seconds)"
+    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success",
+    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "2b490ff7623c27c04e5496c6d348253fbcbb1d6f98ec31585f740c9e692bbdcf",
+  "prompt_sha256": "69916a4b1e3dc79e8135ec361b31290f0913b1ac185d7d58f5c45f3d7e0730ab",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T201343Z-d38840",
+   "call_id": "20261002T202212Z-4f593e",
    "confirmed": false,
    "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
+   "finding": "",
+   "level": "implementation",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "2b490ff7623c27c04e5496c6d348253fbcbb1d6f98ec31585f740c9e692bbdcf",
-   "reason": "The mutation suppresses a logging statement when a route cooldown is opened. Because the requirement only specifies the isolation, interval spacing, and state transitions of the rate limiter without mandating any logging, this change is irrelevant to the required behavior.",
-   "response_sha256": "f2afa963c1806138f6f34a913f1fc9cee0ac4cae97e4b211eabc517aee8fbc32",
+   "prompt_sha256": "69916a4b1e3dc79e8135ec361b31290f0913b1ac185d7d58f5c45f3d7e0730ab",
+   "reason": "The change only sets should_log_opened to False, which suppresses an internal log statement without modifying bucket state, return value, or exceptions. For any caller and input, both versions behave identically and preserve the required rate-limit state transitions.",
+   "response_sha256": "ac5490d410f162294b8607e4b9129ce8c549806e2d7c07b84d12fd6f3997abe1",
    "sources": [
-    "Rate-limit state shall remain isolated per provider and key, apply the more conservative configured request interval, record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "record every failed attempt in the transient failure state of its provider and key, and reset that state after success.",
+    "A failed attempt counts in the transient failure state of its own provider and key: at the threshold that key alone is blocked.",
     "should_log_opened = False"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  }
 }

@@ -64,16 +64,18 @@
  "0cf4bd1dd8b7fe62": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000723Z-f94aee",
+   "call_id": "20261002T201753Z-63d744",
    "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Limiter waits are non-negative (0.0 means unblocked), so the mutant's empty \"available\" set falls into the else branch. There, min(...) is 0.0 whenever any key is unblocked, so it picks exactly the same keys with wait 0.0 as the original. When every key is blocked, both versions pick the shortest wait, so key selection and the returned wait never differ.",
-   "response_sha256": "d17b99a6061644d068397dfeb04f7ebe041232eb55300ea4b1b6281eab3691d4",
+   "reason": "The limiter reports an unblocked key as a wait of 0.0. With `< 0.0` the \"available\" set comes out empty, so the code falls through to the fallback branch. That branch takes the keys with the smallest wait, which is 0.0, so it picks exactly the same unblocked keys. When every key is blocked, both versions also pick the same shortest-wait keys, so the chosen credential and the wait are identical, provided wait_seconds is never negative.",
+   "response_sha256": "56aa0912c5ee32168da9fbd40903472ea9dec7bc8f801aacbccbbc9470d875cb",
    "sources": [
     "Automatic key selection shall choose an unblocked credential before a blocked credential.",
-    "if candidate_wait < 0.0",
+    "available_key_ids = {key_id for key_id, candidate_wait in candidate_waits.items() if candidate_wait < 0.0}",
     "if candidate_wait <= 0.0",
     "earliest_wait = min(candidate_waits.values())"
    ],
@@ -81,46 +83,25 @@
    "verdict": "equivalent"
   },
   "operator": "comparison",
-  "prompt_sha256": "b4d777cffe1fcb7d10b6f7371913d33ad5b5cbf32ce81b577684a8c259a088dc",
-  "rechecks": {
-   "verdict": {
-    "asked_at": "2026-09-30T14:21:01.054522Z",
-    "backend": "claude-cli",
-    "call_id": "20260930T142038Z-b82812",
-    "confirmed": false,
-    "effort": "xhigh",
-    "level": "implementation",
-    "model": "claude-opus-5-5",
-    "problems": [],
-    "prompt_sha256": "b4d777cffe1fcb7d10b6f7371913d33ad5b5cbf32ce81b577684a8c259a088dc",
-    "reason": "The change is only visible if the limiter returns a negative wait, which it should not. Normally an unblocked key reports 0.0, so the mutant finds no \"available\" keys and uses the fallback. The fallback takes the minimum wait, which is 0.0, and keeps exactly the zero-wait keys, the same set the original prefers. When every key is blocked, both versions take the same path, so key selection and rotation come out the same. I could not check the limiter code, so the no-negative-wait point is an assumption.",
-    "response_sha256": "b5843b1243b01684183eb59da1a5b01a132fa89c8fb94eed52c4e4de1a35d434",
-    "sources": [
-     "Automatic key selection shall choose an unblocked credential before a blocked credential.",
-     "if candidate_wait <= 0.0",
-     "available_key_ids = {key_id for key_id, candidate_wait in candidate_waits.items() if candidate_wait < 0.0}",
-     "preferred_key_ids = {key_id for key_id, candidate_wait in candidate_waits.items() if candidate_wait == earliest_wait}"
-    ],
-    "test_focus": "",
-    "verdict": "equivalent"
-   }
-  },
+  "prompt_sha256": "7f36648f366b521c963b5072f560f0c2db759da1c5e071c0bb022ec3ed5369eb",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T093816Z-d9dcee",
+   "call_id": "20261002T201941Z-42b45e",
    "confirmed": false,
+   "effort": "",
+   "finding": "The code means to isolate unblocked credentials before falling back to shortest-wait selection, but it does nothing observable here because wait times are non-negative and the fallback branch already selects credentials with the minimum wait of 0.0 seconds.",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "b4d777cffe1fcb7d10b6f7371913d33ad5b5cbf32ce81b577684a8c259a088dc",
-   "reason": "The change from `<= 0.0` to `< 0.0` causes credentials with exactly 0.0 wait time to bypass the `if` condition. However, execution falls through to the `else` branch where the minimum wait time is calculated as 0.0. The `else` branch then selects the exact same unblocked credentials with a 0.0 wait time, producing the identical `preferred_key_ids` set. No input can distinguish the two versions.",
-   "response_sha256": "87ca1253a7328ecc670b06db97ad301f74aea5a9e5039a9a79364ca5efa887db",
+   "prompt_sha256": "7f36648f366b521c963b5072f560f0c2db759da1c5e071c0bb022ec3ed5369eb",
+   "reason": "Filtering candidate keys by candidate_wait <= 0.0 was intended to isolate unblocked credentials, but the fallback branch already selects keys with the minimum wait time, which is 0.0 whenever unblocked credentials exist. Consequently, changing the threshold to < 0.0 never selects any keys into available_key_ids yet produces the exact same preferred keys through the else branch, making no observable difference to any caller.",
+   "response_sha256": "00f5055695a185cefbaa2369a57fb50572f5050237e682c8d630bc388e0b5f27",
    "sources": [
-    "if candidate_wait <= 0.0",
-    "Automatic key selection shall choose an unblocked credential before a blocked credential."
+    "Automatic key selection shall choose an unblocked credential before a blocked credential. When every eligible route/key candidate is blocked and waiting is enabled, the router shall select the candidate with the shortest remaining wait.",
+    "available_key_ids = {key_id for key_id, candidate_wait in candidate_waits.items() if candidate_wait < 0.0}"
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "ineffective"
   }
  },
  "0d1ec285e912ae10": {
@@ -309,41 +290,81 @@
  "a08d94ffe918312f": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000732Z-748f8f",
+   "call_id": "20261002T201753Z-9cd3e4",
    "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Unblocked keys have a wait of zero, so whenever any key is unblocked the minimum wait is 0.0. The mutant's \"earliest wait\" set is then exactly the set of unblocked keys that the original prefers. The original raises on an empty candidate list and so does the mutant. The two versions can only differ if the limiter returns different negative waits, which a clamped remaining-wait value cannot do. This could not be checked by running anything, because RouterRuntime cannot be built from typed arguments.",
-   "response_sha256": "28872a7b7324276f6814ef8df0268047c110ef161007de091e7fa45037811ce6",
+   "reason": "If any candidate is unblocked, the shortest wait is 0.0, so the shortest-wait set equals the unblocked set. The forced else-branch therefore passes resolve the same preferred keys. Unblocked credentials are still chosen and rotated before blocked ones, assuming the limiter reports 0.0, never a negative value, for unblocked keys.",
+   "response_sha256": "50a3498ee0460c7f98a1ec1a5ba197f2218ac6b757b7f88f376670ebcb7e15bc",
    "sources": [
     "Automatic key selection shall choose an unblocked credential before a blocked credential.",
+    "if available_key_ids:",
     "if False:",
-    "if candidate_wait == earliest_wait",
+    "earliest_wait = min(candidate_waits.values())",
     "if candidate_wait <= 0.0"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conditional",
-  "prompt_sha256": "63351025f4897951dd87410062f6a9153e55d665637bd6cf9a6c9e29b8c40b39",
+  "pin": {
+   "adopted_at": "2026-10-02T20:38:23.862254Z",
+   "answer_sha256": "bf8910c34e2b82973851a0eafebdaceb5eb0bd4bee5c2f3a218639fde07748bd",
+   "call_id": "20261002T203553Z-4d7b5b",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "bf8910c34e2b82973851a0eafebdaceb5eb0bd4bee5c2f3a218639fde07748bd",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_rate_limit_availability_selection_a08d94ffe918312f.py",
+   "response_sha256": "a744fbf912cfb8030de8da46fdf44999c7999958569d3bdae7cbb0dc273acdf1",
+   "source": "last resort",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.ProviderLimits",
+    "llm_router.RouterProfile",
+    "llm_router._internal.runtime.limiter.LimiterState",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "b2c7cf0a0bd643dbc41614811bc1316b59235a118c1e7c76c018eb3eaa3f8671",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T093844Z-03dce4",
+   "call_id": "20261002T201830Z-2e9d16",
    "confirmed": false,
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "effort": "",
+   "finding": "",
+   "level": "requirement",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "63351025f4897951dd87410062f6a9153e55d665637bd6cf9a6c9e29b8c40b39",
-   "reason": "Since unblocked credentials have a wait time of zero, falling through to the else block calculates the minimum wait time as zero and naturally selects the exact same set of unblocked credentials as the explicitly skipped branch.",
-   "response_sha256": "ca573ef0fc58a469795b0523a2b0f5035c7f34496aa70789982c718b24526f46",
+   "prompt_sha256": "b2c7cf0a0bd643dbc41614811bc1316b59235a118c1e7c76c018eb3eaa3f8671",
+   "reason": "Bypassing the available keys branch forces the router to prefer only candidates with the single shortest wait time, even when multiple unblocked credentials are available. This prevents unblocked credentials with different non-positive wait times from rotating as required.",
+   "response_sha256": "86d45b4e63bddc9813a6423d9429f81032b1e8096dc659565bffc62ffbc1d6bb",
    "sources": [
-    "Automatic key selection shall choose an unblocked credential before a blocked credential.",
-    "if False:",
-    "earliest_wait = min(candidate_waits.values())"
+    "Available credentials shall rotate before reuse requires waiting.",
+    "Automatic key selection shall choose an unblocked credential before a blocked credential. When every eligible route/key candidate is blocked and waiting is enabled, the router shall select the candidate with the shortest remaining wait.",
+    "if available_key_ids:",
+    "if False:"
    ],
-   "test_focus": "",
-   "verdict": "equivalent"
+   "test_focus": "The test must check that when multiple unblocked credentials are available with different non-positive wait times under automatic key selection, all available credentials are included in preferred keys to allow rotation.",
+   "verdict": "pin"
   }
  },
  "e92263fea0939fa2": {

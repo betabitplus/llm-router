@@ -1,16 +1,36 @@
 {
  "0c1b36286cf6938e": {
   "by": "delegate claude-opus-5-5",
-  "decided_at": "2026-10-01",
+  "decided_at": "2026-10-02",
+  "disposition": "kept",
+  "finding": "The guard in _content_parts that rejects raw bytes never acts: the public API wraps or rejects bytes before they reach it.",
   "level": "requirement",
-  "reason": "The mutant drops the guard that rejects raw bytes in _content_parts. The public API never hands it raw bytes: query(b\"abc\") wraps the content first and the media normalization rejects bytes earlier with its own TypeError (\"Unsupported media value: bytes.\"), in both versions alike. No public path can observe it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after the drafts that followed the earlier focus ran the path and did not catch the mutant.",
-  "verdict": "irrelevant"
+  "reason": "Re-decided under ADR_0007 on 2026-10-02 (irrelevant before): The guard that rejects raw bytes in _content_parts never acts: the public API wraps or rejects bytes before it. Kept as a cheap guard of a private helper. Earlier reason: The mutant drops the guard that rejects raw bytes in _content_parts. The public API never hands it raw bytes: query(b\"abc\") wraps the content first and the media normalization rejects bytes earlier with its own TypeError (\"Unsupported media value: bytes.\"), in both versions alike. No public path can observe it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after the drafts that followed the earlier focus ran the path and did not catch the mutant.",
+  "verdict": "ineffective"
+ },
+ "85f4bcb339f625ed": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept, as the two earlier decisions on _content_parts: the tuple keeps the internal parts immutable, costs nothing and changes nothing a caller sees. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
  },
  "SM-73959DE4": {
   "by": "delegate claude-opus-5-5",
-  "decided_at": "2026-10-01",
+  "decided_at": "2026-10-02",
+  "disposition": "kept",
+  "finding": "The guard in _content_parts that rejects raw bytes never acts: the public API wraps or rejects bytes before they reach it.",
   "level": "requirement",
-  "reason": "The mutant drops the guard that rejects raw bytes in _content_parts. The public API never hands it raw bytes: query(b\"abc\") wraps the content first and the media normalization rejects bytes earlier with its own TypeError (\"Unsupported media value: bytes.\"), in both versions alike. No public path can observe it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
-  "verdict": "irrelevant"
+  "reason": "Re-decided under ADR_0007 on 2026-10-02 (irrelevant before): The guard that rejects raw bytes in _content_parts never acts: the public API wraps or rejects bytes before it. Kept as a cheap guard of a private helper. Earlier reason: The mutant drops the guard that rejects raw bytes in _content_parts. The public API never hands it raw bytes: query(b\"abc\") wraps the content first and the media normalization rejects bytes earlier with its own TypeError (\"Unsupported media value: bytes.\"), in both versions alike. No public path can observe it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01), after every rung of the draft ladder and the verdict asked again with its callers in view.",
+  "verdict": "ineffective"
+ },
+ "a9925109311de4d5": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: normalize_parts returns an immutable tuple that NormalizedMessage holds; no caller sees the difference, and the tuple keeps the normalized value from being changed later. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
  }
 }

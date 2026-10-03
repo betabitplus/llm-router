@@ -1306,7 +1306,7 @@ def label(score: float, threshold: float | None) -> str:
 
 # --- the verdict (ADR_0006) ------------------------------------------------------------------
 
-VERDICTS_FINAL = ("pin", "equivalent", "irrelevant", "escalate")
+VERDICTS_FINAL = ("pin", "equivalent", "irrelevant", "unspecified", "ineffective", "escalate")
 LEVELS = ("implementation", "requirement", "feature", "goal")
 VERDICT_SYSTEM = (
     "You decide what a surviving mutant means for a project's requirements, as the engineer who owns "
@@ -1324,24 +1324,33 @@ A changed version (a mutant) that every passing test of the requirement lets thr
 {callee}What the survivor judgement found: {judgement}
 Decide one verdict:
 - pin: the change breaks something the requirement asks for, so a test must pin it;
-- equivalent: no input can tell the versions apart as the contract observes them (never when an input above is confirmed);
-- irrelevant: the versions differ, but in nothing any requirement asks for;
+- unspecified: the versions differ in what a caller could rely on, such as whether a request is sent, a tool runs, data is kept or lost, a resource is held or released, the result, an error or the cost, and no requirement says what it must be;
+- ineffective: the code the change removes or alters does not do what it is meant to do here, so the change makes no difference a caller can see: it cannot cancel, close, release or guard what it aims at, or nothing ever reaches it, such as a guard an earlier line already settles or a branch no caller takes;
+- irrelevant: the versions differ only in what no caller should rely on, such as formatting, the wording of a message or log line, or the order of internal steps;
+- equivalent: no input tells the versions apart and the code the change touches still does its job, only in another form, such as an equal expression or a conversion that changes nothing (never when an input above is confirmed);
 - escalate: deciding changes what the Feature or Goal above promises, and no requirement settles it.
-Decide pin, equivalent or irrelevant yourself whenever the question stays inside a requirement's scope:
-a comparison, a type, a default, a message or an order is never a reason to escalate. Give the highest
+Judge the change by what a caller of the public API would see: a requirement covers a function's
+result whenever that result decides the behaviour the requirement names, even when it does not name
+the function. Decide every verdict but escalate yourself whenever the question stays inside a
+requirement's scope: a comparison, a type, a default, a message or an order is never a reason to
+escalate. Give the highest
 level the decision touches (implementation, requirement, feature or goal), one or two sentences of
-reason, and for pin one sentence on what the test must check (otherwise an empty text). Under
-sources, copy word for word from above what the verdict rests on: the words of the requirement,
-Feature, Goal or criterion it turns on, and at least one line the change touches."""
+reason, for pin one sentence on what the test must check (otherwise an empty text), and for
+unspecified or ineffective one sentence naming the finding: the behaviour no requirement settles and
+what a requirement would say, or what the code means to do and why it does nothing here (otherwise an
+empty text). Under sources, copy word for word from above what the verdict rests on: the words of the
+requirement, Feature, Goal or criterion it turns on, and at least one line the change touches."""
 VERDICT_SCHEMA = {
     "type": "object",
     "additionalProperties": False,
-    "required": ["verdict", "level", "reason", "test_focus", "sources"],
+    "required": ["verdict", "level", "reason", "test_focus", "finding", "sources"],
     "properties": {
         "verdict": {"type": "string", "enum": list(VERDICTS_FINAL)},
         "level": {"type": "string", "enum": list(LEVELS)},
         "reason": {"type": "string", "minLength": 10, "maxLength": 800},
         "test_focus": {"type": "string", "maxLength": 400},
+        # For unspecified or ineffective, the finding in one sentence (ADR_0007).
+        "finding": {"type": "string", "maxLength": 400},
         # The words of the requirement and the lines of code the verdict rests on, checked against the question.
         "sources": SOURCE_ITEMS,
     },
@@ -1349,13 +1358,31 @@ VERDICT_SCHEMA = {
 
 
 SUPPRESSING = ("equivalent", "irrelevant")
+# A finding leaves the mutant's fault class and stays open until a test catches the mutant, the
+# mutant is gone or the delegate closes it (ADR_0007).
+FINDINGS = ("unspecified", "ineffective")
+LEAVING = SUPPRESSING + FINDINGS
+# What the delegate may decide about a finding: the first keeps it open, the second closes it.
+DISPOSITIONS = {"unspecified": ("require", "not-required"), "ineffective": ("fix", "kept")}
+
+
+def finding_state(verdict: dict | None) -> str | None:
+    """Where a counting verdict leaves its finding (ADR_0007): none when it names no finding,
+    closed when the delegate decided it is not required or kept, decided when the delegate keeps it
+    open with a requirement to add or a fix to make, undecided otherwise."""
+    if not verdict or verdict.get("verdict") not in FINDINGS:
+        return None
+    open_, closing = DISPOSITIONS[verdict["verdict"]]
+    disposition = verdict.get("disposition")
+    return "closed" if disposition == closing else "decided" if disposition == open_ else "undecided"
 
 
 def reviewed_verdict(entry: dict) -> dict | None:
-    """The model's verdict as it counts (ADR_0006): pin and escalate as answered; equivalent or
-    irrelevant only when the review, a model of another family asked the same question, agrees,
-    and pin when it does not, or when the role's current model, asked again, does not; none while
-    the review is missing."""
+    """The model's verdict as it counts (ADR_0006, ADR_0007): pin, a finding and escalate as
+    answered; equivalent or irrelevant only when the review, a model of another family asked the
+    same question, agrees. When it does not, or the role's current model asked again does not, the
+    mutant takes their finding when they name one and is pinned otherwise; none while the review is
+    missing."""
     answer = entry.get("answer") or {}
     if answer.get("problems") or answer.get("verdict") not in VERDICTS_FINAL:
         return None
@@ -1369,10 +1396,12 @@ def reviewed_verdict(entry: dict) -> dict | None:
         return {**answer, "by": answer.get("model"), "reviewed_by": review.get("model")}
     # A re-check may come from the same model at another level, so it is named with its level.
     name = str(against.get("model")) if against is review else f"{against.get('model')} at {against.get('effort') or 'its default level'}, asked again,"
+    verdict = against["verdict"] if against["verdict"] in FINDINGS else "pin"
     return {
-        **answer, "verdict": "pin", "by": f"{answer.get('model')} and {name.rstrip(',')}",
+        **answer, "verdict": verdict, "by": f"{answer.get('model')} and {name.rstrip(',')}",
         "reason": f"{name} disagrees with {answer['verdict']}: {against.get('reason')}",
-        "test_focus": str(against.get("test_focus") or answer.get("test_focus") or ""),
+        "test_focus": str(against.get("test_focus") or answer.get("test_focus") or "") if verdict == "pin" else "",
+        "finding": str(against.get("finding") or "") if verdict in FINDINGS else "",
     }
 
 
@@ -1406,10 +1435,12 @@ the project, wrote a test that passed on both versions or broke the pin rules. W
 calls {name}, with the function around each call:
 {sites}
 {card}Decide again with these callers in view. If no caller can hand the function what the changed
-code needs, the difference cannot be observed where the requirement is observed: answer irrelevant
-(equivalent only when no input tells the versions apart at all), and cite under sources the lines
-that show it. If a caller can, answer pin, and say in test_focus which caller reaches the changed
-code and with what."""
+code needs, the difference cannot be observed where the requirement is observed. When the change
+removes or alters code of the original that no caller reaches, that code never acts: answer
+ineffective and say in finding what it means to do and that no caller reaches it. When the change
+only adds behaviour for what no caller hands the function, answer irrelevant. Cite under sources the
+lines that show it. If a caller can, answer pin, and say in test_focus which caller reaches the
+changed code and with what."""
 CALL_SITES_SHOWN = 8
 CALLER_LINES_SHOWN = 24
 
@@ -1478,8 +1509,9 @@ def verdict_parts(prompt: str) -> tuple[dict[str, str], list[str]]:
 
 def verdict_problems(answer: dict, confirmed: bool, prompt: str = "") -> list[str]:
     """What the schema cannot say: no equivalent against a confirmed input, an escalation only at a
-    Feature or Goal, a pin that says what its test checks and, against the question it answered,
-    sources copied from it that quote the requirement it turns on and a line the change touches."""
+    Feature or Goal, a pin that says what its test checks, a finding that names itself and, against
+    the question it answered, sources copied from it that quote the requirement it turns on and a
+    line the change touches."""
     problems = []
     verdict, level = answer.get("verdict"), answer.get("level")
     if verdict == "equivalent" and confirmed:
@@ -1488,6 +1520,8 @@ def verdict_problems(answer: dict, confirmed: bool, prompt: str = "") -> list[st
         problems.append("it escalates a decision inside a requirement's scope")
     if verdict == "pin" and not str(answer.get("test_focus") or "").strip():
         problems.append("it pins without saying what the test checks")
+    if verdict in FINDINGS and not str(answer.get("finding") or "").strip():
+        problems.append(f"it answers {verdict} without naming the finding")
     if prompt:
         parts, changed = verdict_parts(prompt)
         problems += source_problems(answer.get("sources"), parts, changed, ("requirement", "changed"))

@@ -177,7 +177,7 @@ def check_verification_explorer(module: str) -> None:
     used_causes = {cause for item in items for cause in item["causes"]}
     check(
         {item["kind"] for item in items} <= kinds
-        and kinds == {"path", "unbound", "fault", "mutant", "check", "support", "producer"}
+        and kinds == {"path", "unbound", "fault", "mutant", "silent", "noeffect", "check", "support", "producer"}
         and used_causes <= set(model["causes"])
         and used_causes <= fixes
         and all(item["causes"] for item in items if item["status"] in {"fail", "unknown"})
@@ -257,13 +257,17 @@ def check_verification_explorer(module: str) -> None:
     # A survivor a recorded verdict judged equivalent or irrelevant (ADR_0006) may show as suppressed: the person's
     # decision wins over the model's answer, and the class says how many of its survivors a verdict suppressed.
     recorded_verdicts = {}
+    recorded_findings = {}
     verdict_root = BRIDGE / "survivor-verdicts"
     for folder in sorted(path for path in verdict_root.iterdir() if path.is_dir()) if verdict_root.is_dir() else []:
         answered = load(folder / "verdicts.json") if (folder / "verdicts.json").is_file() else {}
         decided = load(folder / "decisions.json") if (folder / "decisions.json").is_file() else {}
         for key in set(answered) | set(decided):
             recorded_verdicts[(folder.name, key)] = effective_verdict(answered.get(key) or {}, decided.get(key))
+            recorded_findings[(folder.name, key)] = effective_finding_state(recorded_verdicts[(folder.name, key)], decided.get(key))
     mutants_expected = []
+    # A survivor of a class the profile leaves out has no row, but the finding its verdict names is listed (ADR_0007).
+    unlisted_findings: set[tuple[str, str]] = set()
     # A boundary swap challenges impl.comparison and impl.boundary at once: a suppression counts under both.
     mutant_classes: dict[tuple[str, str], tuple[str, ...]] = {}
     fingerprints = load_fingerprints()
@@ -281,14 +285,22 @@ def check_verification_explorer(module: str) -> None:
             )
             klass = current_classes[0] if current_classes else None
             mutant_classes[(contract_id, str(result.get("fingerprint")))] = current_classes
-            if klass is None or (relative_path(result.get("file_path")), int(result.get("line_number") or -1)) not in allowed:
+            if (relative_path(result.get("file_path")), int(result.get("line_number") or -1)) not in allowed:
+                continue
+            if klass is None:
+                unlisted = any(
+                    (classes_actual.get(name) or {}).get("campaign_state") == "current"
+                    for name in fingerprints.fault_classes(result.get("operator"), result.get("description"))
+                )
+                if unlisted and result.get("status") == "survived" and recorded_verdicts.get((contract_id, str(result.get("fingerprint")))) in FINDINGS:
+                    unlisted_findings.add((contract_id, str(result.get("fingerprint"))))
                 continue
             raw = str(result.get("status"))
             status = "pass" if raw in {"zapped", "timeout"} else "na" if raw in {"pardoned", "error"} else "fail"
             cause = [] if status != "fail" else ["notreached" if result.get("covered") is False else "survivors"]
             fingerprint = str(result.get("fingerprint"))
             judged = recorded_verdicts.get((contract_id, fingerprint)) if raw == "survived" and cause in (["survivors"], ["notreached"]) else None
-            mutants_expected.append((contract_id, fingerprint, status, cause, klass, judged if judged in {"equivalent", "irrelevant"} else None))
+            mutants_expected.append((contract_id, fingerprint, status, cause, klass, judged if judged in LEAVING else None))
     semantic_expected = []
     for contract_id in sorted(semantic_selections()):
         retained_path = ROOT / f"test-results/semantic-mutants/{contract_id}.json"
@@ -297,7 +309,7 @@ def check_verification_explorer(module: str) -> None:
                 # A survivor a recorded verdict judged equivalent or irrelevant may show as equivalent (N/A), as
                 # the facts take it out of its class (ADR_0006).
                 judged = recorded_verdicts.get((contract_id, row["id"])) if row["outcome"] in {"undecided", "distinguished"} else None
-                allowed_status = {SEMANTIC_OUTCOME_STATUS[row["outcome"]], *(["na"] if judged in SUPPRESSING else [])}
+                allowed_status = {SEMANTIC_OUTCOME_STATUS[row["outcome"]], *(["na"] if judged in LEAVING else [])}
                 semantic_expected.append((contract_id, f"{row['class']}:{row['id']}", allowed_status))
     mutant_rows = {item["id"]: item for item in by_kind.get("mutant", [])}
     not_generated = []
@@ -329,6 +341,8 @@ def check_verification_explorer(module: str) -> None:
 
     def row_right(contract_id: str, fingerprint: str, status: str, cause: list, judged: str | None) -> bool:
         item = mutant_rows.get(f"mutant|{contract_id}|{fingerprint}") or {}
+        if judged in FINDINGS and item.get("status") == "na":
+            return item.get("causes") == [] and str(item.get("state")).startswith(f"{FINDING_WORD[judged]} · ")
         if judged and item.get("status") == "na":
             return item.get("causes") == [] and item.get("state") == f"Suppressed · {judged}"
         return item.get("status") == status and item.get("causes") == cause
@@ -351,6 +365,38 @@ def check_verification_explorer(module: str) -> None:
         f"the explorer lists the {len(mutants_expected)} mutants whose campaign result counts, one row each under its class: "
         "caught when a test failed on it, survived when its line runs and none did, not reached when no test runs its "
         f"line, N/A when suppressed or invalid, and suppressed by a recorded verdict ({sum(by_verdict.values())}) exactly as its class counts",
+    )
+    # Every finding a verdict names is listed once as a finding of its kind, open (failing) until the
+    # delegate closes it (ADR_0007), and only the survivors whose rows name a finding are listed.
+    finding_items = [*by_kind.get("silent", []), *by_kind.get("noeffect", [])]
+    finding_rows = [
+        row_id for row_id, item in {row["id"]: row for row in by_kind.get("mutant", [])}.items()
+        if any(str(item.get("state")).startswith(f"{word} · ") for word in FINDING_WORD.values())
+    ]
+
+    def finding_key(row_id: str) -> tuple[str, str]:
+        _kind, contract_id, rest = row_id.split("|", 2)
+        return contract_id, rest.rsplit(":", 1)[-1] if rest.startswith("semantic:") else rest
+
+    def finding_right(item: dict) -> bool:
+        contract_id, key = finding_key(item["id"])
+        verdict = recorded_verdicts.get((contract_id, key))
+        state = recorded_findings.get((contract_id, key))
+        return (
+            verdict in FINDINGS and FINDING_KIND[verdict] == item["kind"] and item["owner"] == contract_id
+            and item["status"] == ("pass" if state == "closed" else "fail")
+            and bool(item["causes"]) == (state != "closed")
+            # A decided row still says what was found, not only how it was decided (060).
+            and bool(str(item.get("what") or "").strip())
+        )
+
+    check(
+        all(finding_right(item) for item in finding_items)
+        and len(finding_items) == len({item["id"] for item in finding_items})
+        and {finding_key(item["id"]) for item in finding_items} == {finding_key(row_id) for row_id in finding_rows} | unlisted_findings,
+        f"the explorer lists the {len(finding_items)} findings the verdicts name (ADR_0007), each once and of its kind, a "
+        f"silent requirement or code with no effect, failing until the delegate closes it and naming what was found, "
+        f"{len(unlisted_findings)} of them of a fault class the profile leaves out",
     )
     upper_entities = [*upper.get("features", {}).values(), *upper.get("goals", {}).values(), upper.get("product_system") or {}]
     upper_criteria = sum(
@@ -546,9 +592,9 @@ def check_mutation_system(monitor_facts: dict) -> None:
         for contract_id, contract in contracts.items()
     }
     check(
-        len(effect_states) == 63 and all(state in {"required", "optional", "na"} for state in effect_states.values())
+        len(effect_states) == 65 and all(state in {"required", "optional", "na"} for state in effect_states.values())
         and not any("mutation" in (contract.get("target") or {}) for contract in contracts.values()),
-        "every one of the 63 verification profiles classifies impl.effect, and none selects a mutation threshold",
+        "every one of the 65 verification profiles classifies impl.effect, and none selects a mutation threshold",
     )
     arithmetic_states = {
         contract_id: next(
@@ -558,10 +604,10 @@ def check_mutation_system(monitor_facts: dict) -> None:
         for contract_id, contract in contracts.items()
     }
     check(
-        len(arithmetic_states) == 63 and all(state in {"required", "optional", "na"} for state in arithmetic_states.values())
+        len(arithmetic_states) == 65 and all(state in {"required", "optional", "na"} for state in arithmetic_states.values())
         and {contract_id for contract_id, state in arithmetic_states.items() if state == "required"}
         == {"REQ_CREDENTIAL_RESOLUTION", "REQ_STRUCTURED_OUTPUT_REPAIR", "TREQ_RATE_LIMIT_STATE", "TREQ_USAGE_NORMALIZATION"},
-        "every one of the 63 verification profiles classifies impl.arithmetic, required where the contract's code computes with it",
+        "every one of the 65 verification profiles classifies impl.arithmetic, required where the contract's code computes with it",
     )
     check(
         not any("### Blocking mutation checks" in path.read_text() for path in (ROOT / "docs/verification-profiles").glob("*.md")),
@@ -1032,12 +1078,13 @@ def check_semantic_mutants(monitor_facts: dict) -> None:
             f"{contract_id}: a caught mutant failed a contract test or kept them from finishing in time, a survivor passed them all, a distinguished one names its input, "
             "a kept draft passes five times and fails on its mutant, and a draft that reaches beyond or breaks a lint rule was never run",
         )
-        # A survivor a recorded verdict judged equivalent or irrelevant counts as equivalent (ADR_0006): the
-        # person's decision wins over the model's answer, and a suppression holds only with a review.
+        # A survivor a recorded verdict judged equivalent or irrelevant (ADR_0006), or named a finding
+        # (ADR_0007), leaves its class as equivalent: the person's decision wins over the model's answer,
+        # and a suppression holds only with a review.
         verdict_folder = BRIDGE / f"survivor-verdicts/{contract_id}"
         answered = load(verdict_folder / "verdicts.json") if (verdict_folder / "verdicts.json").is_file() else {}
         decided = load(verdict_folder / "decisions.json") if (verdict_folder / "decisions.json").is_file() else {}
-        suppressing = {key for key in set(answered) | set(decided) if effective_verdict(answered.get(key) or {}, decided.get(key)) in SUPPRESSING}
+        suppressing = {key for key in set(answered) | set(decided) if effective_verdict(answered.get(key) or {}, decided.get(key)) in LEAVING}
         for class_id in {row["class"] for row in results}:
             raw = {outcome: sum(row["outcome"] == outcome for row in results if row["class"] == class_id) for outcome in SEMANTIC_OUTCOME_STATUS}
             judged = {outcome: sum(row["outcome"] == outcome and row["id"] in suppressing for row in results if row["class"] == class_id) for outcome in ("undecided", "distinguished")}
@@ -1422,15 +1469,20 @@ def semantic_module():
     return _SEMANTIC
 
 
-VERDICTS = ("pin", "equivalent", "irrelevant", "escalate")
+VERDICTS = ("pin", "equivalent", "irrelevant", "unspecified", "ineffective", "escalate")
 SUPPRESSING = ("equivalent", "irrelevant")
+FINDINGS = ("unspecified", "ineffective")
+LEAVING = SUPPRESSING + FINDINGS
+FINDING_WORD = {"unspecified": "Silent requirement", "ineffective": "No effect"}
+FINDING_KIND = {"unspecified": "silent", "ineffective": "noeffect"}
+FINDING_DISPOSITIONS = {"unspecified": ("require", "not-required"), "ineffective": ("fix", "kept")}
 
 
 def effective_verdict(entry: dict, decided: dict | None = None) -> str | None:
-    """The verdict a record holds as it counts (ADR_0006): the person's; else the model's pin or
-    escalate; its equivalent or irrelevant only with a review that agrees, pin against one that
-    does not or against a re-check of the same question that does not uphold it, none without a
-    review."""
+    """The verdict a record holds as it counts (ADR_0006, ADR_0007): the person's or the delegate's;
+    else the model's pin, finding or escalate; its equivalent or irrelevant only with a review that
+    agrees; against a review or a re-check of the same question that does not uphold it, their
+    finding when they name one and pin otherwise; none without a review."""
     if decided and decided.get("verdict") in VERDICTS and decided.get("reason"):
         return decided["verdict"]
     answer = entry.get("answer") or {}
@@ -1441,12 +1493,26 @@ def effective_verdict(entry: dict, decided: dict | None = None) -> str | None:
     review = entry.get("review") or {}
     if review.get("prompt_sha256") != entry.get("prompt_sha256") or review.get("problems") or review.get("verdict") not in VERDICTS:
         return None
-    rechecks = (entry.get("rechecks") or {}).values()
-    against = any(
-        row.get("prompt_sha256") == entry.get("prompt_sha256") and not row.get("problems") and row.get("verdict") in VERDICTS and row["verdict"] not in SUPPRESSING
-        for row in rechecks
+    against = next(
+        (
+            row for _role, row in sorted((entry.get("rechecks") or {}).items())
+            if row.get("prompt_sha256") == entry.get("prompt_sha256") and not row.get("problems") and row.get("verdict") in VERDICTS and row["verdict"] not in SUPPRESSING
+        ),
+        None,
     )
-    return answer["verdict"] if review["verdict"] in SUPPRESSING and not against else "pin"
+    disagreeing = review if review["verdict"] not in SUPPRESSING else against
+    if disagreeing is None:
+        return answer["verdict"]
+    return disagreeing["verdict"] if disagreeing["verdict"] in FINDINGS else "pin"
+
+
+def effective_finding_state(verdict: str | None, decided: dict | None = None) -> str | None:
+    """Where a finding stands (ADR_0007): closed or decided by the delegate's disposition, else undecided."""
+    if verdict not in FINDINGS:
+        return None
+    open_, closing = FINDING_DISPOSITIONS[verdict]
+    disposition = (decided or {}).get("disposition") if (decided or {}).get("verdict") == verdict else None
+    return "closed" if disposition == closing else "decided" if disposition == open_ else "undecided"
 
 
 # A draft normalized by ruff is kept by everything its result depends on: the draft, the file it is
@@ -1559,7 +1625,7 @@ def check_survivor_verdicts(models, by_call: dict, usable: set) -> None:
                     models.response_sha256(response) == answer.get("response_sha256") == call.get("response_sha256")
                     and call.get("outcome") == "ok" and response.get("backend") in usable
                     and hashlib.sha256(asked.encode()).hexdigest() == entry.get("prompt_sha256")
-                    and all(structured.get(name) == answer.get(name) for name in ("verdict", "level", "reason", "test_focus", "sources"))
+                    and all(structured.get(name) == answer.get(name) for name in ("verdict", "level", "reason", "test_focus", "finding", "sources"))
                     and ("confirmed" not in answer or judge.verdict_problems(structured, bool(answer["confirmed"]), str(response.get("prompt") or "")) == answer.get("problems"))
                 )
             pin = entry.get("pin")
@@ -2709,7 +2775,7 @@ def main() -> None:
         depth_facts.get("schema_version") == 4
         and retained_test_count >= 189
         and depth_source.get("passed") == retained_test_count
-        and depth_audit.get("contracts") == 63
+        and depth_audit.get("contracts") == 65
         and depth_audit.get("runtime_evidence") == retained_test_count
         and depth_audit.get("nodeid_mismatches") == 0
         and depth_audit.get("verifies_mismatches") == 0
@@ -5756,13 +5822,20 @@ def main() -> None:
         set(developer_fault_expectations) <= complete_fault_contracts,
         f"the developer-tool contracts keep a complete Fault Model ({len(complete_fault_contracts)} complete in all)",
     )
+    def completeness_of(contract: dict) -> str:
+        """Completeness as the page must show it (ADR_0007): an open silent requirement fails it."""
+        actual = contract.get("completeness_actual") or {}
+        silent = [row for row in actual.get("findings") or [] if row.get("kind") == "unspecified"]
+        return "not-met" if actual.get("applicable") and any(row.get("state") in {"undecided", "decided"} for row in silent) else "met"
+
     def overall_state(contract_id: str, seen: tuple = ()) -> str:
-        """A contract passes when its coverage and Fault Model are complete and every Technical requirement
-        it requires passes in turn; with nothing failing, an undecided part keeps it UNKNOWN."""
+        """A contract passes when its coverage and Fault Model are complete, no silent requirement stays
+        open and every Technical requirement it requires passes in turn; with nothing failing, an
+        undecided part keeps it UNKNOWN."""
         contract = monitor_facts["contracts"].get(contract_id) or {}
         required = (contract.get("target") or {}).get("required_treqs") or []
         return worst(
-            ["not-met" if contract_id in partial_coverage_contracts else "met", fault_state_of(contract)]
+            ["not-met" if contract_id in partial_coverage_contracts else "met", fault_state_of(contract), completeness_of(contract)]
             + [overall_state(treq, (*seen, contract_id)) for treq in required if treq not in seen]
         )
 
@@ -6183,10 +6256,10 @@ def main() -> None:
     )
     health_model = map_model.get("health") or {}
     health_layers = (health_model.get("summary") or {}).get("layers") or {}
-    health_layer_keys = ("overall", "execution", "coverage", "faults", "evidence", "assurance")
+    health_layer_keys = ("overall", "execution", "coverage", "faults", "completeness", "evidence", "assurance")
     check(
         set(health_layers) == set(health_layer_keys),
-        "Verification Health Map exposes Overall, Execution, Coverage, Faults, Evidence, and Assurance layers",
+        "Verification Health Map exposes Overall, Execution, Coverage, Faults, Completeness, Evidence, and Assurance layers",
     )
     health_rows = {
         row.get("id"): row
@@ -6278,7 +6351,7 @@ def main() -> None:
     )
     check(
         all(
-            own_status(row, "faults") == "na"
+            own_status(row, "faults") == "na" and own_status(row, "completeness") == "na"
             for row in health_rows.values()
             if row.get("level") in {"product", "goal", "feature"}
         )
@@ -6287,7 +6360,7 @@ def main() -> None:
             for row in health_rows.values()
             if row.get("level") in {"requirement", "treq"}
         ),
-        "fault groups belong to contracts and Assurance support stays with the children that cause it",
+        "fault groups and silent requirements belong to contracts and Assurance support stays with the children that cause it",
     )
     check(
         all(
@@ -6598,6 +6671,7 @@ def main() -> None:
         and 'class="tf-map-help"' in health_page
         and '["execution","Execution","Did the tests and scenarios that ran pass?"]' in health_page
         and '["faults","Fault model",' in health_page
+        and '["completeness","Completeness",' in health_page
         and '["evidence","Evidence quality",' in health_page
         and '" of "+applicableOf(key)+" fail"' in health_page
         and "tiles.thumb=(leaf,mark)=>map.thumb(" in health_page
@@ -6935,7 +7009,7 @@ def main() -> None:
         and all(any(key == layer for key, _layer, _projection, _form in pairs_views) for layer in health_layer_keys)
         and pairs_measures == {"depth", "level", "boundary", "trust", "detect"}
         and 'const MEASURE={depth:"overall",level:"level",boundary:"boundary",trust:"trust",detect:"detect"};' in pairs_js
-        and pairs_js.count('label:"Health",') == 6
+        and pairs_js.count('label:"Health",') == 7
         and "Verdict" not in pairs_js
         and 'document.getElementById("verification-health-map")?.classList.toggle("tf-pairs-measuring",measured(view.projection))' in pairs_js
         and "#verification-health-map.tf-pairs-measuring{--tf-map-up:var(--tf-map-ring);--tf-map-down:var(--tf-map-ring)}" in health_section
@@ -6979,7 +7053,7 @@ def main() -> None:
     pairs_bar = health_section.split('id="tf-map-legendbar"', 1)[-1].split('id="tf-map-body"', 1)[0]
     knob_rule = map_pages_css.split("\n.tf-map-knob{", 1)[-1].split("}", 1)[0]
     check(
-        len(pairs_asks) == len(pairs_views) == 12
+        len(pairs_asks) == len(pairs_views) == 13
         and all(len(ask) <= 40 for ask in pairs_asks)
         and "function viewsHtml(key,lone){" in map_pages_js
         and '<span class="tf-map-views-track" role="radiogroup" aria-label="Views of \'' in map_pages_js
@@ -7240,6 +7314,13 @@ def main() -> None:
     )
     check_verification_explorer(map_pages_module)
     check_model_roles_page(((monitor_facts.get("policy") or {}).get("model_generation") or {}).get("budget") or {})
+    # The roadmap page is retired: the owner keeps the plan in the development history (060).
+    check(
+        not (HTML / "assurance-roadmap.html").exists()
+        and re.search(r">\s*Assurance roadmap\s*</a>", health_nav) is None
+        and (BRIDGE / "development-history/monitor-plan.md").is_file(),
+        "the portal has no roadmap page and the header no roadmap link; the plan lives in the development history",
+    )
     qualification_harness_source = (BRIDGE / "qualify-evidence-confidence.py").read_text()
     check(
         "'<section id=\"verification-health-map\">\\n<h1>Verification Health Map'" in map_pages_module
@@ -7340,16 +7421,17 @@ def main() -> None:
         )
 
     measurement_contract_ids = {row["contract_id"] for row in depth_facts.get("contracts") or []}
-    check(len(measurement_contract_ids) == 63,
-          "verification-depth / mutation measurement universe contains all 63 current contracts")
+    # 65 since history 060: the timeout fix added TREQ_TIMED_OUT_ATTEMPT_STOPS and TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT.
+    check(len(measurement_contract_ids) == 65,
+          "verification-depth / mutation measurement universe contains all 65 current contracts")
     requirements_text = "\n".join(
         path.read_text() for path in sorted((ROOT / "docs/requirements").glob("*.md"))
     )
     normative_contract_ids = set(re.findall(
         r"^:id:\s+((?:REQ|TREQ)_[A-Z0-9_]+)\s*$", requirements_text, flags=re.MULTILINE
     ))
-    check(len(normative_contract_ids) == 63,
-          "normative Sphinx-Needs graph contains 63 Requirement/TREQ contracts")
+    check(len(normative_contract_ids) == 65,
+          "normative Sphinx-Needs graph contains 65 Requirement/TREQ contracts")
     missing_contracts = sorted(
         contract_id for contract_id in normative_contract_ids if f"`{contract_id}`" not in manifest
     )
@@ -7514,6 +7596,8 @@ def main() -> None:
         ".ai-bridge/pytest_plugins/",
         ".ai-bridge/vendor/",
         ".ai-bridge/development-history/",
+        # The walked paths of the monitor plan's working directions (060).
+        ".ai-bridge/walkthroughs/",
         ".ai-bridge/exemplars/",
         "docs/index.md",
         "docs/README.md",
@@ -7522,6 +7606,7 @@ def main() -> None:
         "docs/decisions/0004-metered-model-generation.md",
         "docs/decisions/0005-survivor-judgement.md",
         "docs/decisions/0006-survivor-verdicts.md",
+        "docs/decisions/0007-survivor-dispositions.md",
         "docs/test-plan.md",
         "docs/verification-health-map.md",
         "docs/verification-explorer.md",
@@ -7570,6 +7655,9 @@ def main() -> None:
         "src/llm_router/_internal/providers/retry.py",
         "src/llm_router/_internal/capabilities/usage.py",
         "src/llm_router/_internal/runtime/executor.py",
+        # A timed-out attempt is told it was left and keeps its caller's context (history 060).
+        "src/llm_router/_internal/runtime/errors.py",
+        "src/llm_router/_internal/runtime/requests.py",
         "src/llm_router/_internal/runtime/effective_settings.py",
         "src/llm_router/_internal/session/serialization.py",
         "tests/llm_router/integration/test_layer_bypass_controls.py",

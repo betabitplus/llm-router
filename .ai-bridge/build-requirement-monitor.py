@@ -292,12 +292,15 @@ def fault_inspector(state: dict) -> str:
             ("Unsure", str(judgement.get("unsure") or 0), None),
             ("Not judged", str(judgement.get("not-applicable") or 0), None),
         ]
-        # What the verdicts that count decided (ADR_0006); only an escalation waits for the person.
+        # What the verdicts that count decided (ADR_0006). A finding shows under its kind, open or
+        # closed, and fails while one is open (ADR_0007); only an escalation waits for the person.
         verdicts = [
             ("Pinned", int(judgement.get("verdict_pinned") or 0), None),
             ("Pin pending", int(judgement.get("verdict_pin_pending") or 0), None),
             ("Suppressed", int(judgement.get("verdict_suppressed") or 0), None),
-            ("For you", int(judgement.get("verdict_escalated") or 0), "fail" if judgement.get("verdict_escalated") else None),
+            ("Silent requirement", int(judgement.get("verdict_unspecified") or 0), "NOT MET" if judgement.get("verdict_unspecified_open") else None),
+            ("No effect", int(judgement.get("verdict_ineffective") or 0), "NOT MET" if judgement.get("verdict_ineffective_open") else None),
+            ("For you", int(judgement.get("verdict_escalated") or 0), "NOT MET" if judgement.get("verdict_escalated") else None),
         ]
         if any(value for _label, value, _status in verdicts):
             stages += [(label, str(value), status) for label, value, status in verdicts]
@@ -425,7 +428,9 @@ def render_current() -> None:
         if technical_support_rows
         else "N/A"
     )
-    overall_inputs = [cell_domain, fault_domain]
+    # Whether a requirement or the delegate's decision settles all a caller sees (ADR_0007).
+    completeness = domain.completeness_state(contract)
+    overall_inputs = [cell_domain, fault_domain, completeness["status"]]
     if technical_support_rows:
         overall_inputs.append(technical_support_status)
     overall = combine(overall_inputs)
@@ -549,6 +554,36 @@ def render_current() -> None:
         href=f"#ce-faults-{contract_key}",
         meta=domain_meta(fault_statuses),
     )
+    completeness_domain_card = (
+        ui.domain_card(
+            label="Completeness",
+            status=completeness["status"],
+            # The silent requirements, or the contract's items when it has none.
+            href=(
+                ui.explorer_href(CONTRACT_ID, kind="silent")
+                if completeness["open"] or completeness["closed"]
+                else ui.explorer_href(CONTRACT_ID)
+            ),
+            # In the explorer's words: undecided, a requirement to add, or not required.
+            meta=(
+                " · ".join(
+                    part
+                    for part in (
+                        f"{completeness['undecided']} undecided" if completeness["undecided"] else "",
+                        f"{completeness['to_add']} requirement{'' if completeness['to_add'] == 1 else 's'} to add"
+                        if completeness["to_add"]
+                        else "",
+                        f"{completeness['closed']} not required" if completeness["closed"] else "",
+                    )
+                    if part
+                )
+                if completeness["open"] or completeness["closed"]
+                else "No silent requirement"
+            ),
+        )
+        if completeness["status"] != "N/A"
+        else ""
+    )
     technical_support_section = ""
     domain_strip_class = "domain-strip"
     technical_support_domain_card = ""
@@ -599,7 +634,10 @@ def render_current() -> None:
         entity_id=CONTRACT_ID,
         status=overall,
         domain_cards=(
-            coverage_domain_card + fault_domain_card + technical_support_domain_card
+            coverage_domain_card
+            + fault_domain_card
+            + completeness_domain_card
+            + technical_support_domain_card
         ),
         domain_strip_class=domain_strip_class,
         map_href=f"{HEALTH_MAP_URL}#overall:{CONTRACT_ID}",

@@ -1,0 +1,10 @@
+{
+ "5fd031363386257e": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require, as a clause of REQ_SESSION_PERSISTENCE: Session.load of a file that cannot be read fails with a public LLMRouterError subclass. Today it raises the internal SessionSerializationError, which is not one, and the mutant lets an UnboundLocalError escape; REQ_SESSION_PERSISTENCE covers only what a save and a load preserve. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

@@ -28,3 +28,7 @@ class AllRoutesBlockedError(LLMRouterInternalError):
 
 class KeyResolutionError(LLMRouterInternalError):
     """A concrete provider key could not be selected."""
+
+
+class AttemptLeftError(LLMRouterInternalError):
+    """The router left this attempt at its timeout, so it starts no further work."""

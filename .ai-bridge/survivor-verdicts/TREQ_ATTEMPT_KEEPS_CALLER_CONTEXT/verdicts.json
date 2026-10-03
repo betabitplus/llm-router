@@ -1,0 +1,26 @@
+{
+ "3637e50b07cabf61": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T222313Z-b0f9bf",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "Without the `left` event, an attempt abandoned by a timeout is not told that the caller left. It can keep running tools and sending provider requests. A requirement should say whether such an attempt must stop or may finish its side effects.",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant still copies the caller's context, so the TREQ still holds. The passing timed-attempt test also shows `execute` runs without `left`, so `left` has a default. What changes is that an abandoned attempt never learns that the caller stopped waiting. It may then keep calling tools or the provider after the timeout. The requirement only says to \"stop waiting\" and does not say whether an abandoned attempt must stop its work.",
+   "response_sha256": "535da82c982dcbde8c908504b60686d5c2822ba0c34e8146e5d84f3447f672cf",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "An attempt shall run with the context variables the caller set before the call, with or without an attempt timeout, so the tools it calls and the provider client it uses see them; which thread runs the attempt is not part of this promise.",
+    "contextvars.copy_context().run, executor.execute, request, left=left",
+    "return pool.submit(contextvars.copy_context().run, executor.execute, request)"
+   ],
+   "test_focus": "",
+   "verdict": "unspecified"
+  },
+  "operator": "argument",
+  "prompt_sha256": "75d47a7639601e27f5445dd4b53d943e263a7cc2296215ef87cc51f2a0098574"
+ }
+}

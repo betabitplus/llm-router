@@ -2558,10 +2558,19 @@ def generator_canary_passed(calibration: Path, question: dict, structured: dict)
     return valid > 0, f"{valid} well-formed, confined proposals"
 
 
-def verdict_canary_passed(question: dict, structured: dict) -> tuple[bool, str]:
-    problems = equivalence().verdict_problems(structured or {}, bool(question.get("confirmed")), question["prompt"])
-    got = (structured or {}).get("verdict")
-    return got == question["expected"] and not problems, f"expected {question['expected']}, got {got}" + (f" ({'; '.join(problems)})" if problems else "")
+def verdict_canary_passed(question: dict, structured: dict, role: str = "verdict") -> tuple[bool, str]:
+    """A verdict canary passes on the case's settled outcome, by the rules. The review is asked only
+    whether a suppression holds (ADR_0006, ADR_0007): it passes when it suppresses exactly the cases
+    settled as suppressions, since any other answer keeps the mutant out of the suppressions."""
+    judge = equivalence()
+    problems = judge.verdict_problems(structured or {}, bool(question.get("confirmed")), question["prompt"])
+    got, expected = (structured or {}).get("verdict"), question["expected"]
+    if role == "verdict_review":
+        right = got in judge.VERDICTS_FINAL and (got in judge.SUPPRESSING) == (expected in judge.SUPPRESSING)
+        wanted = expected if expected in judge.SUPPRESSING else f"{expected} or another answer that does not suppress"
+    else:
+        right, wanted = got == expected, expected
+    return right and not problems, f"expected {wanted}, got {got}" + (f" ({'; '.join(problems)})" if problems else "")
 
 
 # --- the ladder: a draft written with tools (ADR_0004) -----------------------------------------------

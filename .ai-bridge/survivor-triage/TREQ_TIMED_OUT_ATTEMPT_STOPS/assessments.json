@@ -1,0 +1,49 @@
+{
+ "39d5d1ce764651c8": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "left": "None"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261002T215716Z-7a2384",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With left=None the original returns None, but the changed version raises AttributeError by calling None.is_set().",
+    "response_sha256": "6538e4702f61f93acc1698ef4f985025fe8370b204d818e7b0afc5014aefb8b6",
+    "sources": [
+     "if left is not None and left.is_set():",
+     "if left.is_set():"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "d533b197068a763a2f53dc9722c3a381837dc81105ba67ab4fd470ec5e839842"
+ },
+ "7ba9e381cf99831d": {
+  "answers": {
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "any valid ProviderRequest",
+     "self_adapter": "any ProviderAdapter whose execute returns a ProviderResult, e.g. a stub adapter",
+     "self_left": "(lambda e: (e.set(), e)[1])(threading.Event())"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261002T215716Z-2e3307",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With the left event set, the original raises AttemptLeftError via _stop_if_left, while the changed version skips the check and returns the adapter's result.",
+    "response_sha256": "67113e58cd24286ae61dad3927de1d7246d2f4b4c3e2cfd6137ff5a236876610",
+    "sources": [
+     "_stop_if_left(self._left)",
+     "pass",
+     "return self._adapter.execute(request)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "3d49db9a24c7b22feda1c9ab23fea20ed5e713f320b10379be8721ec2fbf0d9e"
+ }
+}

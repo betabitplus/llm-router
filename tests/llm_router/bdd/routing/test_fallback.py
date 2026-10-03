@@ -30,6 +30,7 @@ from tests.llm_router.support.workers.retry import (
     openai_success_response,
 )
 from tests.llm_router.support.workers.timeout import run_timeout_inprocess
+from tests.llm_router.support.workers.tool_failure import openai_tool_call_response
 from tests.llm_router.support.workers.worker_patches import (
     install_fast_worker_runtime_config,
     patched_openai_sdk,
@@ -58,6 +59,22 @@ for _test_name, _criterion in (
     (
         "test_an_async_terminal_route_timeout_is_exposed_when_no_fallback_remains",
         "VC_ROUTE_TIMEOUT_TERMINAL",
+    ),
+    (
+        "test_a_timedout_attempt_starts_no_further_work_once_the_router_leaves_it",
+        "VC_TIMED_OUT_ATTEMPT_STOPS",
+    ),
+    (
+        "test_an_async_timedout_attempt_starts_no_further_work_once_the_router_leaves_it",
+        "VC_TIMED_OUT_ATTEMPT_STOPS",
+    ),
+    (
+        "test_a_timed_attempt_runs_with_the_context_the_caller_set",
+        "VC_ATTEMPT_KEEPS_CALLER_CONTEXT",
+    ),
+    (
+        "test_an_async_timed_attempt_runs_with_the_context_the_caller_set",
+        "VC_ATTEMPT_KEEPS_CALLER_CONTEXT",
     ),
     (
         "test_the_router_does_not_exceed_the_configured_number_of_route_attempts",
@@ -95,6 +112,22 @@ for _test_name, _path_id in (
     ),
     (
         "test_an_async_terminal_route_timeout_is_exposed_when_no_fallback_remains",
+        "async",
+    ),
+    (
+        "test_a_timedout_attempt_starts_no_further_work_once_the_router_leaves_it",
+        "sync",
+    ),
+    (
+        "test_an_async_timedout_attempt_starts_no_further_work_once_the_router_leaves_it",
+        "async",
+    ),
+    (
+        "test_a_timed_attempt_runs_with_the_context_the_caller_set",
+        "sync",
+    ),
+    (
+        "test_an_async_timed_attempt_runs_with_the_context_the_caller_set",
         "async",
     ),
 ):
@@ -426,6 +459,119 @@ def first_route_times_out_async() -> dict[str, Any]:
 @then("the async request continues with the next route")
 def async_timeout_falls_back(case: dict[str, Any]) -> None:
     timeout_falls_back(case)
+
+
+def _late_tool_call_routes() -> dict[tuple[str, str], list[ScriptedResponse]]:
+    """The first route answers a tool call after the timeout; the fallback at once."""
+    return {
+        ("POST", _TIMEOUT_PATH): [
+            ScriptedResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body=openai_tool_call_response(
+                    tool_name="look_up_weather", args={"city": "Paris"}
+                ),
+                delay_seconds=_TIMEOUT_DELAY_SECONDS,
+            ),
+            ScriptedResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body=openai_success_response(text=_TIMEOUT_TEXT),
+            ),
+        ]
+    }
+
+
+@given(
+    "the first route answers with a tool call only after its attempt timeout",
+    target_fixture="case",
+)
+def first_route_answers_late_with_a_tool_call() -> dict[str, Any]:
+    return {
+        "timeout_routes": _late_tool_call_routes(),
+        "tool_scenario": "left_attempt_after_timeout",
+    }
+
+
+@given(
+    "the first route answers with a tool call only after its async attempt timeout",
+    target_fixture="case",
+)
+def first_route_answers_late_with_a_tool_call_async() -> dict[str, Any]:
+    return {
+        "timeout_routes": _late_tool_call_routes(),
+        "tool_scenario": "async_left_attempt_after_timeout",
+    }
+
+
+def _tool_call_in_time_routes() -> dict[tuple[str, str], list[ScriptedResponse]]:
+    """The route asks for a tool call at once, then answers."""
+    return {
+        ("POST", _TIMEOUT_PATH): [
+            ScriptedResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body=openai_tool_call_response(
+                    tool_name="look_up_weather", args={"city": "Paris"}
+                ),
+            ),
+            ScriptedResponse(
+                status_code=200,
+                headers={"Content-Type": "application/json"},
+                body=openai_success_response(text=_TIMEOUT_TEXT),
+            ),
+        ]
+    }
+
+
+@given(
+    "the route asks for a tool call within its attempt timeout",
+    target_fixture="case",
+)
+def route_asks_for_a_tool_in_time() -> dict[str, Any]:
+    return {
+        "timeout_routes": _tool_call_in_time_routes(),
+        "tool_scenario": "caller_context_reaches_tool",
+    }
+
+
+@given(
+    "the route asks for a tool call within its async attempt timeout",
+    target_fixture="case",
+)
+def route_asks_for_a_tool_in_time_async() -> dict[str, Any]:
+    return {
+        "timeout_routes": _tool_call_in_time_routes(),
+        "tool_scenario": "async_caller_context_reaches_tool",
+    }
+
+
+@when("a request with a tool is made")
+def request_with_a_tool_is_made(case: dict[str, Any]) -> None:
+    marker = uuid.uuid4().hex
+    case["marker"] = marker
+    with ScriptedHTTPServer(port=0, routes=case["timeout_routes"]) as server:
+        case["response"] = run_timeout_inprocess(
+            scenario=case["tool_scenario"],
+            server_base_url=server.base_url,
+            marker=marker,
+        )
+        case["request_count"], case["requests_seen"] = _own_requests(server, marker)
+
+
+@then("the tool sees the value the caller set before the call")
+def tool_sees_the_caller_value(case: dict[str, Any]) -> None:
+    result = case["response"]
+    # The worker sets a context variable to the run's marker just before the call.
+    assert result.ok, result.error_message
+    assert result.tool_values == (f"caller {case['marker']}",), result.tool_values
+
+
+@then("the left attempt runs no tool and sends no further request")
+def left_attempt_starts_nothing(case: dict[str, Any]) -> None:
+    # Its late tool call would run the tool and ask the first route again.
+    assert case["response"].tool_calls == 0, case["requests_seen"]
+    assert case["request_count"] == 2, case["requests_seen"]
 
 
 @given("another route is available")

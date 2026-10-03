@@ -57,45 +57,26 @@
  "2a31133556a5dacb": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T113700Z-0fc678",
+   "call_id": "20261002T201413Z-1bccd0",
    "confirmed": true,
    "effort": "xhigh",
+   "finding": "The guard is meant to stop an unset (None) value in a router or route default layer from clearing the config default. No public caller seems to put None into those layers (LLMRouter and RouterProfile appear to leave unset settings out first), so the guard never acts. This is inferred from the failed test attempts; the filtering code itself was not checked.",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "_apply_non_null only serves the default layers (router_defaults and route_policy_defaults inside resolve_effective_settings). Request overrides, where explicit null must stay distinct from omission, go through a separate path. Every test attempt, including one working in a copy of the project, failed to get a None default-layer value to these calls, which suggests the public LLMRouter/RouterProfile paths strip omitted (None) fields first. So the difference doesn't show where this requirement is checked.",
-   "response_sha256": "5a3ccee523e83848a625fa59ec05f536e223a6417e51dd1ce8712c36f1c91e3f",
+   "reason": "_apply_non_null is called only for the router and route default layers, and the draft ladder could not get a null value into those layers through the public API. So the null guard never changes the effective settings a caller sees. Request-level explicit-null semantics are handled separately through _CallUnset.",
+   "response_sha256": "f7fbce4799cda98050fa6d869df81a73aec531f13669f27fe05cee6223e4f14d",
    "sources": [
-    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
-    "\"\"\"Apply only non-null overrides for default layers.\"\"\"",
     "if key in values and value is not None:",
+    "\"\"\"Apply only non-null overrides for default layers.\"\"\"",
+    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
     "Request settings override router and route defaults while unrelated defaults survive."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "ineffective"
   },
   "operator": "condition",
-  "prompt_sha256": "91ec337f7aa7dbfb57e6bef29cf701cb1f313d84390c52edc45289d321be18da",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T113803Z-fa680d",
-   "confirmed": true,
-   "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "91ec337f7aa7dbfb57e6bef29cf701cb1f313d84390c52edc45289d321be18da",
-   "reason": "The requirement governs how request-level settings override defaults and clear inherited settings with explicit nulls. Since the mutated function is explicitly scoped to default layers, its removed comparison only affects default layer merging, which is outside the scope of this requirement.",
-   "response_sha256": "2a51b6aef740230c124259f4fae7c29179ac69ba063546515f8dec98a764625e",
-   "sources": [
-    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
-    "Explicit null and explicit empty-collection request values each clear the corresponding inherited optional setting.",
-    "\"\"\"Apply only non-null overrides for default layers.\"\"\"",
-    "if key in values and value is not None:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "1deb2a88344a0e0e14e452c5b56558680973e92500082d2450d415c9c7082135"
  },
  "39cd06b3a9c8bc51": {
   "answer": {
@@ -206,43 +187,26 @@
  "4e2d2eb9f2ba8e75": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T113700Z-478497",
+   "call_id": "20261002T201409Z-2f3001",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether a router or route default layer may add keys that are not known settings (the original ignores them, the mutant adds them). A validation requirement should state that such keys are ignored or rejected.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only override keys that are not already in `values`: it adds them, where the original drops them. Non-null overrides of known keys still replace defaults, and nulls are still skipped. The requirement covers precedence and telling an explicit null or empty value apart from an omitted one. It says nothing about filtering unknown keys, so this difference touches nothing it asks for.",
-   "response_sha256": "75ea82433832db6a7a9d6c4019de9e3c1468535aa7b6d08d8b68e5735d094478",
+   "reason": "The mutant changes nothing about how known keys are overridden or how explicit null is treated. It only lets keys that are not already in the base values leak into the effective configuration, where the original drops them. Whether a default layer may add keys that are not settings is a caller-visible difference, but REQ_REQUEST_OVERRIDE_PRECEDENCE covers only precedence and the null/omission distinction.",
+   "response_sha256": "cbff4e8c27b62ab2dfc1dc6edbe1ff4f10394f50664cf2266442d1790867b3db",
    "sources": [
     "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
     "Request settings override router and route defaults while unrelated defaults survive.",
-    "        if key in values and value is not None:",
-    "        if value is not None:"
+    "if key in values and value is not None:",
+    "FEAT_CONFIGURATION_PRECEDENCE (Configuration precedence and validation)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "condition",
-  "prompt_sha256": "2a78c223d1bc39baa635800f106afce58c100e4e23235725fdd604e3d0dba4e0",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T113803Z-4e54d3",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "2a78c223d1bc39baa635800f106afce58c100e4e23235725fdd604e3d0dba4e0",
-   "reason": "The requirement specifies that request settings override defaults and that explicit values remain distinct from omissions. It does not dictate whether extraneous keys in the overrides should be ignored or added. Removing the check that restricts updates to existing keys is an implementation detail that does not violate any aspect of the requirement.",
-   "response_sha256": "2cc3d4ebc0da6649abfef794ad765be70a4e6698ac23f13796ba38852e0d99f0",
-   "sources": [
-    "Request-level settings shall override router and route defaults, while an explicitly supplied empty or null value shall remain distinguishable from an omitted override.",
-    "if key in values and value is not None:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "ae10ea1aba8b4c286a239e736e13dfe5366e27f840b5cb4efc5ee76ae141863f"
  },
  "55b2f9299d7194b1": {
   "answer": {

@@ -1,0 +1,18 @@
+{
+ "667bb68e1a41ac4b": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require: a tool_choice that is not a string, a mapping or None is rejected with TypeError before any provider request is built, as the code does today; REQ_TOOL_CHOICE covers only named and required choices. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "b9226947eece89d0": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require: a tool_choice that is not a string, a mapping or None is rejected with TypeError before any provider request is built, as the code does today; REQ_TOOL_CHOICE covers only named and required choices. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

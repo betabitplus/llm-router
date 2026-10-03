@@ -2,17 +2,17 @@
  "0912db8ce4b47a9a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195903Z-d1fd9f",
+   "call_id": "20261002T201753Z-284aeb",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "When `Model(...)` is given a member of `Model`, it returns that member unchanged, because `Enum.__new__` returns the value when `type(value) is cls`. So removing the `isinstance` shortcut gives the same `resolved` for every input. The later check that rejects models not in `config.models` still rejects undeclared models before provider execution.",
-   "response_sha256": "5b0f7c2722605f6d2e31535013f7f9fbcfbd05d87088e39a6561ac6f80077668",
+   "reason": "Calling an Enum class on one of its own members returns that same member, so sending Model instances through `Model(model)` gives the same `resolved` value as the removed isinstance branch. The declaration check and the ConfigurationError for undeclared or unknown models behave the same for every input.",
+   "response_sha256": "02d6f37305818b5ff3f6df56877ae39bc3b69fcf12bdf465774d25033fd456a9",
    "sources": [
     "A requested model shall be accepted only when it is declared by the effective configuration.",
-    "An undeclared requested model is rejected before provider execution.",
     "    if isinstance(model, Model):",
     "    if False:",
     "            resolved = Model(model)"
@@ -21,22 +21,23 @@
    "verdict": "equivalent"
   },
   "operator": "conditional",
-  "prompt_sha256": "9c59e72507f29b96f0a521824afc45914a9e5e1b41417e3e5a4ecc3d4ad07d20",
+  "prompt_sha256": "aa55f8550914085087792bad07a2890351e88cb38c06f8908aeccc72a3046b65",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195923Z-18f812",
+   "call_id": "20261002T201905Z-381119",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "9c59e72507f29b96f0a521824afc45914a9e5e1b41417e3e5a4ecc3d4ad07d20",
-   "reason": "Passing an Enum instance to its own constructor returns the instance itself, making the explicit `isinstance` check redundant and resulting in identical behavior for all inputs.",
-   "response_sha256": "eba0c65962843b7c2a35ee654f3eee9ec368b6ec0828077e3dd900d255dffdfa",
+   "prompt_sha256": "aa55f8550914085087792bad07a2890351e88cb38c06f8908aeccc72a3046b65",
+   "reason": "In Python, passing an Enum member to its own class constructor returns the member itself, so calling Model(model) on an existing Model instance produces the exact same resolved enum member. Both versions therefore behave identically for all valid and invalid inputs.",
+   "response_sha256": "3bd6ca99c089938791d32ddc3dde5e858a91a37b0e63725e27e7777f4acb62b1",
    "sources": [
     "A requested model shall be accepted only when it is declared by the effective configuration.",
-    "if isinstance(model, Model):",
-    "if False:"
+    "    if isinstance(model, Model):",
+    "    if False:"
    ],
    "test_focus": "",
    "verdict": "equivalent"

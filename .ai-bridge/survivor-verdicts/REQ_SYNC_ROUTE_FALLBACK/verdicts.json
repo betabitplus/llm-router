@@ -32,42 +32,25 @@
  "3d3d1491ad30ff05": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000201Z-e1d47e",
+   "call_id": "20261002T201753Z-2e026e",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "finding": "No requirement says whether a success that came after skipping a rate-limited route counts as a fallback that the router remembers. A requirement should say whether that success changes which route later requests try first.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes the fallback_occurred flag passed to _remember_fallback_success. That changes things only when a rate-limited route was skipped and no route had failed. The requirement covers failed-route fall-through, keeping failed and successful attempts in the trace, and raising the last route's error. All three behave the same in both versions.",
-   "response_sha256": "cc8994c29b7136fdca40aa3dc1c1f047723b17d485c79be1efda2e60423f8bfc",
+   "reason": "The mutant stops treating a success reached after skipping a rate-limited route as a fallback, so `_remember_fallback_success` is not told about it. This likely changes which route later requests try first. The requirement only covers continuing after failed routes, the trace and raising the last error. It says nothing about what the router remembers for later requests, or whether skipping a blocked route counts as a fallback.",
+   "response_sha256": "0ce714fd8305c5961c97bb21d32ada791d2b74a239c07e46f70c52847bcc0aa7",
    "sources": [
-    "During a synchronous request, when an attempted route fails before producing a successful response and another eligible route remains, the router shall continue with the next route.",
-    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
     "fallback_occurred=bool(failed_traces or blocked_requests),",
-    "self._remember_fallback_success(route=route, fallback_occurred=bool(failed_traces))"
+    "self._remember_fallback_success(route=route, fallback_occurred=bool(failed_traces))",
+    "During a synchronous request, when an attempted route fails before producing a successful response and another eligible route remains, the router shall continue with the next route."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "condition",
-  "prompt_sha256": "b11bc346114dd415c9f9efdcabf55ccfea95bb77a2d15f6a93ae8123ed3edf49",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T091941Z-0f1fb0",
-   "confirmed": false,
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "b11bc346114dd415c9f9efdcabf55ccfea95bb77a2d15f6a93ae8123ed3edf49",
-   "reason": "The mutant removes `blocked_requests` from the condition used to record a fallback occurrence in `_remember_fallback_success`. This is an internal state update that does not affect the route continuation, trace exposure, or error handling mandated by the requirement for the current request.",
-   "response_sha256": "6fbf2b98d2cb40a77640ef26e6410cf6ee447c426b4e7efdbebd86799b08f73f",
-   "sources": [
-    "Requirement REQ_SYNC_ROUTE_FALLBACK (Synchronous failed-route fallback): During a synchronous request, when an attempted route fails before producing a successful response and another eligible route remains, the router shall continue with the next route.",
-    "fallback_occurred=bool(failed_traces or blocked_requests)",
-    "self._remember_fallback_success(route=route, fallback_occurred=bool(failed_traces))"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "cd65065b609c3de6e2af760e0bc0d7dab487ee28f2b70e3e5377a0de3e569aa5"
  },
  "45f4eab791155bbe": {
   "answer": {
@@ -187,42 +170,26 @@
  "9c900d047ce4eab2": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000214Z-4a47d8",
+   "call_id": "20261002T201753Z-27bc65",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "finding": "No requirement says what a synchronous request must raise when there is no route to attempt. A requirement should say it raises a defined error, e.g. TimeoutError \"No route attempts were available.\", and not a TypeError from `raise None`.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant differs only when no route was attempted at all (last_error is None): it raises TypeError from `raise None` instead of TimeoutError. The requirement only covers the case where every attempted route has failed and its last error is raised, so a request with no routes is outside its scope. Both versions still raise rather than return.",
-   "response_sha256": "4fc17c1c1a75a45a14e78c5651ac2edcdc3889f1434bb91063ffe30a3fe0b549",
+   "reason": "The removed guard only matters when no route was attempted at all, so `last_error` is still None. In that case the original raises TimeoutError(\"No route attempts were available.\") but the mutant runs `raise None`, which gives a TypeError instead. The requirement only covers the case where every attempted route failed and the last route's error is re-raised, so it does not say which error an empty attempt order must raise.",
+   "response_sha256": "409dc0632adba6ff104913924d6c54eb2843e8d7c1433b46e6197ee4d861a6fb",
    "sources": [
     "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
     "if last_error is None:",
     "if False:",
-    "When every eligible synchronous route fails, each is attempted once and the request raises the last route's provider error."
+    "msg = \"No route attempts were available.\""
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "conditional",
-  "prompt_sha256": "ee6e3e5b2bec64b35bbe0fe63153d32cfb4637328fedf80ec42ec88168d48f6b",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T091941Z-406882",
-   "confirmed": false,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "ee6e3e5b2bec64b35bbe0fe63153d32cfb4637328fedf80ec42ec88168d48f6b",
-   "reason": "The mutation only changes the error handling behavior when no routes are available to attempt (the loop executes zero times). The requirement dictates the fallback sequence and error propagation for failed route attempts, but specifies nothing about the case where zero routes are available.",
-   "response_sha256": "43c28301525dd56e97c87be6f8c3e0d415b2ce1779a84c4839d062ee488f0785",
-   "sources": [
-    "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
-    "if last_error is None:",
-    "if False:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "59b5a3be29db537ceaa6665da3d0b6e0a0d7f7a4f23d1c93d8f4acf6575f629c"
  },
  "a83d827c2d26e5f7": {
   "answer": {
@@ -322,80 +289,65 @@
  "bfb51170ab51a102": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T160557Z-6c28e3",
+   "call_id": "20261002T201753Z-222194",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "finding": "No requirement says which error a synchronous request raises when no eligible route is attempted at all. A requirement should say it raises a clear error such as TimeoutError(\"No route attempts were available.\") and not a TypeError from `raise None`.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only differs when no route was attempted at all (last_error is None): it raises TypeError from `raise None` instead of TimeoutError. The requirement covers attempted routes that failed, and the request still fails rather than returning. Nothing here specifies the exception type for the empty-route case.",
-   "response_sha256": "16c44669697f80e6cb5d8b96e22d2fc4d6a5716b6ef179c222f76a92ecb57814",
+   "reason": "This branch only runs when no route was attempted at all, so the requirement's case of every attempted route failing does not apply. Both versions still fail instead of returning, but the original raises TimeoutError(\"No route attempts were available.\") and the mutant ends up running `raise None`, which raises TypeError. A caller could tell these apart, and no requirement says which error is correct.",
+   "response_sha256": "5a8b50a5be7185d635daca1ea6ec4148c704f275faae180c58fe16c38d54a040",
    "sources": [
     "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
     "raise TimeoutError(msg)",
-    "if last_error is None:"
+    "if last_error is None:\n        msg = 'No route attempts were available.'\n        pass"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "statement",
-  "prompt_sha256": "82334e6464ebae4e5b9c0dcee28580c3d5bd86033543a7e922a364ac58221f7e",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260928T195411Z-20034e",
-   "confirmed": false,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "82334e6464ebae4e5b9c0dcee28580c3d5bd86033543a7e922a364ac58221f7e",
-   "reason": "The requirement specifies the fallback behavior and error handling when attempted routes fail, but does not govern the behavior when no routes are available to attempt. Therefore, changing the specific error raised when zero routes are attempted is outside the scope of this requirement.",
-   "response_sha256": "ee777b3fd366a361e536bfae56078db74c48424bcd78d930e85f11ebf6c0e1d5",
-   "sources": [
-    "When every attempted route has failed and no rate-limited route remains to wait for, the request shall fail with the last route's error rather than return without a result.",
-    "if last_error is None:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "9c8a79d334f7de1284992abb9a61a3232b4ba17e4d4ff106031ffc05b95be111"
  },
  "f01210c4280a2513": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T091142Z-cf6700",
+   "call_id": "20261002T201753Z-7d4d74",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The success trace is only built once the `if wait_seconds > 0:` branch has passed without hitting `continue`, so wait_seconds is not positive there. A rate-limit wait is never negative in practice, so it is 0.0, which is also the default the mutant falls back to. Both versions therefore build the same final trace, and the failed \u2192 successful order is unchanged.",
-   "response_sha256": "db5294fbd3351dd1e79ea8e59289431dc52044bb77f13b1b16191ca6a41e365d",
+   "reason": "The success trace is only reached after the `if wait_seconds > 0: ... continue` branch has been skipped, so the wait time there is effectively 0. The default `wait_seconds=0.0` therefore records the same value, and the failed \u2192 successful trace order is unchanged. This assumes `_prepare_request` never returns a negative wait time.",
+   "response_sha256": "cb3c98b7feee1e6bb8f2ab5415672e0274b204de30dce92789ef28bd346af54a",
    "sources": [
-    "if wait_seconds > 0:",
+    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
     "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)",
-    "without `wait_seconds`, the call takes `wait_seconds=0.0`.",
-    "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded."
+    "if wait_seconds > 0:",
+    "without `wait_seconds`, the call takes `wait_seconds=0.0`."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "argument",
-  "prompt_sha256": "3348b3f7b0b95dd30ec1c394fbb9d7ca3f15b881dc83930c062ae34e1843d5ec",
+  "prompt_sha256": "66caac76212224118e75e325f213cc030ab9af9718ed3dd76328a6170eba76ba",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261002T091155Z-b05edb",
+   "call_id": "20261002T201830Z-29342b",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "3348b3f7b0b95dd30ec1c394fbb9d7ca3f15b881dc83930c062ae34e1843d5ec",
-   "reason": "The execution only reaches the successful trace construction if wait_seconds is 0 or less, since any value greater than 0 triggers a continue. Because build_attempt_trace defaults wait_seconds to 0.0, omitting the argument produces an identical trace, making the mutation observationally equivalent.",
-   "response_sha256": "bb8dfc671b5e2cf3d2c51eff0307078e7ef2964f211313d1fa36b953aea65ded",
+   "prompt_sha256": "66caac76212224118e75e325f213cc030ab9af9718ed3dd76328a6170eba76ba",
+   "reason": "Because any route with wait_seconds > 0 is blocked and skipped by the earlier check, wait_seconds is guaranteed to be 0.0 at this point. Omitting wait_seconds causes build_attempt_trace to take its default of 0.0, so the mutant is an equal expression that produces identical results for all inputs.",
+   "response_sha256": "5156ab15ad4b10db429bdeb50f6737f93e7cfdeb68a722c19a89cd3854943247",
    "sources": [
     "A successful result shall expose routing trace entries for both the failed attempt and the route that ultimately succeeded.",
-    "if wait_seconds > 0:",
-    "continue",
-    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)",
-    "wait_seconds: float = 0.0"
+    "wait_seconds=wait_seconds,",
+    "trace = build_attempt_trace(route=route, settings=settings, key_id=request.key.key_id)"
    ],
    "test_focus": "",
    "verdict": "equivalent"

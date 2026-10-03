@@ -2,83 +2,68 @@
  "1d3b41f3104390c6": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085809Z-39abe5",
+   "call_id": "20261002T201413Z-f56929",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Each call creates a fresh pool and submits exactly one task, and ThreadPoolExecutor starts threads only as work arrives. So with or without max_workers=1, exactly one worker thread runs the attempt. Timeout, cancel and shutdown behave the same, so no input can make the timeout or fallback behave differently.",
-   "response_sha256": "b8b915749fd493ac0d695431835d8225eb654391f63431a24529c90c0cf20081",
+   "reason": "A new pool is built for each attempt and only one task is ever submitted to it. ThreadPoolExecutor starts worker threads only as needed, so it starts exactly one thread whether max_workers is 1 or the default. Timeout, cancel and shutdown behave the same, so a caller cannot tell the versions apart.",
+   "response_sha256": "a7fedc5b444020af646ba5f5a57b21c3dfda468c769362fdbe83fb7ab833d0da",
    "sources": [
-    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
     "pool = ThreadPoolExecutor(max_workers=1)",
     "pool = ThreadPoolExecutor()",
-    "future = pool.submit(self._executor.execute, request)"
-   ],
-   "test_focus": "",
-   "verdict": "equivalent"
-  },
-  "operator": "argument",
-  "prompt_sha256": "34729f2efb8754f1f2e61834075d00d8bda7c2fcebaf45df902fb41cf611d03e",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T090939Z-d466a7",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "34729f2efb8754f1f2e61834075d00d8bda7c2fcebaf45df902fb41cf611d03e",
-   "reason": "Because the locally created ThreadPoolExecutor receives exactly one task submission per attempt, leaving max_workers to its default still results in exactly one thread being spawned on demand. The versions are behaviorally indistinguishable as the timeout and execution operate identically.",
-   "response_sha256": "1cd75f8b784b89fc97766a3b5e5c547755a51e59863579e1215115ee5ee8e0ef",
-   "sources": [
-    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-    "pool = ThreadPoolExecutor(max_workers=1)",
-    "pool = ThreadPoolExecutor()"
-   ],
-   "test_focus": "",
-   "verdict": "equivalent"
-  }
- },
- "1d6328ad0f851ffd": {
-  "answer": {
-   "backend": "claude-cli",
-   "call_id": "20260928T160334Z-ecdf17",
-   "confirmed": false,
-   "level": "implementation",
-   "model": "claude-opus-5-5",
-   "problems": [],
-   "reason": "This single-worker pool only ever gets one call. When shutdown runs, that call has either finished, been cancelled already by future.cancel(), or is running, and cancel_futures cannot stop a running call. So the flag never has a queued item to act on, and the timeout, fallback and shutdown behaviour do not change.",
-   "response_sha256": "e8b64ee368036f7c3a5ed292b0b981c2e2c3d44184562d8e5bc343fe5f45b224",
-   "sources": [
-    "pool.shutdown(wait=not timed_out, cancel_futures=False)",
-    "future.cancel()",
+    "future = pool.submit(self._executor.execute, request)",
     "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
-  "operator": "boolean",
-  "prompt_sha256": "10863f918f74b8279fd1c80bf08ad2ebcbaeacf8ae373879039d0e1f2fba0295",
+  "operator": "argument",
+  "prompt_sha256": "793ac612633f10a0d384ffee2b92a475e2ce5e593925e0eb611c530168442582",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260928T195249Z-1be6c9",
+   "call_id": "20261002T201519Z-a406e6",
    "confirmed": false,
+   "effort": "",
+   "finding": "The max_workers=1 argument is meant to limit the executor to a single worker thread, but it does nothing here because only one task is ever submitted before the pool is shut down.",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "10863f918f74b8279fd1c80bf08ad2ebcbaeacf8ae373879039d0e1f2fba0295",
-   "reason": "Modifying the `cancel_futures` flag only changes whether an unstarted task in the background thread pool gets cancelled. The timeout is still raised and waiting stops as specified, while the requirement dictates no rules for background task cancellation.",
-   "response_sha256": "3439172c89dbc3ea86fa6ed37572c06619a8075d63dd13899e906ac8081e03f4",
+   "prompt_sha256": "793ac612633f10a0d384ffee2b92a475e2ce5e593925e0eb611c530168442582",
+   "reason": "Removing max_workers=1 alters the executor's worker limit, but because only a single task is submitted before shutdown, the pool spawns at most one worker thread in either version. The change therefore makes no observable difference to callers and has no effect on execution.",
+   "response_sha256": "1a4c0bc1bba8e54a962056eb15586efcada94198631c229685b15eff186fc83a",
    "sources": [
     "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
-    "pool.shutdown(wait=not timed_out, cancel_futures=False)"
+    "pool = ThreadPoolExecutor(max_workers=1)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "ineffective"
   }
+ },
+ "1d6328ad0f851ffd": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T201412Z-825c62",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "`cancel_futures=True` is meant to cancel queued work when the pool shuts down. But the single submitted future is always already done, already running or already cancelled by `future.cancel()`, so this flag cannot change anything a caller sees.",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The pool only ever holds one future. When the attempt times out, `future.cancel()` has already cancelled that future if it was still pending, and a running future cannot be cancelled at all. On every other path the future has already finished before `shutdown` runs, so `cancel_futures` never has anything left to cancel.",
+   "response_sha256": "7359f5e3a8aa8eb94e93c3bc19d46f50219561ac9b0223825cc3cb9c3b2cc0b6",
+   "sources": [
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "future.cancel()",
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains."
+   ],
+   "test_focus": "",
+   "verdict": "ineffective"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "2d65842cc602825aab749bb965f615ea5b8c0a9ee27be19a3d9fb7ffe2edc8ca"
  },
  "3ccbc7c7990f5f22": {
   "answer": {
@@ -136,40 +121,46 @@
  "47c27bae6c554d3e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T234941Z-76b75f",
+   "call_id": "20261002T201412Z-ecd10c",
    "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "With timeout_seconds None, the mutant runs the executor in a thread pool and waits via future.result(timeout=None), which blocks until done and returns the same response or re-raises the same exception. The remaining differences (a worker thread instead of the caller's thread, and rewording a TimeoutError the executor raises itself) are outside what the timeout-fallback requirement asks, which only covers attempts that have a timeout.",
-   "response_sha256": "6a633798a603ac4113819666bd3e6652ae9f12a9305a7ac0b330420d50a1f3d1",
+   "reason": "When timeout_seconds is None, the mutant runs the attempt through the thread pool, and future.result(timeout=None) blocks until it finishes. It returns the same response or re-raises the same exception, and shutdown(wait=True) frees the worker, so no caller-visible outcome changes. The timeout and fallback behaviour the requirement names only applies when a timeout is set and is unchanged; the removed branch only avoids creating a thread.",
+   "response_sha256": "6cbf77b923cb5683454a2be13a2d61c946066f13fc9d7a1f7ad6f9808d8ba92c",
    "sources": [
     "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-    "if timeout_seconds is None:\n            return self._executor.execute(request)",
-    "if False:"
+    "if timeout_seconds is None:",
+    "            return self._executor.execute(request)",
+    "    if False:",
+    "        return future.result(timeout=timeout_seconds)"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   },
   "operator": "conditional",
-  "prompt_sha256": "8960463d61dbc5c02bc29be2d267c1229a85b6363ef1333d04502777e6c1d254",
+  "prompt_sha256": "323c59b9b8c50f6eecb5152b4faa4df9e375a3989265f0be0284da1c830f0cc4",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260929T085911Z-c7cf01",
+   "call_id": "20261002T201533Z-e11a58",
    "confirmed": false,
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "effort": "",
+   "finding": "Executing untimed sync requests in a dedicated thread pool rather than directly on the calling thread introduces thread resource allocation and overhead that no requirement settles, whereas a requirement would specify whether requests without a timeout must execute directly on the caller thread.",
+   "level": "requirement",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "8960463d61dbc5c02bc29be2d267c1229a85b6363ef1333d04502777e6c1d254",
-   "reason": "The change forces the use of a thread pool even when no timeout is configured by bypassing the `timeout_seconds is None` check. This modifies an internal execution optimization but does not affect the required behavior for timed-out attempts or fallbacks.",
-   "response_sha256": "a3dfb2e39ff2e7e345523e0073240c5d554fdac884f6de5469b6786cd2dc3fe8",
+   "prompt_sha256": "323c59b9b8c50f6eecb5152b4faa4df9e375a3989265f0be0284da1c830f0cc4",
+   "reason": "When timeout_seconds is None, replacing the check with False forces sync execution through a newly created ThreadPoolExecutor instead of running directly on the calling thread. Although the returned response is the same, this alters thread resource usage and execution cost for untimed requests without violating any requirement.",
+   "response_sha256": "c791b2b4c54aa2bf43d11d58004111823a944ff15e5943195252cafb2ebd29c9",
    "sources": [
     "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
     "if timeout_seconds is None:",
     "if False:"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   }
  },
  "9587fa3b6bf28237": {
@@ -402,6 +393,72 @@
   },
   "prompt_sha256": "4fe211ab006283ebed9fb7b58d14d2124cc15b94fc79d6c7bfe4ce4dd34b2386"
  },
+ "SM-B1F1B760": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T230522Z-9a764f",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only moves left.set() after pool.shutdown(wait=False) in the finally block. That shutdown neither blocks nor cancels the running attempt, so on timeout the left attempt is still signalled before TimeoutError reaches the caller. Fallback and timeout behaviour is unchanged.",
+   "response_sha256": "908536395f3bee200b0c610663126cb57e6c2720fb35a26c6d20f30cf0193477",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "            left.set()",
+    "            pool.shutdown(wait=not timed_out)",
+    "            if timed_out:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  },
+  "operator": "semantic",
+  "prompt_sha256": "dd9641cf56bd174ea70ce89692741a4b474255dafd28aa82c5a370f415590e3c",
+  "rechecks": {
+   "verdict_review": {
+    "asked_at": "2026-10-02T23:16:34.367808Z",
+    "backend": "antigravity-cli",
+    "call_id": "20261002T231535Z-1b68e7",
+    "confirmed": false,
+    "effort": "",
+    "finding": "",
+    "level": "implementation",
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "prompt_sha256": "dd9641cf56bd174ea70ce89692741a4b474255dafd28aa82c5a370f415590e3c",
+    "reason": "Moving left.set() to the finally block after pool.shutdown only changes the order of internal cleanup steps during a timeout. Both actions still execute before TimeoutError is raised to the caller, producing no observable difference.",
+    "response_sha256": "951580636fb774f48787d9c50cec9b93da82c910ce2e3b2609df69315cb7ceb1",
+    "sources": [
+     "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+     "            if timed_out:",
+     "                left.set()"
+    ],
+    "test_focus": "",
+    "verdict": "irrelevant"
+   }
+  },
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261002T230541Z-3e6e23",
+   "confirmed": false,
+   "effort": "",
+   "finding": "",
+   "level": "implementation",
+   "model": "gemini-3.8-flash-high",
+   "problems": [],
+   "prompt_sha256": "dd9641cf56bd174ea70ce89692741a4b474255dafd28aa82c5a370f415590e3c",
+   "reason": "Moving left.set() to the finally block after pool.shutdown only alters the order of internal cleanup steps during a timeout. In both versions, the thread pool is shut down non-blocking and the cancellation event is set before TimeoutError propagates to the caller.",
+   "response_sha256": "f526c3cfdff860096af9bcea2afd64520a6f605882e1775921d56e2a1c02b856",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "left.set()"
+   ],
+   "test_focus": "",
+   "verdict": "irrelevant"
+  }
+ },
  "SM-BD2A25D9": {
   "answer": {
    "backend": "claude-cli",
@@ -486,45 +543,26 @@
  "a8d0a937c7bbe96f": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085806Z-484130",
+   "call_id": "20261002T201413Z-d73ba6",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "`cancel_futures=True` is meant to cancel queued work at shutdown. Here the single-worker pool holds only one future, and `future.cancel()` has already handled it if it was still pending, so the flag never has anything to act on.",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The pool has one worker and only one future is submitted. When shutdown runs, that future is either finished (success or route error) or already cancelled by future.cancel() or running (timeout), so the queue has nothing left for cancel_futures to cancel. Timeout, fallback and success behave the same either way; only an interrupt such as Ctrl+C before the task starts would differ, and the requirement does not cover that.",
-   "response_sha256": "d6f7d8134e2b0daba7dff25d880bb57385478a922b109836fff5057ef34700c2",
+   "reason": "The pool only ever gets one submitted future. When shutdown runs, that future has already finished, is running and cannot be cancelled, or was cancelled by `future.cancel()` on timeout. So `cancel_futures=True` has no queued work to cancel, and timeout and fallback behaviour stays the same.",
+   "response_sha256": "eadaf5e48c3c64951f9011b8ba39a3190b29fbde97abb24c3c291356719b0752",
    "sources": [
-    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
     "pool.shutdown(wait=not timed_out, cancel_futures=True)",
-    "pool.shutdown(wait=not timed_out)",
+    "future = pool.submit(self._executor.execute, request)",
     "future.cancel()",
-    "pool = ThreadPoolExecutor(max_workers=1)"
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains."
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "ineffective"
   },
   "operator": "argument",
-  "prompt_sha256": "5ed9ad7d3918617d72bd84109ec12fa6ea7dfbc958d78a03706487a07a324869",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T090957Z-c2f248",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "5ed9ad7d3918617d72bd84109ec12fa6ea7dfbc958d78a03706487a07a324869",
-   "reason": "The explicit `future.cancel()` call inside the timeout exception handler already cancels the single future submitted to the thread pool. Because only one task is ever submitted, `cancel_futures=True` in `pool.shutdown` is redundant, leaving the observable behavior identical in all cases.",
-   "response_sha256": "80af8c304a66cd85990078c643d9b81d1dd2963a6fec310f33aea61b8625de24",
-   "sources": [
-    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-    "future.cancel()",
-    "pool.shutdown(wait=not timed_out)"
-   ],
-   "test_focus": "",
-   "verdict": "equivalent"
-  }
+  "prompt_sha256": "e6a68da3267a8c15d9e200a4431360fe52885bad364301916f61ec0ad9496534"
  },
  "ac82539c9e31aa00": {
   "answer": {
@@ -568,41 +606,25 @@
  "b39c78844ce0f60e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T160334Z-ab076f",
+   "call_id": "20261002T201413Z-ff7e6f",
    "confirmed": false,
+   "effort": "xhigh",
+   "finding": "future.cancel() is meant to stop the timed-out attempt, but here the attempt is already running, so cancel() cannot stop it. A still-queued attempt is cancelled by pool.shutdown(cancel_futures=True) anyway, so the line does nothing.",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Once the timeout fires, the future is normally already running on the single worker, so future.cancel() does nothing. If the call hasn't started yet, pool.shutdown(cancel_futures=True) in the finally block cancels the queued work anyway. Either way the TimeoutError is raised straight away, so waiting, fallback and the terminal timeout all behave the same.",
-   "response_sha256": "e7da326d3a50ee7902654f1791647ea912d072da4b076d6d0697f900a21311ee",
+   "reason": "When the timeout fires, the worker is normally already running the executor call. Future.cancel() cannot stop a running future, so the call keeps going either way and the caller still gets the TimeoutError. If the attempt were still queued, shutdown(cancel_futures=True) in the finally block would cancel it anyway, so removing cancel() makes no visible difference to route fallback or the timeout error.",
+   "response_sha256": "2ffae3a72ecf933bb8017b6c4c8aacee180428db9fb989d03e2241cc1e7e5e7e",
    "sources": [
-    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-    "            future.cancel()",
-    "            pool.shutdown(wait=not timed_out, cancel_futures=True)"
+    "future.cancel()",
+    "pool.shutdown(wait=not timed_out, cancel_futures=True)",
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains."
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "ineffective"
   },
   "operator": "statement",
-  "prompt_sha256": "d69304c2141d1fbf22068fb8c92d075808925421aa05faf3cf7d09414e18c0a9",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260928T195249Z-6fd8da",
-   "confirmed": false,
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "d69304c2141d1fbf22068fb8c92d075808925421aa05faf3cf7d09414e18c0a9",
-   "reason": "Removing future.cancel() does not change behavior because thread pool futures already executing cannot be cancelled, and the finally block already guarantees pending tasks are cancelled via pool.shutdown(..., cancel_futures=True).",
-   "response_sha256": "ae79ee285a46270770099b87e49b88abedf96c3b5fa82e6c46abfc665cf11bdb",
-   "sources": [
-    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-    "future.cancel()",
-    "pool.shutdown(wait=not timed_out, cancel_futures=True)"
-   ],
-   "test_focus": "",
-   "verdict": "equivalent"
-  }
+  "prompt_sha256": "9e28b303d65b63b45f1843070af74d17bfb74b8312a42fa3bcb85a540f02b86c"
  },
  "b9accd29af1a644f": {
   "answer": {
@@ -674,40 +696,45 @@
  "f793def41400b418": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T160557Z-09d333",
+   "call_id": "20261002T201413Z-0264e2",
    "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The only difference is the starting value of timed_out, which matters only when the attempt does not time out. By then future.result() has finished, so shutting down without waiting just skips joining an idle worker thread. The returned response, the raised errors, the timeout and the fallback all behave the same.",
-   "response_sha256": "c8998424282e1c6968a053d651f0ab2bd3b1a586378b3873faca704b646a4536",
+   "reason": "On the timeout path both versions set timed_out = True. On every path that is not a timeout, future.result has already returned or raised, so the attempt is finished. Calling shutdown(wait=False) there only skips joining a worker thread that is already exiting, so the result, the error and the fallback behaviour stay the same.",
+   "response_sha256": "cbd8fd9924b4f2b1e3af507b8d2dc989f4f8725a4ca95edeeab0af841633934d",
    "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
     "timed_out = True",
     "pool.shutdown(wait=not timed_out, cancel_futures=True)",
-    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains."
+    "return future.result(timeout=timeout_seconds)"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "boolean",
-  "prompt_sha256": "ed70f936d75dd34828146ecbf7676ddf0c063c6d74dcf2eda012498a1decdbca",
+  "prompt_sha256": "609c4b7da132ecfaa44bb520e7d8c191140759048ce104f31ad4061ae5f0a02e",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260928T195249Z-f03b67",
+   "call_id": "20261002T201533Z-f76a2b",
    "confirmed": false,
+   "effort": "",
+   "finding": "The initialization timed_out = False is meant to ensure that pool.shutdown waits for worker thread completion on non-timed-out attempts, but it does nothing here because the executor attempt has already finished executing before shutdown is called.",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "ed70f936d75dd34828146ecbf7676ddf0c063c6d74dcf2eda012498a1decdbca",
-   "reason": "Setting `timed_out = True` initially means `pool.shutdown` is always called with `wait=False`. On a timeout, both versions execute this exactly the same way; on success or failure, the non-blocking shutdown is unobservable because the worker thread has already completed its task, making the versions indistinguishable to the caller.",
-   "response_sha256": "f148a8354a20ad887b5631351a29b833cd6ffc06a3ff382a50d8548364b18d00",
+   "prompt_sha256": "609c4b7da132ecfaa44bb520e7d8c191140759048ce104f31ad4061ae5f0a02e",
+   "reason": "The mutant initializes timed_out to True, causing pool.shutdown to run with wait=False rather than wait=True on successful attempts. Because future.result() has already returned and the executor task has completed, skipping the thread join makes no difference that a caller of the public API can see.",
+   "response_sha256": "b001ad4d33b597642192fb214b1b35a3694d6d8564adacc37c6151841ac3da8d",
    "sources": [
-    "Requirement REQ_ROUTE_TIMEOUT_FALLBACK (Route timeout fallback): An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
-    "timed_out = True",
-    "pool.shutdown(wait=not timed_out, cancel_futures=True)"
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "        timed_out = False",
+    "    timed_out = True"
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "ineffective"
   }
  }
 }

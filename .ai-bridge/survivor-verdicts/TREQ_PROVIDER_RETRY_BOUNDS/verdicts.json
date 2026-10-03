@@ -385,45 +385,27 @@
  "5ecf3277f62095b3": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085923Z-3bfc65",
+   "call_id": "20261002T201753Z-c956b8",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether each scheduled same-route retry must be reported. One should say that every retry emits the retry.scheduled event with its context and passes the retry state to the caller's state_sink before the wait.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only removes the before_sleep hook, which logs and records state. It keeps the same stop_after_attempt(policy.max_attempts), the same wait_random_exponential min/max and the same retryable-error predicate, so the attempt count, the wait bounds and which failures get retried stay the same. Retry logging is outside what these requirements and criteria ask for.",
-   "response_sha256": "b008ea1d85860e618c565349032d3682921b96df0285b2b832f525142659cf56",
+   "reason": "Dropping before_sleep does not change the attempt count, the waits, or which errors are retried, so the bounds requirement still holds. What changes is that no \"llm_router.provider.retry.scheduled\" event is logged and a caller-supplied state_sink is never called before a retry. A caller can observe that, and no requirement says whether it must happen.",
+   "response_sha256": "744c1d5306eb7a7b0584c187bed2a686c8030cd3310c841efe3f542a902712e7",
    "sources": [
-    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
-    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
     "before_sleep=build_retry_before_sleep_logger(",
-    "return AsyncRetrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), reraise=True)"
+    "event_type=\"llm_router.provider.retry.scheduled\",",
+    "state_sink=state_sink,",
+    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "argument",
-  "prompt_sha256": "097dfc385ef5349286de95e99eedd7108b22a0f625752048ee56cf89dd8189aa",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T091155Z-cb1569",
-   "confirmed": true,
-   "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "097dfc385ef5349286de95e99eedd7108b22a0f625752048ee56cf89dd8189aa",
-   "reason": "The mutation removes the before_sleep hook used for logging retries, but the specified requirements focus exclusively on attempt bounds and wait intervals, making the change irrelevant to what the requirement asks for.",
-   "response_sha256": "5d3d59ca5d94c14ab95093c52b621a425e35c2d6fffa874c2c360f58026d9614",
-   "sources": [
-    "Sync and async exhausted retry each perform exactly the configured maximum attempt count and never one interaction beyond.",
-    "Sync and async retry each wait at least the configured minimum and no longer than the configured maximum retry wait.",
-    "before_sleep=build_retry_before_sleep_logger("
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "a4fb99bd7b40f1a9221f971e5a234b4e1f3e02614e15243efa91dcb00caf8dbd"
  },
  "621cfe26a9c437b8": {
   "answer": {
@@ -587,45 +569,27 @@
  "95c295ed20ab677a": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085923Z-7459fe",
+   "call_id": "20261002T201753Z-70e892",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says that each scheduled same-route retry must log a `retry.scheduled` event and send its retry state to `state_sink`. An observability requirement should say that every retry wait is reported, with its attempt number and wait.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only drops the before_sleep callback, which logs the retry-scheduled event and feeds state_sink. The stop rule, the wait bounds and the retry predicate stay the same, so the attempt count, the wait durations and which failures are retried do not change. The requirement only asks about retry eligibility and bounds, not logging or observability.",
-   "response_sha256": "d3c59f9e77d3ab9f41f8b28fc6664415d946abb1a6bc3ceccfbed5f9f75ce2d9",
+   "reason": "Dropping `before_sleep` does not change the attempt count, which exceptions are retried, or the wait bounds, so TREQ_PROVIDER_RETRY_BOUNDS still holds. What changes is something callers and operators can see: the `llm_router.provider.retry.scheduled` event is no longer emitted and `state_sink` never gets the retry state. No requirement shown here says either must happen.",
+   "response_sha256": "ba921e123447bb591902aea158cb21503c69c885b99aed68dcca4558db130587",
    "sources": [
-    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing.",
-    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
+    "provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing",
+    "every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait",
     "before_sleep=build_retry_before_sleep_logger(",
-    "return Retrying(stop=stop_after_attempt(policy.max_attempts), wait=wait_random_exponential(min=policy.min_wait_seconds, max=policy.max_wait_seconds), retry=retry_if_exception(is_retryable_provider_error), reraise=True)"
+    "event_type=\"llm_router.provider.retry.scheduled\",",
+    "state_sink=state_sink,"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "argument",
-  "prompt_sha256": "6aaf50b3c70758d43a6c33024b3652ad8974b0e8459da964d0b3b0d3a16a32b1",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T091155Z-de7b14",
-   "confirmed": true,
-   "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "6aaf50b3c70758d43a6c33024b3652ad8974b0e8459da964d0b3b0d3a16a32b1",
-   "reason": "The mutation removes the before_sleep logging callback from the retry policy configuration, but the provided requirements only mandate retry eligibility, attempt bounds, and wait durations without specifying any logging behavior.",
-   "response_sha256": "da603d300e9d4a491a3228587d07466b4a5dfabb5eb13b81347bdd664bccadda",
-   "sources": [
-    "Temporary provider failures shall be eligible for retry, while permanent failures shall not be retried as if they were transient.",
-    "For one resolved provider route, provider execution shall perform no more than the configured retry maximum-attempt count before surfacing the final failure to routing. The initial provider call counts as attempt one, and every wait before a retry shall last at least the configured minimum retry wait and no longer than the configured maximum retry wait.",
-    "        before_sleep=build_retry_before_sleep_logger("
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "0ee42b9a822e0816e8853b755cc94d45176a60ee560e6641e5e8dc0a69560b90"
  },
  "983ba1af56c61839": {
   "answer": {

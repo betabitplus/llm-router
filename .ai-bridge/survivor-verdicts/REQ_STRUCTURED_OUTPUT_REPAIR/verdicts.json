@@ -2,14 +2,15 @@
  "41a277a968c393aa": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195735Z-4ec30a",
+   "call_id": "20261002T201412Z-0a25a6",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only drops the \"Validation failed.\" fallback text used in the repair message when error_message is falsy. Attempt counting, the check against the limit and where repair stops are unchanged, so the bounded-repair requirement and its budget-2 criterion behave the same. Any difference is limited to repair-message wording, which no requirement asks for.",
-   "response_sha256": "e3f7cbbc69637dfed90800d9efe80095f1ff15ad61caf8f8d23c442f5cbf269b",
+   "reason": "The mutant changes only the error text placed in the repair message (no \"Validation failed.\" fallback when the validator gives no message). The attempt counting and the finite stop at `structured_output_max_attempts` are unchanged, so the bounded-repair behaviour the requirement asks for stays the same.",
+   "response_sha256": "8644a843b62bd4e7ba1655daf5984ab05103bf13676e5283687c098914b5336b",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "error_message = validated.error_message or \"Validation failed.\"",
@@ -20,67 +21,52 @@
    "verdict": "irrelevant"
   },
   "operator": "condition",
-  "prompt_sha256": "3d40f3f8e01ed6be42fd79766729cb121337791fc987f27c31d837fa378a6711",
+  "prompt_sha256": "223b551f7a4b9391b4bbb3c7f76bc9bad23ccecbcc796ac8d8f6821b067e0618",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195813Z-2f9858",
+   "call_id": "20261002T201533Z-99a455",
    "confirmed": false,
    "effort": "",
+   "finding": "The fallback string is meant to provide a default error message when validation fails without one, but it does nothing here because validation failure always produces a non-empty error message.",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "3d40f3f8e01ed6be42fd79766729cb121337791fc987f27c31d837fa378a6711",
-   "reason": "The fallback error message is unreachable dead code because validation failures always return a truthy error message, meaning both versions behave identically on all inputs.",
-   "response_sha256": "ac58c0d55cdb1da9d32df2322f00f275b5cf45d0832f76e579680e2c0dc71f27",
+   "prompt_sha256": "223b551f7a4b9391b4bbb3c7f76bc9bad23ccecbcc796ac8d8f6821b067e0618",
+   "reason": "The mutant removes the fallback default error message, but this fallback is unreachable dead code because structured output validation always populates a non-empty error message on failure. Consequently, the change produces no observable difference for any caller.",
+   "response_sha256": "0e084e40075d88b786f85485325f332dcef78f6326fff852960e4fa816e1a81d",
    "sources": [
-    "Requirement REQ_STRUCTURED_OUTPUT_REPAIR (Structured output repair is bounded): Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
-    "error_message = validated.error_message or \"Validation failed.\"",
-    "error_message = validated.error_message"
+    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
+    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
+    "    error_message = validated.error_message or \"Validation failed.\"",
+    "    error_message = validated.error_message"
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "ineffective"
   }
  },
  "43eb66a1bd8232c0": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085809Z-99fce8",
+   "call_id": "20261002T201413Z-ffbccd",
    "confirmed": true,
    "effort": "xhigh",
+   "finding": "No requirement says whether a repair request must carry the plan's schema, for example after tool rounds. A requirement should say that every repair request sends plan.schema as its structured-output constraint, with tools turned off.",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only skips resetting the loop state's schema to plan.schema on a repair turn. The repair message still carries plan.schema, and the attempt count and finite stop are unchanged, so bounded repair and the budget-2 criterion behave the same. The difference is real but lies in a state field this requirement doesn't ask about.",
-   "response_sha256": "665e606964ffaefb2f9b808da5e063b492de23f9628320d0733a63686cae2f25",
+   "reason": "The mutant still bounds repairs and checks each response against plan.schema, so the \"budget 2\" criterion holds. What changes is that the repair state keeps its old schema instead of plan.schema, so the next provider request may carry the wrong schema or none. No requirement says what schema a repair request must carry.",
+   "response_sha256": "a0fd6f836fa340c92ce833560755e07755ddde6b80727050bfd966cc756e4174",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
     "            schema=plan.schema,",
-    "    if next_attempts >= config.structured_output_max_attempts:"
+    "return _ResultStep(state=replace(state, messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message), tool_registry=None, tool_choice=None, structured_attempts=next_attempts))"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "argument",
-  "prompt_sha256": "2814851fdb281d6bd0b329df29b0f0ac655f9b250f245b81eb8378361c0de8bf",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T090957Z-09c602",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "2814851fdb281d6bd0b329df29b0f0ac655f9b250f245b81eb8378361c0de8bf",
-   "reason": "The requirement bounds repair attempts and ensures successful recovery, but it does not specify that the internal loop state must continuously copy the static schema from the execution plan. Both versions successfully use the plan's schema to construct the repair message, making the omission of the schema update in the state object an internal implementation difference that does not affect any requirement.",
-   "response_sha256": "96038a655a004a9753aa77a559562439470ecbbf5ae363c405fab159f305a7c6",
-   "sources": [
-    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
-    "schema=plan.schema,"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "682f021bb8483eb07c9f0154be132a9557ba6ca255cdeb8233ccd8d906f478a5"
  },
  "63b7393727f5c29f": {
   "answer": {
@@ -217,85 +203,48 @@
  "7d7bccdbf94b90fa": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085809Z-74972c",
+   "call_id": "20261002T201409Z-e400a6",
    "confirmed": true,
    "effort": "xhigh",
+   "finding": "No requirement says whether tools stay available while invalid structured output is being repaired. A requirement would need to state that repair requests send no tool registry or tool choice, so no tool can run during repair.",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only stops clearing tool_registry in the repair state, so the repair turn keeps its tools. The attempt count, the stop at structured_output_max_attempts and success on the last allowed response are all unchanged. The requirement asks only that repair stops at the configured limit, not that repair turns run without tools, so the difference is outside what it observes.",
-   "response_sha256": "ceb3645b4ec2e8bb7552104fff86f8f86de6105a3cb67313218127fee7bdc913",
+   "reason": "The mutant keeps the tool registry on the repair request, so the provider can still be offered tools and a tool may run during repair. The attempt count and the limit check are unchanged, so repair still stops at the configured limit. No requirement says whether a repair request must drop the tools.",
+   "response_sha256": "ecbaac36c0db8013ba4f462da3b30ccaabe90d6b2d83b87bba0d4737e4c8648d",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
-    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
-    "            tool_registry=None,",
-    "    if next_attempts >= config.structured_output_max_attempts:"
+    "tool_registry=None,",
+    "return _ResultStep(state=replace(state, messages=append_repair_message(state.messages, request=provider_request, schema=plan.schema, result=result, error_message=error_message), schema=plan.schema, tool_choice=None, structured_attempts=next_attempts))"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "argument",
-  "prompt_sha256": "f04b41406758984bfe452d9a54032333c80f6b6035ad8ac519da4ca74c1a9da3",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T090957Z-ee1b07",
-   "confirmed": true,
-   "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "f04b41406758984bfe452d9a54032333c80f6b6035ad8ac519da4ca74c1a9da3",
-   "reason": "The requirement specifies that structured output repair attempts must stop at a finite limit, but it does not mandate whether the tool registry must be disabled during those attempts. The change only affects the clearing of the tool registry and does not alter the attempt counting or bounding logic.",
-   "response_sha256": "54ebc5ef0b4c2a19da82266ab8a9fa1e54fa2ce36782986805257be37834f75b",
-   "sources": [
-    "Requirement REQ_STRUCTURED_OUTPUT_REPAIR (Structured output repair is bounded): Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
-    "tool_registry=None,"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "9382b466e89ca01a62c309c2131c950a0b55fb64108818b3f62120ae9bd2c00f"
  },
  "868533cd04ee427f": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195735Z-7d4900",
+   "call_id": "20261002T201413Z-252646",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "The repair prompt drops the validator's specific error detail and sends a generic 'Validation failed.'. A requirement would say that each repair request includes the validation error reported for the previous invalid output.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes the text passed to the repair prompt: a fixed 'Validation failed.' replaces the validator's error message. The attempt count and the stop at the configured limit are unchanged. The requirement asks only that repair be bounded, not what the repair message says.",
-   "response_sha256": "75222e982d3fe40266313fa720a17c666dea79556dd4292f07b35b0baa33c322",
+   "reason": "The attempt bound is untouched, so the requirement's limit still holds and the criterion still passes. But the repair request sent to the provider no longer includes the validator's specific error, and no requirement says what a repair message must contain.",
+   "response_sha256": "ff2e80b1b88e36708c24fc510f40d73b4afc7ee3ccbe2dd8463e12088b157b41",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
-    "With total attempt budget 2, an invalid first response followed by valid output succeeds on the final allowed response.",
     "error_message = validated.error_message or \"Validation failed.\"",
     "error_message = 'Validation failed.'"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "condition",
-  "prompt_sha256": "b8b6c8fa5ddba19307d998698179aee7daf7dea62eb517965b31cf08c9f57f5c",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T195813Z-06199e",
-   "confirmed": false,
-   "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "b8b6c8fa5ddba19307d998698179aee7daf7dea62eb517965b31cf08c9f57f5c",
-   "reason": "The requirement mandates that structured output repair attempts must stop at a finite limit, but it does not specify the exact content of the error messages used during those attempts. Replacing the specific validation error message with a generic one does not violate the attempt bounding rules.",
-   "response_sha256": "00c6835effc426c43518ae7a1db50ddd510ea72c0d25475d1cc6c6817f272b46",
-   "sources": [
-    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
-    "error_message = validated.error_message or \"Validation failed.\"",
-    "error_message = 'Validation failed.'"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "233ceeb08e053cfac523a62b2ee0d38bc18a2000986cad4bbc5bd313fd2b9cf0"
  },
  "8d730e921a4ddffa": {
   "answer": {
@@ -363,44 +312,25 @@
  "9a81553c4311e34e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195735Z-1c65d9",
+   "call_id": "20261002T201409Z-057f9a",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "Nothing settles whether the repair message must carry the validator's actual error to the model. A requirement would say the repair prompt includes validated.error_message, or 'Validation failed.' when there is none.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only the error text passed to append_repair_message: a specific validation error becomes the generic 'Validation failed.', and an empty one becomes falsy. Attempt counting, the stop at structured_output_max_attempts and the repair/raise decisions are unchanged, and no requirement asks what the repair message says.",
-   "response_sha256": "830aedfc7a82180c154a34e7417e00184045e6b939e004a481c60d0b0913c28c",
-   "sources": [
-    "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
-    "error_message = validated.error_message and 'Validation failed.'",
-    "error_message = validated.error_message or \"Validation failed.\"",
-    "if next_attempts >= config.structured_output_max_attempts:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  },
-  "operator": "boolean",
-  "prompt_sha256": "2d8635c1a9eb0ab201375ab60a56bcc45965b3157309a433c5990f54d9753052",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T195813Z-3a7182",
-   "confirmed": false,
-   "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "2d8635c1a9eb0ab201375ab60a56bcc45965b3157309a433c5990f54d9753052",
-   "reason": "The change alters the exact text of the error message passed to the repair prompt. However, the requirement only specifies that repair attempts must occur and be bounded by a limit, without dictating the content of the repair messages.",
-   "response_sha256": "142752decd3a278add7e3e0c8857de9745eaa7e9a017beacf76b50fea7cc9313",
+   "reason": "The mutant leaves the attempt count and limit check alone, so repair still stops at the configured limit. What changes is the repair request sent to the provider: a real validator error is replaced by the generic 'Validation failed.', and a missing error becomes None or '' instead of the fallback. No requirement says what the repair feedback must contain.",
+   "response_sha256": "986ea781cb712b3a450e65dc3b94864f410f9ac1d499e0e3987501bfdeb8da7e",
    "sources": [
     "Invalid structured output may be repaired, but repair attempts shall stop at the configured finite limit.",
     "error_message = validated.error_message or \"Validation failed.\"",
     "error_message = validated.error_message and 'Validation failed.'"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
-  }
+   "verdict": "unspecified"
+  },
+  "operator": "boolean",
+  "prompt_sha256": "89850c38ce35e8eaa4faf9c4caa8679a2dba2bec841a6ef598689b6de9694c7f"
  },
  "SM-12FA1E31": {
   "answer": {

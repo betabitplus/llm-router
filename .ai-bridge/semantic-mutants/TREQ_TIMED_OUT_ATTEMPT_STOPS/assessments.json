@@ -1,0 +1,118 @@
+{
+ "SM-5BEF46E5": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='1', provider=Provider.GOOGLE, model=Model.GEMINI_FLASH, provider_model='m', credential=ProviderCredential(key_id=1, env_var='E', value='v'), messages=())",
+     "self_adapter": "None",
+     "self_left": "[e := threading.Event(), e.set(), e][-1]"
+    },
+    "backend": "antigravity-cli",
+    "call_id": "20261002T212714Z-bb5379",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "The original version checks whether the attempt was left by evaluating the threading event and raises AttemptLeftError if it is, whereas the changed version skips this check and executes the adapter unconditionally, allowing an external request to proceed despite a timeout.",
+    "response_sha256": "323ca58d23400da418fca57d16b6e5b1c16e8e53637ca8e637dc376c5ef21b63",
+    "sources": [
+     "        \"\"\"Start the request only while the attempt is not left.\"\"\"",
+     "        _stop_if_left(self._left)",
+     "        return self._adapter.execute(request)"
+    ],
+    "verdict": "distinct"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261002T212714Z-3d6e4f",
+    "confidence": 0.85,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Both versions raise AttributeError on every input built from the allowed types, as no allowed object implements the execute method of ProviderAdapter or provides a set event for _stop_if_left to raise AttemptLeftError.",
+    "response_sha256": "34fc5d90280e9cf50913e62dd47b5a2492b342b61ca210080ea4de683e172d5a",
+    "sources": [
+     "        _stop_if_left(self._left)",
+     "        return self._adapter.execute(request)"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "any valid ProviderRequest, e.g. ProviderRequest(request_id='r', provider=Provider.GROQ, model=Model.LLAMA_8B, provider_model='m', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=())",
+     "self_adapter": "any ProviderAdapter whose execute records calls or returns a ProviderResult",
+     "self_left": "(lambda e: (e.set(), e)[1])(threading.Event())"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261002T212714Z-5f2d1d",
+    "confidence": 0.93,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With the left event set, the original raises AttemptLeftError before calling the adapter, while the changed version calls the adapter and returns its result.",
+    "response_sha256": "5e2f8c2155c433de9c03b777a03bf8e3ba70ed95115fed6377e3eb27d394eb96",
+    "sources": [
+     "_stop_if_left(self._left)",
+     "return self._adapter.execute(request)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "ad4a295cfeba1c795e85ae731cf1c46a0327dc5d5ec5621ea294d2a6a70974cd"
+ },
+ "SM-5E109C65": {
+  "answers": {
+   "antigravity-cli:gemini-3.1-pro-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261002T212710Z-91a28f",
+    "confidence": 1,
+    "model": "gemini-3.1-pro-high",
+    "problems": [],
+    "reason": "Although the changed version inappropriately triggers the adapter's external interaction when the attempt is left, both versions ultimately raise AttemptLeftError or return the same result, leaving the return value, object state, and exception type identical.",
+    "response_sha256": "b78e88b5bde74b68cad9f963cbc90944127a2d973bb169e743d8e96595da5ace",
+    "sources": [
+     "        result = self._adapter.execute(request)",
+     "        _stop_if_left(self._left)",
+     "        return result"
+    ],
+    "verdict": "equivalent"
+   },
+   "antigravity-cli:gemini-3.8-flash-high": {
+    "arguments": {},
+    "backend": "antigravity-cli",
+    "call_id": "20261002T212710Z-24ad32",
+    "confidence": 0.95,
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "reason": "Under the specified definition of behaviour, both versions return the same result, maintain identical object state, and raise identical exceptions because any constructible threading.Event is unset, making _stop_if_left a no-op.",
+    "response_sha256": "bdbc79689cc858f490f94667c9adaceac2c3c885fa32ecfa7a04d9d2235b2271",
+    "sources": [
+     "        _stop_if_left(self._left)",
+     "        return self._adapter.execute(request)",
+     "        result = self._adapter.execute(request)",
+     "        return result"
+    ],
+    "verdict": "equivalent"
+   },
+   "claude-cli:claude-sonnet-5-5@low": {
+    "arguments": {
+     "request": "ProviderRequest(request_id='r', provider=Provider.GROQ, model=Model.LLAMA_8B, provider_model='m', credential=ProviderCredential(key_id=1, env_var='K', value='v'), messages=())",
+     "self_adapter": "a ProviderAdapter whose execute records the call and returns a ProviderResult (any stub adapter that counts calls)",
+     "self_left": "threading.Event() that has been set (left.set())"
+    },
+    "backend": "claude-cli",
+    "call_id": "20261002T212710Z-70cde5",
+    "confidence": 0.97,
+    "model": "claude-sonnet-5-5",
+    "problems": [],
+    "reason": "With the event already set, the original raises AttemptLeftError before calling the adapter, but the changed version calls adapter.execute (the external request) first and only then raises.",
+    "response_sha256": "8840086d0d91fec6468a43cd7dde97b38aaa35f50903e6b81869349eac3d51f0",
+    "sources": [
+     "_stop_if_left(self._left)\n        return self._adapter.execute(request)",
+     "result = self._adapter.execute(request)\n        _stop_if_left(self._left)"
+    ],
+    "verdict": "distinct"
+   }
+  },
+  "prompt_sha256": "f2eb70681dcc84964822f66138c937bfe95bcb1dcaef806ee397f375a0c4be78"
+ }
+}

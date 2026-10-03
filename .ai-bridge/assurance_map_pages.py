@@ -527,6 +527,7 @@ const MAP_HEALTH_LAYERS=[
  ["execution","Execution","Did the tests and scenarios that ran pass?"],
  ["coverage","Coverage","Does every required case have a passing test?"],
  ["faults","Fault model","Do the tests catch the errors they should?"],
+ ["completeness","Completeness","Does a requirement or a decision settle all a caller sees?"],
  ["evidence","Evidence quality","Is the evidence realistic, traceable, qualified, up to date?"],
  ["assurance","Assurance","Do goals and capabilities pass their integration and validation checks?"]
 ];
@@ -2283,6 +2284,7 @@ const METRIC_LABELS={
  "Required scenarios":"Required scenarios passing",
  "Targets":"Required cases covered",
  "Fault groups":"Fault checks passed",
+ "Silent requirements":"Silent requirements decided",
  "Representation":"Right kind of target",
  "Provenance":"Traceable to its run",
  "Producers":"Made by qualified tools",
@@ -3027,6 +3029,7 @@ function pairsMap(H,D){
   {key:"coverage/boundary",layer:"coverage",projection:"boundary",form:"tiles",label:"Boundary",ask:"What do its tests talk to?"},
   {key:"faults",layer:"faults",projection:"faults",form:"tiles",label:"Health",ask:"Are its required faults caught?"},
   {key:"faults/detect",layer:"faults",projection:"detect",form:"tiles",label:"Mutants caught",ask:"How many planted bugs are caught?"},
+  {key:"completeness",layer:"completeness",projection:"completeness",form:"tiles",label:"Health",ask:"Is all a caller sees settled?"},
   {key:"evidence",layer:"evidence",projection:"evidence",form:"tiles",label:"Health",ask:"Is its evidence sound and fresh?"},
   {key:"evidence/trust",layer:"evidence",projection:"trust",form:"tiles",label:"Model validation",ask:"How well are its substitutes checked?"},
   {key:"assurance",layer:"assurance",projection:"assurance",form:"tiles",label:"Health",ask:"Do goals and capabilities pass?"}
@@ -3277,6 +3280,8 @@ function explorerPage(model){
   ["unbound","fa-link-slash","Unbound","Tests outside the profiles","Test outside the profile","A test that verifies a contract outside every case its profile requires. It proves no case, but its failure fails the contract."],
   ["fault","fa-shield-halved","Faults","Fault classes","Fault class","A kind of defect a contract's tests must be able to catch, as its verification profile requires."],
   ["mutant","fa-bug","Mutants","Mutants","Mutant","A small change planted in a contract's own code. Its tests should fail on it and so catch it."],
+  ["silent","fa-comment-slash","Silent","Silent requirements","Silent requirement","A behaviour a caller can see that no requirement settles, found by a mutant no test catches. It needs a requirement, or a decision that it is not required."],
+  ["noeffect","fa-ghost","No effect","Code with no effect","Code with no effect","Code that does not do what it is meant to: removing it changes nothing. It needs a fix, or a decision to keep it."],
   ["check","fa-diagram-project","Checks","Assurance checks","Assurance check","A goal's or capability's own integration or validation scenario: what its contracts cannot prove one by one."],
   ["support","fa-sitemap","Support","Support","Support","A contract, capability or goal this one rests on. It cannot pass while that fails."],
   ["producer","fa-industry","Producers","Evidence producers","Evidence producer","A tool that captures or judges evidence. Qualified means a control showed it does not turn a wrong result into a pass."]
@@ -3301,6 +3306,10 @@ function explorerPage(model){
   noimpl:"Mark the code that implements the contract with @impl.",
   notests:"Make the contract's own tests pass: faults are judged only with passing tests.",
   missed:"Strengthen the assertions so that the injected fault fails a test.",
+  silent:"Decide: write a requirement that says what this behaviour must be, or record that it is not required and why.",
+  toadd:"Write the requirement the decision asks for and a test that holds it: the finding closes when a test catches the mutant.",
+  noeffect:"Decide: make the code do what it is meant to, remove it, or record why it is kept.",
+  tofix:"Make the code do what it is meant to, with a test that catches the mutant, or remove the code.",
   campaign:"Run the implementation fault campaign again.",
   blocked:"Find out why the campaign could not run for this contract, then run it again.",
   support:"Open the supporting item and fix what fails there.",
@@ -3405,6 +3414,8 @@ function explorerPage(model){
   unbound:["status","cause","change","owner","goal","capability"],
   fault:["status","cause","change","owner","goal","capability","group"],
   mutant:["status","cause","change","diff","origin","klass","operator","owner","goal","capability"],
+  silent:["status","cause","change","owner","goal","capability"],
+  noeffect:["status","cause","change","owner","goal","capability"],
   check:["status","cause","change","owner","goal","capability","level","boundary"],
   support:["status","change","owner","goal","capability"],
   producer:["status","cause","change","goal","capability"]
@@ -3541,10 +3552,12 @@ function explorerPage(model){
  const BLOCKS=[
   ["coverage","Coverage",["path","unbound"]],
   ["faults","Fault model",["fault","mutant"]],
+  ["completeness","Completeness",["silent"]],
+  ["code","Code",["noeffect"]],
   ["assurance","Assurance",["check"]],
   ["support","Support",["support"]]
  ];
- const blockAsk={coverage:LAYER.coverage.ask,faults:LAYER.faults.ask,assurance:LAYER.assurance.ask,support:"What does it rest on, and does that pass?"};
+ const blockAsk={coverage:LAYER.coverage.ask,faults:LAYER.faults.ask,completeness:LAYER.completeness.ask,code:"Does its code do what it is meant to?",assurance:LAYER.assurance.ask,support:"What does it rest on, and does that pass?"};
  function blocksHtml(list){
   return BLOCKS.map(([key,label,kinds])=>{
    const inside=list.filter(item=>kinds.includes(item.kind));

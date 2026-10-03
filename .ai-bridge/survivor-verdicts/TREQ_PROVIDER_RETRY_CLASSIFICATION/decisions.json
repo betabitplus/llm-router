@@ -1,0 +1,26 @@
+{
+ "307acf14e91902cf": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: every attempt returns or raises and an exhausted loop raises, so the line after the loop is never reached; it is the defensive end that also tells the type checker the method never returns None. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
+ },
+ "d8f7199ce8dc26c9": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: status 500 is already in the retryable set, so >= and > decide the same; >= states the 5xx range as it is meant. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
+ },
+ "f0760cfe8c668b1a": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: nothing reads RetryDecision.status_code; the adapters take the status from the response itself and use only the decision's retryable flag and reason, so no caller sees it. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

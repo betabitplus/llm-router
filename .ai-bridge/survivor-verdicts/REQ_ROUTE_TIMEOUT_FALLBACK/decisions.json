@@ -1,0 +1,50 @@
+{
+ "1d3b41f3104390c6": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: the pool runs exactly one attempt and max_workers=1 says so. Without it the pool still starts one thread for its one task, so no caller can tell; the argument costs nothing and states the intent. Decided on the owner's delegation below Goal and Feature (ADR_0007).",
+  "verdict": "ineffective"
+ },
+ "1d6328ad0f851ffd": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "fix",
+  "level": "requirement",
+  "reason": "Fix under TREQ_TIMED_OUT_ATTEMPT_STOPS. cancel_futures=True cancels only work still queued, and the pool's single attempt is running or done by the time it shuts down. A timed-out sync attempt runs on in its worker thread and can still send provider requests and run the caller's tools after the router has moved on. The router now tells the attempt it was left (a threading.Event), the attempt starts nothing more, and this code goes. Decided on the owner's delegation below Goal and Feature (ADR_0007).",
+  "verdict": "ineffective"
+ },
+ "47c27bae6c554d3e": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Closed after the requirement it called for: TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT now says an attempt runs with the caller's context variables with or without a timeout, and a timed attempt does (history 060). What the mutant still changes is which thread runs an untimed attempt, and that requirement says the thread is not promised, so nothing a caller may rely on is left unsettled. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "a8d0a937c7bbe96f": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "fix",
+  "level": "requirement",
+  "reason": "Fix under TREQ_TIMED_OUT_ATTEMPT_STOPS. cancel_futures=True cancels only work still queued, and the pool's single attempt is running or done by the time it shuts down. A timed-out sync attempt runs on in its worker thread and can still send provider requests and run the caller's tools after the router has moved on. The router now tells the attempt it was left (a threading.Event), the attempt starts nothing more, and this code goes. Decided on the owner's delegation below Goal and Feature (ADR_0007).",
+  "verdict": "ineffective"
+ },
+ "b39c78844ce0f60e": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "fix",
+  "level": "requirement",
+  "reason": "Fix under TREQ_TIMED_OUT_ATTEMPT_STOPS. Future.cancel() cannot stop a call that is already running (Python's concurrent.futures documentation: cancel fails once the call is being executed), and at the timeout the attempt is always running. A timed-out sync attempt runs on in its worker thread and can still send provider requests and run the caller's tools after the router has moved on. The router now tells the attempt it was left (a threading.Event), the attempt starts nothing more, and this code goes. Decided on the owner's delegation below Goal and Feature (ADR_0007).",
+  "verdict": "ineffective"
+ },
+ "f793def41400b418": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: on a normal return the pool joins its finished worker, so the call leaves no thread behind. Without the join the idle worker would exit moments later on its own, which no caller can see; the join stays because it releases the thread before the call returns. Decided on the owner's delegation below Goal and Feature (ADR_0007).",
+  "verdict": "ineffective"
+ }
+}

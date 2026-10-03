@@ -1,0 +1,46 @@
+{
+ "schema": "ternforge-semantic-mutant-proposals-1",
+ "contract_id": "TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT",
+ "proposals": [
+  {
+   "id": "SM-1DCD717B",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/router.py::_in_caller_context",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Returns the call directly without wrapping it in `context.run`, failing to propagate context variables to the executing thread.",
+   "original_sha256": "de8473ad8c38c3223729c76c29ce7eacea7618888a149d6ba731fdb1dc99fc45",
+   "context_sha256": "65cbefb6b54350b3755db4da85b8e969d0d79fdc30d648eb82470244def768f1",
+   "prompt_sha256": "f3ca97ad30522cf19e00651a167dac2e6c2c192251e299f8ff5a7cc0bb2ebe31",
+   "replacement": "def _in_caller_context[T](call: Callable[[], T]) -> Callable[[], T]:\n    \"\"\"Return ``call``, to run in a copy of the context its caller has now.\n\n    A worker thread starts with an empty context, so without the copy the tracing\n    span, the log fields and every other context variable the caller set would not\n    reach a timed attempt; ``asyncio.to_thread`` carries them over the same way.\n    \"\"\"\n    return call",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T225119Z-a9d8c3",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "92769c61f60205215bcb96cc14c1219d167707b21a3616bf3d829d969f35c0e4",
+    "index": 0
+   }
+  },
+  {
+   "id": "SM-7E495DC3",
+   "class": "spec.missing-partition",
+   "target": "src/llm_router/_internal/runtime/router.py::_in_caller_context",
+   "risk": "one input partition its requirement or criteria name is no longer handled as they say",
+   "rationale": "Creates a new, empty context instead of copying the current context, meaning the attempt runs without the caller's context variables.",
+   "original_sha256": "de8473ad8c38c3223729c76c29ce7eacea7618888a149d6ba731fdb1dc99fc45",
+   "context_sha256": "65cbefb6b54350b3755db4da85b8e969d0d79fdc30d648eb82470244def768f1",
+   "prompt_sha256": "f3ca97ad30522cf19e00651a167dac2e6c2c192251e299f8ff5a7cc0bb2ebe31",
+   "replacement": "def _in_caller_context[T](call: Callable[[], T]) -> Callable[[], T]:\n    \"\"\"Return ``call``, to run in a copy of the context its caller has now.\n\n    A worker thread starts with an empty context, so without the copy the tracing\n    span, the log fields and every other context variable the caller set would not\n    reach a timed attempt; ``asyncio.to_thread`` carries them over the same way.\n    \"\"\"\n    context = contextvars.Context()\n    return partial(context.run, call)",
+   "generator": {
+    "kind": "model",
+    "call_id": "20261002T225119Z-a9d8c3",
+    "backend": "antigravity-cli",
+    "backend_version": "1.2.15",
+    "model": "gemini-3.1-pro-high",
+    "response_sha256": "92769c61f60205215bcb96cc14c1219d167707b21a3616bf3d829d969f35c0e4",
+    "index": 1
+   }
+  }
+ ]
+}

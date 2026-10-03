@@ -23,40 +23,25 @@
  "62173758417ffc7d": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T000259Z-d08da3",
+   "call_id": "20261002T201753Z-36a845",
    "confirmed": true,
-   "level": "implementation",
+   "effort": "xhigh",
+   "finding": "No requirement says how describe_media must reject unsupported media values. A requirement would say that non-supported values are rejected with a TypeError and are never treated as remote video.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only how an unsupported value fails: it raises AttributeError where the original raises TypeError. Supported local-file and remote-URL video inputs are still turned into the same descriptors. The requirement only asks that supported forms be accepted and grounded, and says nothing about how unsupported values are rejected.",
-   "response_sha256": "a39ff590393afb260eda16c71a2b4b3bb0f245b6ae26139342695914c598b059",
+   "reason": "Supported local and remote video forms behave the same. The only difference is for unsupported media values: they now raise AttributeError instead of TypeError, or are accepted as remote video if they happen to have url-like attributes. REQ_VIDEO_INPUT only covers accepting supported forms and says nothing about rejecting unsupported values.",
+   "response_sha256": "a92904991a35ea95ba94c8360da5792f83659a86e052a2e00c216ae7671d7b18",
    "sources": [
     "Provider routes that declare support for a specific video input form shall accept that supported form and return structured output grounded in video content.",
-    "if True:",
-    "    if isinstance(value, VideoUrlSchema):"
+    "if isinstance(value, VideoUrlSchema):",
+    "msg = f\"Unsupported media value: {type(value).__name__}.\""
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "conditional",
-  "prompt_sha256": "a6501bb743249ecea2a515fbffcc045e83a9c3535fa561e4f5523652c28cc6d1",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T092151Z-1bc59c",
-   "confirmed": true,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "a6501bb743249ecea2a515fbffcc045e83a9c3535fa561e4f5523652c28cc6d1",
-   "reason": "The requirement specifies that supported video input forms must be accepted, but it does not mandate specific error handling or rejection behavior for unsupported input types.",
-   "response_sha256": "ac18c5e7f944581c5d6b3823f0361abe423a95650ebb1eb938d5da16fad1ae0b",
-   "sources": [
-    "Provider routes that declare support for a specific video input form shall accept that supported form",
-    "if isinstance(value, VideoUrlSchema):"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "5d69133fdf2efaa3e5e183b4f9e9a0e9dd0b58885879fe4ff69c4b72f174218e"
  },
  "68771b7b6b05d78f": {
   "answer": {

@@ -61,6 +61,34 @@ Feature: Route fallback
       When the async timed-out request is executed
       Then the async request fails with a timeout error
 
+    @TREQ_TIMED_OUT_ATTEMPT_STOPS[revision==1]
+    Scenario: A timed-out attempt starts no further work once the router leaves it
+      Given the first route answers with a tool call only after its attempt timeout
+      And another route is available
+      When a request with a tool is made
+      Then the request continues with the next route
+      And the left attempt runs no tool and sends no further request
+
+    @TREQ_TIMED_OUT_ATTEMPT_STOPS[revision==1]
+    Scenario: An async timed-out attempt starts no further work once the router leaves it
+      Given the first route answers with a tool call only after its async attempt timeout
+      And another route is available
+      When a request with a tool is made
+      Then the async request continues with the next route
+      And the left attempt runs no tool and sends no further request
+
+    @TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT[revision==1]
+    Scenario: A timed attempt runs with the context the caller set
+      Given the route asks for a tool call within its attempt timeout
+      When a request with a tool is made
+      Then the tool sees the value the caller set before the call
+
+    @TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT[revision==1]
+    Scenario: An async timed attempt runs with the context the caller set
+      Given the route asks for a tool call within its async attempt timeout
+      When a request with a tool is made
+      Then the tool sees the value the caller set before the call
+
     @REQ_ROUTE_ATTEMPT_LIMIT[revision==1]
     Scenario: The router does not exceed the configured number of route attempts
       Given more routes are available than the allowed attempt count

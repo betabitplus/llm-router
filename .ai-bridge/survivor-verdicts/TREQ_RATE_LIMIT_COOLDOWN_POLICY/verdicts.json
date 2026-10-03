@@ -2,84 +2,88 @@
  "50264430ac7ff216": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195903Z-53c554",
+   "call_id": "20261002T201753Z-52971e",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant still updates bucket state (failure_count, cooldown_until, reset) the same way, so blocking and unblocking behave as the requirement says. The only difference is a false 'Route cooldown opened' log line on failures below the threshold. That is observable, but no requirement or criterion covers logging.",
-   "response_sha256": "bdb0158f08d5740c0e7e8b7a9f6926d9a96989a0b6b30bb0e8b15335d74a2e06",
-   "sources": [
-    "when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
-    "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
-    "if should_log_opened:",
-    "if True:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  },
-  "operator": "conditional",
-  "prompt_sha256": "b0cc521fc40086b8f527396337f1a61d0ee185402fdc9d5675b0e62374286eb2",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260930T195923Z-80e23f",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "b0cc521fc40086b8f527396337f1a61d0ee185402fdc9d5675b0e62374286eb2",
-   "reason": "The mutated code unconditionally logs a cooldown message on every failure instead of only when a cooldown is opened. This introduces a difference in logging behavior, but logging is an implementation detail not specified by the requirement, which only dictates the cooldown logic.",
-   "response_sha256": "6920537ec6f14612c836a211bcaeb1ad7bb2e85384b6134ca6fd89e3e7c508fd",
-   "sources": [
-    "For each provider/key limiter bucket, when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
-    "if should_log_opened:",
-    "if True:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
- },
- "753353272439298a": {
-  "answer": {
-   "backend": "claude-cli",
-   "call_id": "20260930T195903Z-1aa98a",
-   "confirmed": false,
-   "effort": "xhigh",
-   "level": "implementation",
-   "model": "claude-opus-5-5",
-   "problems": [],
-   "reason": "The mutant flips only the guard on the \"Route cooldown opened\" log line, so the log is written on below-threshold failures and skipped when cooldown actually opens. That is an observable difference, so the versions are not equivalent. Bucket state, cooldown_until and failure_count reset stay identical, though, and the requirement only covers whether the bucket is blocked and for how long, not what gets logged.",
-   "response_sha256": "424a8b8260fe08ee5bb16258d34ca00700ae9a3ce4cf4bb49fe58b6d7465474e",
+   "reason": "The bucket state is the same in both versions: below-threshold failures do not block, and the failure that reaches the threshold sets the cooldown. The only difference is that the mutant logs \"Route cooldown opened\" after every failure, and nothing in the requirement depends on a log line. It is not equivalent, because the logging call is observably different.",
+   "response_sha256": "ff32b283355c9b4d0c1b6ecb0505b898e98321ee34f779be9c71342594e329a8",
    "sources": [
     "For each provider/key limiter bucket, when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
     "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
-    "if not should_log_opened:",
+    "    if True:",
     "        if should_log_opened:"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
-  "operator": "negation",
-  "prompt_sha256": "426247d020daa19959480ad2e4056d4011df7cb92ec7a07dd4c9eaee5aee940a",
+  "operator": "conditional",
+  "prompt_sha256": "531bc70ef38ddce2e9c412098a4e2baf46b08f89448926350554c68d633462b8",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195923Z-d0cca1",
+   "call_id": "20261002T201830Z-1b7468",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "426247d020daa19959480ad2e4056d4011df7cb92ec7a07dd4c9eaee5aee940a",
-   "reason": "The mutation merely inverts the condition for emitting an informational log line, which is an implementation detail. The actual state changes that enforce the failure threshold and open the cooldown remain identical and continue to satisfy the requirement.",
-   "response_sha256": "1438826e5a7361fe4afa29a0ab1d3327e65f3e11fde53895882c27bfdf81e83e",
+   "prompt_sha256": "531bc70ef38ddce2e9c412098a4e2baf46b08f89448926350554c68d633462b8",
+   "reason": "The change unconditionally executes the logger call, which is a logging side effect that does not alter the method's return value, internal bucket state, or exception behavior. Because failure counting, cooldown intervals, and blocking state remain identical across all inputs, no caller can distinguish the two versions.",
+   "response_sha256": "53b2c136599c7ae446bd87c98e21d1a34185c07bd2b869808a220a6d673c71b1",
    "sources": [
+    "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
     "For each provider/key limiter bucket, when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
-    "if not should_log_opened:"
+    "if should_log_opened:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
+  }
+ },
+ "753353272439298a": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T201753Z-f5c703",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The mutant only flips when the \"Route cooldown opened\" log line is emitted. The failure count, `cooldown_until`, the return value and the errors raised stay the same, so the threshold still blocks the bucket for the configured cooldown. No caller should rely on a log line, and no requirement covers it.",
+   "response_sha256": "23ab9c28a82842c6a5e5ec48401706efd7acc7208e682f93c0745f9576d41030",
+   "sources": [
+    "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
+    "if not should_log_opened:",
+    "bucket.cooldown_until = current + limits.cooldown_seconds"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
+  },
+  "operator": "negation",
+  "prompt_sha256": "cbcdcfe69f809066e15a49f6d46d0220543c436125eb530cad19b5cafc67428e",
+  "review": {
+   "backend": "antigravity-cli",
+   "call_id": "20261002T201830Z-59657d",
+   "confirmed": false,
+   "effort": "",
+   "finding": "",
+   "level": "implementation",
+   "model": "gemini-3.8-flash-high",
+   "problems": [],
+   "prompt_sha256": "cbcdcfe69f809066e15a49f6d46d0220543c436125eb530cad19b5cafc67428e",
+   "reason": "The change only inverts the condition for emitting the informational log line, leaving the bucket state, failure counts, cooldown timing, return value, and exceptions completely unaffected. No caller of the public API can observe any difference in behavior between the two versions.",
+   "response_sha256": "b0cb72ceb39a837109d2952d162785337b8736a03e192ba9a50b9a6467f88d5b",
+   "sources": [
+    "For each provider/key limiter bucket, when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
+    "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
+    "if not should_log_opened:"
+   ],
+   "test_focus": "",
+   "verdict": "equivalent"
   }
  },
  "7cfc3f8477b3a2b8": {
@@ -131,41 +135,44 @@
  "7d8cf2a980915b49": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195903Z-2a9bce",
+   "call_id": "20261002T201753Z-17d5e3",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant sets `should_log_opened` to True from the start, so it logs \"Route cooldown opened\" after every failure, even below the threshold. The versions really do differ in their log output. Bucket state and cooldown timing stay the same, and no stated requirement covers this log event, so no test is needed.",
-   "response_sha256": "c050d503961f9ac6c218380b0aec8161230181e481ccff33722918a60df10d6c",
+   "reason": "The mutant still updates the bucket's failure count and cooldown the same way, so whether a route is blocked or available does not change. The only difference is that it emits the \"Route cooldown opened\" log on every failure, including failures below the threshold. That changes a log line, not anything the requirement asks the router to do.",
+   "response_sha256": "b437e0a0190e971bfeaaddeeef8848d8b0f7882d1336c1e4c6dd1f323b598416",
    "sources": [
-    "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
+    "should_log_opened = True",
     "when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
-    "should_log_opened = True"
+    "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown."
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "c63febcb849d02f14131d34db97ebdb4222e3ae3b2cb5884270a4570894b15c9",
+  "prompt_sha256": "a63783086475a8c76f50ad8b17cb1fae6345ce9c19463e9700025d5b01ea6035",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195923Z-2ffb71",
+   "call_id": "20261002T201830Z-fcaaa7",
    "confirmed": false,
    "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
+   "finding": "",
+   "level": "implementation",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "c63febcb849d02f14131d34db97ebdb4222e3ae3b2cb5884270a4570894b15c9",
-   "reason": "The mutant causes a log message to be emitted on every failure instead of only when a cooldown is opened. This difference is irrelevant because the requirement only specifies the conditions under which the bucket is blocked or unblocked, without mentioning logging behavior.",
-   "response_sha256": "0da2c48328d692beb670a3657530932dd32b31590382025b8d19568a3551e835",
+   "prompt_sha256": "a63783086475a8c76f50ad8b17cb1fae6345ce9c19463e9700025d5b01ea6035",
+   "reason": "The mutant only alters the initial value of should_log_opened to True, causing logger.info to be called on every failure. From the perspective of a caller of the public API, return values, object state, and cooldown behavior remain completely identical.",
+   "response_sha256": "2243cfa58b2cc6d46b0a3bd7d9bad2f44446d967b3fb75e1f31ff0e2b2b08893",
    "sources": [
     "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
-    "should_log_opened = True"
+    "        should_log_opened = False",
+    "    should_log_opened = True"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  },
  "8f336828c0f9c375": {
@@ -457,42 +464,45 @@
  "fe6b5732a0060288": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T195903Z-71e5f6",
+   "call_id": "20261002T201753Z-d14540",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only stops the 'Route cooldown opened' log event from being emitted. The bucket's cooldown_until and failure_count reset are unchanged, so the cooldown still blocks the bucket as required. The versions do differ in log output, but no requirement, Feature or Goal asks for that log.",
-   "response_sha256": "7fe490daa19a19e965399e22361c24515242564c6f263ce1330a4e873ba28c6c",
+   "reason": "The mutant still sets cooldown_until and resets failure_count at the threshold, so the bucket is blocked for cooldown_seconds exactly as required. The only difference is that the \"Route cooldown opened\" log event is no longer emitted, and no requirement covers logging.",
+   "response_sha256": "fb0706c7fdc7b5454813cbe47f44bfa4075bc8c0e98b0b75801b710ac7f3f0bd",
    "sources": [
     "when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
-    "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
     "should_log_opened = False",
+    "should_log_opened = True",
     "bucket.cooldown_until = current + limits.cooldown_seconds"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "boolean",
-  "prompt_sha256": "ab04e88529d0894f50be6ed00f99ec7d1b671ab3ff367b8acdd0e989cb36b7ac",
+  "prompt_sha256": "5800ffa6ab4284be904e919b3d6d7d524f70bb619d0491d8fdd634bf5107dd4f",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20260930T195923Z-718f9c",
+   "call_id": "20261002T201830Z-7f2a52",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "ab04e88529d0894f50be6ed00f99ec7d1b671ab3ff367b8acdd0e989cb36b7ac",
-   "reason": "The mutant disables logging when a route cooldown is opened. The requirement and verification criteria only specify that the bucket becomes unavailable after consecutive failures reach the threshold, making logging an unmandated implementation detail.",
-   "response_sha256": "65ea9495ce861b00b5240bd1838529dd9512c8c69fb89f625b3b0f2c4084e77a",
+   "prompt_sha256": "5800ffa6ab4284be904e919b3d6d7d524f70bb619d0491d8fdd634bf5107dd4f",
+   "reason": "Setting should_log_opened to False suppresses an internal informational log call without altering the return value, bucket state, or exceptions. Because callers of the public API cannot observe any difference in state or behavior across any inputs, the mutant is equivalent.",
+   "response_sha256": "db53f0ff59e5670188fb3ec96cd4c65f025555ea8eb319dc357bfa794cb74520",
    "sources": [
+    "For each provider/key limiter bucket, when configured consecutive failures reach `cooldown_after_failures`, the bucket shall remain unavailable for the configured `cooldown_seconds` interval.",
     "Below-threshold failures do not block the bucket, while the threshold failure blocks it for the configured cooldown.",
     "should_log_opened = False"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "equivalent"
   }
  }
 }

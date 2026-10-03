@@ -54,7 +54,8 @@ ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/assurance-fault-model-facts.json"
 HEALTH_PAGE=ROOT/"docs/_build/html/verification-health-map.html"
 EXPLORER_PAGE=ROOT/"docs/_build/html/verification-explorer.html"
 # The Verification Depth Map and the Verification Map prototype became the Verification Health Map (MAP-P41).
-RETIRED_MAP_PAGES=(ROOT/"docs/_build/html/verification-depth-map.html",ROOT/"docs/_build/html/verification-map.html")
+# The roadmap page is retired too: the owner keeps the plan in the development history, not on the portal (060).
+RETIRED_MAP_PAGES=(ROOT/"docs/_build/html/verification-depth-map.html",ROOT/"docs/_build/html/verification-map.html",ROOT/"docs/_build/html/assurance-roadmap.html")
 REQ_MONITOR_FACTS_PATH=ROOT/"docs/_build/html/requirement-monitor-facts.json"
 UPPER_ASSURANCE_FACTS_PATH=ROOT/"docs/_build/html/upper-assurance-facts.json"
 EVIDENCE_CLASSIFICATION_PATH=ROOT/"docs/_build/html/evidence-classification-facts.json"
@@ -549,6 +550,13 @@ def health_map_payload():
         }
         evidence_statuses=[status for statuses in evidence_parts.values() for status in statuses]
         fault_statuses=[fault["status"] for fault in faults if fault["status"]!="N/A"]
+        # Completeness: every silent requirement its verdicts name is settled (ADR_0007).
+        completeness=ASSURANCE_DOMAIN.completeness_state(contract)
+        silent_statuses=[
+          "NOT MET" if finding.get("state") in {"undecided","decided"} else "MET"
+          for finding in (contract.get("completeness_actual") or {}).get("findings") or []
+          if finding.get("kind")=="unspecified"
+        ]
         contract_layers[contract_id]={
           "coverage":health_layer_result(
             coverage_statuses,
@@ -562,6 +570,13 @@ def health_map_payload():
             label="Faults",
             applicable=bool(fault_statuses),
             metrics=[health_metric("Fault groups",fault_statuses)],
+          ),
+          "completeness":health_layer_result(
+            silent_statuses or ["MET"],
+            href=f"verification-explorer.html#kind=silent&contract={contract_id}",
+            label="Completeness",
+            applicable=completeness["status"]!="N/A",
+            metrics=[health_metric("Silent requirements",silent_statuses)] if silent_statuses else [],
           ),
           "evidence":health_layer_result(
             evidence_statuses,
@@ -656,7 +671,7 @@ def health_map_payload():
         return health_layer_result(
           statuses,
           href=first_href(results,fallback),
-          label={"coverage":"Coverage","faults":"Faults","evidence":"Evidence"}[key],
+          label={"coverage":"Coverage","faults":"Faults","completeness":"Completeness","evidence":"Evidence"}[key],
           applicable=bool(statuses),
           metrics=merge_health_metrics(results),
         )
@@ -797,6 +812,7 @@ def health_map_payload():
                 "unbound_tests":unbound_tests.get(need_id,0),
               },
               "faults":layers.get("faults") or not_applicable("Faults"),
+              "completeness":layers.get("completeness") or not_applicable("Completeness"),
               "evidence":layers.get("evidence") or not_applicable("Evidence"),
               "assurance":not_applicable("Assurance"),
             }
@@ -811,6 +827,7 @@ def health_map_payload():
               "execution":not_applicable("Execution"),
               "coverage":not_applicable("Coverage"),
               "faults":not_applicable("Faults"),
+              "completeness":not_applicable("Completeness"),
               "evidence":not_applicable("Evidence"),
               "assurance":{**missing,"label":"Assurance"},
             }
@@ -890,6 +907,7 @@ def health_map_payload():
           "execution":execution,
           "coverage":coverage,
           "faults":not_applicable("Faults"),
+          "completeness":not_applicable("Completeness"),
           "evidence":evidence,
           "assurance":assurance,
         }
@@ -919,6 +937,7 @@ def health_map_payload():
         execution=aggregate_execution(need_id,scope,fallback)
         coverage=aggregate_coverage(need_id,scope,fallback)
         faults=aggregate_contract_layer(scope,"faults",fallback)
+        completeness=aggregate_contract_layer(scope,"completeness",fallback)
         evidence=aggregate_contract_layer(scope,"evidence",fallback)
         # Upper-level producer/freshness gates are part of evidence trust too.
         upper_evidence=[]
@@ -954,6 +973,8 @@ def health_map_payload():
             })
         if faults["status"]!="na":
             overall_metrics.extend(faults.get("metrics") or [])
+        if completeness["status"]!="na":
+            overall_metrics.extend(completeness.get("metrics") or [])
         if evidence["status"]!="na":
             overall_metrics.append({
               "label":"Evidence",
@@ -968,6 +989,7 @@ def health_map_payload():
           "execution":execution,
           "coverage":coverage,
           "faults":faults,
+          "completeness":completeness,
           "evidence":evidence,
           "assurance":assurance,
         }
@@ -990,6 +1012,7 @@ def health_map_payload():
       ("execution","Execution"),
       ("coverage","Coverage"),
       ("faults","Faults"),
+      ("completeness","Completeness"),
       ("evidence","Evidence"),
       ("assurance","Assurance"),
     )
@@ -1034,8 +1057,8 @@ def health_map_payload():
 
 HEALTH_RUN_SNAPSHOTS=ROOT/"test-results/health-map/runs"
 DEPTH_RUN_SNAPSHOTS=ROOT/"test-results/depth-map/runs"
-HEALTH_LAYER_KEYS=("overall","execution","coverage","faults","evidence","assurance")
-HEALTH_LAYER_NAMES={"execution":"Execution","coverage":"Coverage","faults":"Fault model","evidence":"Evidence quality","assurance":"Assurance"}
+HEALTH_LAYER_KEYS=("overall","execution","coverage","faults","completeness","evidence","assurance")
+HEALTH_LAYER_NAMES={"execution":"Execution","coverage":"Coverage","faults":"Fault model","completeness":"Completeness","evidence":"Evidence quality","assurance":"Assurance"}
 # Why a red mark is red, in the words a reader acts on. Fault causes come from the contract's
 # required fault classes; the other layers name the check that fails.
 HEALTH_CAUSES={
@@ -1056,6 +1079,10 @@ HEALTH_CAUSES={
     ("campaign","Campaign not current","The implementation fault campaign result is stale or failed; run it again."),
     ("blocked","Campaign blocked","The implementation fault campaign could not run for this contract."),
   ),
+  "completeness":(
+    ("silent","Silent requirement undecided","A behaviour a caller can see is settled by no requirement and by no decision."),
+    ("toadd","Requirement to add","The delegate decided a requirement must settle this behaviour; until a test catches the mutant, it is not held."),
+  ),
   "coverage":(
     ("uncovered","Required case not covered","A required case of the verification profile has no passing test."),
     ("scenario","Required scenario missing or failing","A required scenario did not pass."),
@@ -1068,6 +1095,7 @@ HEALTH_METRIC_CAUSES={
   "Required scenarios":("Required scenario missing or failing","A required scenario did not pass."),
   "Targets":("Required case not covered","A required case of the verification profile has no passing test."),
   "Fault groups":("Fault checks fail","A required fault group is not caught."),
+  "Silent requirements":("Silent requirement open","A behaviour a caller can see is not yet settled by a requirement or a decision."),
   "Representation":("Wrong kind of target","The evidence does not represent the target it claims."),
   "Provenance":("Not traceable to its run","The evidence cannot be traced to the retained run."),
   "Producers":("Unqualified producer","A tool that produced the evidence is not qualified."),
@@ -1138,6 +1166,10 @@ def health_layer_causes(rows,contracts,plans):
                     cause=health_fault_cause(classes.get(name),plans.get(row["id"]))
                     if cause:
                         found.add(cause)
+            if key=="completeness" and row["id"] in contracts:
+                for finding in (contracts[row["id"]].get("completeness_actual") or {}).get("findings") or []:
+                    if finding.get("kind")=="unspecified" and finding.get("state") in {"undecided","decided"}:
+                        found.add("silent" if finding["state"]=="undecided" else "toadd")
             if key=="coverage":
                 if own.get("unbound_tests"):
                     found.add("unbound")
@@ -1150,6 +1182,8 @@ def health_layer_causes(rows,contracts,plans):
                 elif key=="coverage" and label=="Required scenarios":
                     found.add("scenario")
                 elif key=="faults" and label=="Fault groups" and found:
+                    continue
+                elif key=="completeness" and found:
                     continue
                 else:
                     found.add("metric:"+str(label))
@@ -1575,6 +1609,15 @@ EXPLORER_CAUSES={
   "support":("Supporting item fails","Something this item depends on fails, so it cannot pass until that passes."),
   "pending":("Supporting item undecided","Something this item depends on is not decided yet, so this item cannot pass until it is."),
   "unexpected":("Path the profile does not declare","A retained test claims a path the profile does not list, so its criterion cannot be judged."),
+  "noeffect":("Code with no effect undecided","This code does not do what it is meant to: removing it changes nothing, and no one has decided what to do."),
+  "tofix":("Fix to make","The delegate decided this code must be fixed or removed; its mutant still survives."),
+}
+# A finding in the explorer (ADR_0007): its name, its kind of item and, per state, its status, state word and cause.
+FINDING_WORDS={"unspecified":"Silent requirement","ineffective":"No effect"}
+FINDING_KINDS={"unspecified":"silent","ineffective":"noeffect"}
+FINDING_STATES={
+  "unspecified":{"undecided":("fail","Undecided","silent"),"decided":("fail","Requirement to add","toadd"),"closed":("pass","Not required",None)},
+  "ineffective":{"undecided":("fail","Undecided","noeffect"),"decided":("fail","Fix to make","tofix"),"closed":("pass","Kept",None)},
 }
 EXPLORER_SUPPORT_SECTIONS={"feature":"requirement_support","goal":"capability_support","product":"goal_support"}
 EXPLORER_SECTION_LABELS={
@@ -1722,6 +1765,34 @@ def explorer_verdict_note(contract_id,key):
     if verdict["verdict"]=="escalate":
         return f" Verdict by {by}: escalated, it waits for you. {reason}"
     return f" Verdict by {by}: {verdict['verdict']}. {reason}"
+
+
+def finding_note(verdict):
+    """What one finding says, who found or decided it and why, and where it stands (ADR_0007)."""
+    state=EQ.finding_state(verdict)
+    reason=explorer_clip(" ".join(str(verdict.get("reason") or "").split()),300)
+    if state=="undecided":
+        confirmed=f" (reviewed by {verdict['reviewed_by']})" if verdict.get("reviewed_by") else ""
+        return f"Found by {verdict.get('by')}{confirmed}: {reason} No one has decided it yet."
+    then={
+      ("unspecified","decided"):"It stays open until a requirement settles it and a test catches the mutant.",
+      ("unspecified","closed"):"Not required.",
+      ("ineffective","decided"):"It stays open until the code does what it means to and a test catches the mutant, or the code is gone.",
+      ("ineffective","closed"):"The code is kept.",
+    }[(verdict["verdict"],state)]
+    return f"Decided by {verdict.get('by')}: {reason} {then}"
+
+
+def finding_item(contract_id,key,verdict,klass,name,origin,producers,links):
+    """One finding as an explorer item of its own kind, under the contract that owns the survivor."""
+    kind=FINDING_KINDS[verdict["verdict"]]
+    status,word,cause=FINDING_STATES[verdict["verdict"]][EQ.finding_state(verdict)]
+    return {
+      "id":f"{kind}|{contract_id}|{key}","kind":kind,"owner":contract_id,"object":f"fault|{contract_id}|{klass}",
+      "layers":["completeness"] if kind=="silent" else ["faults"],"status":status,"state":word,"causes":[cause] if cause else [],
+      "name":name,"what":" ".join(str(verdict.get("finding") or "").split()),"note":finding_note(verdict),
+      "attrs":{"class":klass,"origin":origin},"producers":producers,"links":links,
+    }
 
 
 def answer_links(contract_id,key,judged=None):
@@ -2019,7 +2090,10 @@ def explorer_payload(health_payload):
                 suppression=mutant.get("suppression") or {}
                 status,word,causes,note=EXPLORER_MUTANT_OUTCOMES[outcome]
                 triaged=None
-                if outcome=="suppressed" and suppression.get("verdict"):
+                if outcome=="suppressed" and suppression.get("verdict") in FINDINGS:
+                    word=f"{FINDING_WORDS[suppression['verdict']]} · "+FINDING_STATES[suppression["verdict"]][suppression.get("finding_state") or "undecided"][1]
+                    note=finding_note(suppression)
+                elif outcome=="suppressed" and suppression.get("verdict"):
                     word=f"Suppressed · {suppression['verdict']}"
                     confirmed=f" (confirmed by {suppression['reviewed_by']})" if suppression.get("reviewed_by") else ""
                     note=f"Judged {suppression['verdict']} by {suppression.get('by')}{confirmed}: "+explorer_clip(" ".join(str(suppression.get("reason") or "").split()),300)
@@ -2058,6 +2132,13 @@ def explorer_payload(health_payload):
                     *answer_links(contract_id,mutant["fingerprint"],triaged),
                   ],
                 })
+                # A survivor whose verdict names a finding is also listed as that finding (ADR_0007).
+                counting=((((verdict_state().get(contract_id) or {}).get("items") or {}).get(str(mutant["fingerprint"])) or {}).get("verdict")) or {}
+                if outcome=="suppressed" and counting.get("verdict") in FINDINGS:
+                    items.append(finding_item(
+                      contract_id,mutant["fingerprint"],counting,klass,items[-1]["name"],"rule",list(IMPL_FAULTS.PRODUCERS),
+                      [["Source",repo_blob_url(mutant["source"],campaign.get("head_sha") or head)+f"#L{line}","raw"],*answer_links(contract_id,mutant["fingerprint"])],
+                    ))
         # Semantic mutants, frozen proposals for the risks the profile names, under their class.
         semantic=semantic_actual.get(contract_id) or {}
         # A result belongs to its proposal by place: one mutant selected for two classes carries one id.
@@ -2074,6 +2155,13 @@ def explorer_payload(health_payload):
             status,word,causes=EXPLORER_SEMANTIC_OUTCOMES[outcome]
             note=str((result or {}).get("reason") or semantic.get("reason") or "")
             note=note[:1].upper()+note[1:]+("" if note.endswith(".") else ".")
+            counting=((((verdict_state().get(contract_id) or {}).get("items") or {}).get(str(proposal["id"])) or {}).get("verdict")) or {}
+            taken_out=outcome=="equivalent" and (result or {}).get("verdict") in LEAVING
+            if taken_out and counting.get("verdict") in FINDINGS:
+                word=f"{FINDING_WORDS[counting['verdict']]} · "+FINDING_STATES[counting["verdict"]][EQ.finding_state(counting)][1]
+                note=finding_note(counting)
+            elif taken_out:
+                word=f"Suppressed · {(result or {}).get('verdict')}"
             found=(result or {}).get("differential") or {}
             judged=(result or {}).get("judgement") or {}
             if found.get("found"):
@@ -2115,6 +2203,11 @@ def explorer_payload(health_payload):
               },
               "producers":list(SEMANTIC_PRODUCERS),"links":links,
             })
+            if taken_out and counting.get("verdict") in FINDINGS and f"{FINDING_KINDS[counting['verdict']]}|{contract_id}|{proposal['id']}" not in {item["id"] for item in items}:
+                items.append(finding_item(
+                  contract_id,proposal["id"],counting,klass,items[-1]["name"],"semantic",list(SEMANTIC_PRODUCERS),
+                  [["Patch",f"semantic-mutants/{contract_id}/{proposal['id']}.diff","raw"],["Source",repo_blob_url(source,head),"raw"],*answer_links(contract_id,proposal["id"])],
+                ))
         # A selected target without any semantic mutant: its class stays undecided until one is generated.
         for selection in semantic.get("missing") or []:
             klass=selection["class"]
@@ -2138,6 +2231,19 @@ def explorer_payload(health_payload):
               "attrs":{"group":group_label,"class":klass,"operator":"semantic","origin":"semantic"},
               "producers":list(SEMANTIC_PRODUCERS),"links":[["Source",repo_blob_url(source,head),"raw"]],
             })
+        # A finding belongs to its layer whatever the applicability of the fault class its mutant falls in:
+        # a survivor of a class the profile leaves out has no row above and is listed here (ADR_0007).
+        shown={item["id"] for item in items}
+        for finding in completeness_findings(contract_id):
+            if finding["origin"]!="rule" or f"{FINDING_KINDS[finding['kind']]}|{contract_id}|{finding['key']}" in shown:
+                continue
+            counting=(((verdict_state().get(contract_id) or {}).get("items") or {}).get(finding["key"]) or {}).get("verdict") or {}
+            qualname=str(finding.get("qualname") or "")
+            items.append(finding_item(
+              contract_id,finding["key"],counting,finding["class"],
+              f"{Path(str(finding['path'])).name}:{finding['line']}"+(f" · {qualname}" if qualname and qualname!="<module>" else ""),"rule",list(IMPL_FAULTS.PRODUCERS),
+              [["Source",repo_blob_url(str(finding["path"]),head)+f"#L{finding['line']}","raw"],*answer_links(contract_id,finding["key"])],
+            ))
         # What a requirement needs from its technical requirements.
         for treq_id in target.get("required_treqs") or []:
             child=contracts.get(treq_id)
@@ -6683,7 +6789,7 @@ def run_canaries(roles=None):
                         if role=="generator":
                             case["passed"],case["detail"]=SEMANTIC.generator_canary_passed(CALIBRATION_PROJECT,question,structured)
                         elif role in ("verdict","verdict_review"):
-                            case["passed"],case["detail"]=SEMANTIC.verdict_canary_passed(question,structured)
+                            case["passed"],case["detail"]=SEMANTIC.verdict_canary_passed(question,structured,role)
                         else:
                             draft=SEMANTIC.draft_from_answer(question["proposal"]["id"],structured)
                             case["draft_sha256"]=sha256_text(draft)
@@ -6941,7 +7047,7 @@ def verdict_answer(response,confirmed):
     answered, and the call that made it."""
     structured=response["structured"]
     return {
-      **{key:structured.get(key) for key in ("verdict","level","reason","test_focus")},"sources":list(structured.get("sources") or []),
+      **{key:structured.get(key) for key in ("verdict","level","reason","test_focus","finding")},"sources":list(structured.get("sources") or []),
       "confirmed":bool(confirmed),"call_id":response["call_id"],"backend":response["backend"],"model":response["model"],"effort":str(response.get("effort") or ""),
       "response_sha256":MODELS.response_sha256(response),"problems":EQ.verdict_problems(structured,confirmed,str(response.get("prompt") or "")),
     }
@@ -6962,6 +7068,8 @@ def final_decisions(contract_id):
 
 
 SUPPRESSING=EQ.SUPPRESSING
+FINDINGS=EQ.FINDINGS
+LEAVING=EQ.LEAVING
 reviewed_verdict=EQ.reviewed_verdict
 
 
@@ -6970,8 +7078,15 @@ def current_verdict(item,verdicts,decisions):
     survivor's current question, reviewed as ADR_0006 asks, else none."""
     decided=decisions.get(item["key"]) or {}
     if decided.get("verdict") in EQ.VERDICTS_FINAL and decided.get("reason"):
-        # The person's, or the delegate's who decides below Feature level on the person's behalf.
-        return {**decided,"by":decided.get("by") or "person"}
+        # The person's, or the delegate's who decides below Feature level on the person's behalf. A
+        # decision on a finding keeps the sentence that names the finding: its own, else the one of the
+        # answer it decided (ADR_0007), so a decided row still says what was found.
+        found=str(decided.get("finding") or "")
+        if not found and decided["verdict"] in FINDINGS:
+            answered=reviewed_verdict(verdicts.get(item["key"]) or {}) or {}
+            if answered.get("verdict")==decided["verdict"]:
+                found=str(answered.get("finding") or "")
+        return {**decided,"by":decided.get("by") or "person",**({"finding":found} if found else {})}
     entry=verdicts.get(item["key"]) or {}
     if entry.get("prompt_sha256")!=sha256_text(item["prompt"]):
         return None
@@ -7005,13 +7120,33 @@ def verdict_state(refresh=False):
 
 
 def verdict_suppressions(contract_id):
-    """Surviving rule mutants a verdict that counts judged equivalent or irrelevant, by fingerprint."""
+    """Surviving rule mutants a verdict that counts takes out of their class, by fingerprint: judged
+    equivalent or irrelevant (ADR_0006), or named a finding, open or closed (ADR_0007)."""
     items=(verdict_state().get(contract_id) or {}).get("items") or {}
     return {
-      key:{"verdict":entry["verdict"]["verdict"],"reason":entry["verdict"].get("reason"),"by":entry["verdict"].get("by"),"reviewed_by":entry["verdict"].get("reviewed_by")}
+      key:{**{name:entry["verdict"].get(name) for name in ("verdict","reason","by","reviewed_by","finding","disposition")},"finding_state":EQ.finding_state(entry["verdict"])}
       for key,entry in items.items()
-      if entry["item"]["kind"]=="rule" and entry["verdict"] and entry["verdict"]["verdict"] in SUPPRESSING
+      if entry["item"]["kind"]=="rule" and entry["verdict"] and entry["verdict"]["verdict"] in LEAVING
     }
+
+
+def completeness_findings(contract_id):
+    """The findings a contract's counting verdicts name (ADR_0007): a survivor's silent requirement
+    or code with no effect, with its state, its sentence, the verdict's reason and who decided."""
+    found=[]
+    for key,entry in sorted(((verdict_state().get(contract_id) or {}).get("items") or {}).items()):
+        verdict=entry.get("verdict") or {}
+        state=EQ.finding_state(verdict)
+        if state is None:
+            continue
+        item=entry["item"]
+        found.append({
+          "key":key,"kind":verdict["verdict"],"state":state,"finding":str(verdict.get("finding") or ""),
+          "reason":str(verdict.get("reason") or ""),"by":str(verdict.get("by") or ""),"reviewed_by":str(verdict.get("reviewed_by") or ""),
+          "disposition":str(verdict.get("disposition") or ""),"origin":item.get("kind"),"class":item.get("class"),
+          "path":item.get("path"),"qualname":item.get("qualname"),"line":item.get("line"),
+        })
+    return found
 
 
 def is_mutation_pin(nodeid):
@@ -8163,11 +8298,11 @@ def restore_subsumed(contract_id,record,rows,surviving,workdir):
     folder=VERDICTS_DIR/contract_id
     verdicts=load_verdicts(contract_id)
     # Nothing to bring back while the campaign still catches what it caught before the removal; a
-    # mutant a verdict that counts takes out as equivalent or irrelevant costs nothing when it survives.
+    # mutant a verdict that counts takes out of its class (equivalent, irrelevant or a finding) costs nothing when it survives.
     decisions=person_decisions(contract_id)
     suppressed={
       key for key in surviving
-      if ((decisions.get(key) or {}).get("verdict") if key in final_decisions(contract_id) else (reviewed_verdict(verdicts.get(key) or {}) or {}).get("verdict")) in SUPPRESSING
+      if ((decisions.get(key) or {}).get("verdict") if key in final_decisions(contract_id) else (reviewed_verdict(verdicts.get(key) or {}) or {}).get("verdict")) in LEAVING
     }
     lost=sorted(set(record.get("caught_before") or [])&surviving-suppressed)
     if not lost:
@@ -8431,10 +8566,29 @@ def attempts_text(rows):
     )
 
 
+def retire_deselected_proposals(contract_id,target):
+    """Proposals for a class at a target the profile no longer selects (its target was renamed or
+    dropped): the generation retires them with their drafts, as it retires the proposals an answer
+    replaces. Returns the ids of the mutants that are gone."""
+    folder=SEMANTIC.PROPOSAL_ROOT/contract_id
+    payload=SEMANTIC.load_proposals(contract_id)
+    selected={SEMANTIC.selection_key(row) for row in target.get("semantic_mutants") or []}
+    proposals=list(payload.get("proposals") or [])
+    kept=[proposal for proposal in proposals if proposal.get("target") and proposal.get("class") and SEMANTIC.selection_key(proposal) in selected]
+    if len(kept)==len(proposals):
+        return set()
+    gone={proposal.get("id") for proposal in proposals}-{proposal.get("id") for proposal in kept}
+    retire_drafts(folder,gone)
+    (folder/"proposals.json").write_text(json.dumps({**payload,"proposals":kept},indent=1,ensure_ascii=False)+"\n")
+    print(f"[GENERATE] {contract_id}: retired {len(proposals)-len(kept)} proposals of targets the profile no longer selects",flush=True)
+    return gone
+
+
 def generate_contract_proposals(run,contract_id,target,needs,force=False):
     """Ask the generator about every selection of one contract, a class at a target, that has no
     current proposal (or about every one, with force), all at once, as many as the backends take; an
     accepted answer replaces that selection's proposals."""
+    retired=retire_deselected_proposals(contract_id,target)
     payload,proposals=semantic_proposal_set(contract_id,target)
     contexts=semantic_contexts(contract_id,target,needs)
     folder=SEMANTIC.PROPOSAL_ROOT/contract_id
@@ -8453,7 +8607,7 @@ def generate_contract_proposals(run,contract_id,target,needs,force=False):
           "system":SEMANTIC.GENERATOR_SYSTEM,"prompt":SEMANTIC.prompt(context),
           "schema":SEMANTIC.mutant_answer_schema(selection["budget"]),"response_dir":folder/"responses",
         }))
-    changed=False
+    changed=bool(retired)
     for (selection,key,qualname,context,original),(_row,response,attempts) in zip([owner for owner,_request in asking],run.call_many([request for _owner,request in asking])):
         print(f"[GENERATE] {contract_id} · {qualname} · {selection['class']}: "+attempts_text(attempts),flush=True)
         if response is None:
@@ -8778,7 +8932,17 @@ def survivor_judgement_counts(triage,semantic,decided=None):
         klass=entry["item"].get("class")
         if not verdict or not klass:
             continue
-        name={"pin":"pinned" if entry.get("pin") else "pin_pending","equivalent":"suppressed","irrelevant":"suppressed","escalate":"escalated"}[verdict["verdict"]]
+        # A finding counts under its kind whether it is open or closed, and its open ones apart: a
+        # finding the delegate closed is still what it is, never a suppression (ADR_0007).
+        if verdict["verdict"] in FINDINGS:
+            counts.setdefault(klass,Counter())["verdict_"+verdict["verdict"]]+=1
+            if EQ.finding_state(verdict)!="closed":
+                counts[klass]["verdict_"+verdict["verdict"]+"_open"]+=1
+            continue
+        name={
+          "pin":"pinned" if entry.get("pin") else "pin_pending","equivalent":"suppressed","irrelevant":"suppressed",
+          "escalate":"escalated",
+        }[verdict["verdict"]]
         counts.setdefault(klass,Counter())["verdict_"+name]+=1
     for row in (triage.get("rows") or {}).values():
         klass=IMPL_FAULTS.CLASS_BY_OPERATOR.get(str(row.get("operator")))
@@ -8872,12 +9036,16 @@ def _semantic_mutant_actual(plans,test_rows,apply_verdicts):
             state,reason="current",""
         classes={}
         if state=="current" and apply_verdicts:
-            # A verdict that counts and calls a survivor equivalent or irrelevant takes it out of its class (ADR_0006).
+            # A verdict that counts and calls a survivor equivalent or irrelevant (ADR_0006), or names a finding
+            # (ADR_0007), takes it out of its class; the row keeps which verdict did.
             decided=(verdict_state().get(contract_id) or {}).get("items") or {}
             retained={**retained,"results":[
-              {**row,"outcome":"equivalent","reason":f"judged {decided[row['id']]['verdict']['verdict']} by {decided[row['id']]['verdict'].get('by')}: {decided[row['id']]['verdict'].get('reason')}","by":decided[row["id"]]["verdict"].get("by")}
+              {
+                **row,"outcome":"equivalent","reason":f"judged {decided[row['id']]['verdict']['verdict']} by {decided[row['id']]['verdict'].get('by')}: {decided[row['id']]['verdict'].get('reason')}","by":decided[row["id"]]["verdict"].get("by"),
+                "verdict":decided[row["id"]]["verdict"]["verdict"],"finding_state":EQ.finding_state(decided[row["id"]]["verdict"]),
+              }
               # Only a survivor: a caught, filtered or duplicate mutant has no verdict to take it out.
-              if row.get("outcome") in {"undecided","distinguished"} and row.get("id") in decided and decided[row["id"]]["verdict"] and decided[row["id"]]["verdict"]["verdict"] in {"equivalent","irrelevant"} else row
+              if row.get("outcome") in {"undecided","distinguished"} and row.get("id") in decided and decided[row["id"]]["verdict"] and decided[row["id"]]["verdict"]["verdict"] in LEAVING else row
               for row in retained.get("results") or []
             ]}
         if state=="current":
@@ -9012,6 +9180,7 @@ def requirement_monitor_model(base_model):
     semantic_faults=semantic_mutant_actual()
     scenario_faults=scenario_mutant_actual()
     triage_faults=survivor_triage_actual()
+    campaigned=current_campaign_contracts()
     fault_model=json.loads(ASSURANCE_FACTS_PATH.read_text()) if ASSURANCE_FACTS_PATH.exists() else {}
     result={
       "schema":"ternforge-requirement-monitor-p34-2",
@@ -9206,6 +9375,9 @@ def requirement_monitor_model(base_model):
             "survivor_judgement":survivor_judgement_counts(triage_faults.get(contract_id) or {},semantic_faults.get(contract_id) or {},(verdict_state().get(contract_id) or {}).get("items")),
             "raw_url":"requirement-monitor-facts.json",
           },
+          # What the contract's survivors say about its requirement and its code (ADR_0007): judged
+          # only where its campaign is current.
+          "completeness_actual":{"applicable":contract_id in campaigned,"findings":completeness_findings(contract_id)},
         }
     # Tests that claim to verify a contract but serve none of the profile's cases
     # (and are not goal/capability scenarios or fault challenges) are kept visible:
@@ -10334,8 +10506,8 @@ def run_diff_campaign(base_ref="main",contract_ids=None):
                 kept[contract_id].write_text(json.dumps({"returncode":run["returncode"],"report":raw_path.read_text()})+"\n")
         mutants=[]
         if run["report_retained"]:
-            # A survivor a recorded verdict judged equivalent or irrelevant is no finding; it is listed apart.
-            suppressions={key:verdict for key,verdict in (recorded.get(contract_id) or {}).items() if verdict.get("verdict") in SUPPRESSING}
+            # A survivor a recorded verdict took out of its class is no new finding of the diff; it is listed apart.
+            suppressions={key:verdict for key,verdict in (recorded.get(contract_id) or {}).items() if verdict.get("verdict") in LEAVING}
             mutants=IMPL_FAULTS.suppress_by_verdict(IMPL_FAULTS.contract_mutants({**plan,"attributable_lines":scope},json.loads(raw_path.read_text()),ROOT),suppressions)
         found=diff_findings(contract_id,mutants,priority)
         earlier=[

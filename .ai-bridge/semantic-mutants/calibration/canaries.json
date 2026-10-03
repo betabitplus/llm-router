@@ -67,6 +67,24 @@
    "judgement": "an input is confirmed by execution: billed(status='cancelled'); the original gives False and the mutant gives True (found by symbolic search)."
   },
   {
+   "id": "V-UNSPECIFIED",
+   "expected": "unspecified",
+   "context": "Technical requirement CALIBRATION_ORDER_TOTAL (Order total): An order's total is the sum of the prices of its lines.\nIts verification criteria: an order of lines priced 2 and 3 totals 5",
+   "target": "place_order",
+   "original": "def place_order(order: Order, mailer: Mailer) -> int:\n    total = sum(line.price for line in order.lines)\n    mailer.send_receipt(order.customer, total)\n    return total",
+   "mutant": "def place_order(order: Order, mailer: Mailer) -> int:\n    total = sum(line.price for line in order.lines)\n    return total",
+   "judgement": "it could not be judged: Mailer cannot be built from typed arguments; no input was tried."
+  },
+  {
+   "id": "V-INEFFECTIVE",
+   "expected": "ineffective",
+   "context": "Technical requirement CALIBRATION_SHARE (Shares): A share is the part divided by the whole, and a whole below one counts as one.\nIts verification criteria: a part of 3 of a whole of 4 is 0.75; a part of 2 of a whole of 0 is 2.0",
+   "target": "share",
+   "original": "def share(part: int, whole: int) -> float:\n    whole = max(whole, 1)\n    if whole == 0:\n        raise ValueError('empty whole')\n    return part / whole",
+   "mutant": "def share(part: int, whole: int) -> float:\n    whole = max(whole, 1)\n    return part / whole",
+   "judgement": "the symbolic search ended exhausted after 4 paths; every assessor answered equivalent (0.97): the guard can never raise; its label is likely-equivalent."
+  },
+  {
    "id": "V-REAL-PIN",
    "expected": "pin",
    "context": "Goal GOAL_CONFIGURATION_PREDICTABILITY (Make effective request configuration predictable)\nFeature FEAT_CONFIGURATION_PRECEDENCE (Configuration precedence and validation)\nRequirement REQ_CREDENTIAL_RESOLUTION (Credentials resolve deterministically): Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically. A missing required credential shall surface as the public missing-key error.\nIts verification criteria: A configured fixed key resolves through its configured custom environment name.; Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.; A missing required credential raises the public missing-key error with identity.; Every provider family that permits an absent bearer credential resolves the permitted empty value.; A public request with a missing required credential surfaces the missing-key error.",
@@ -101,8 +119,8 @@
    }
   },
   {
-   "id": "V-REAL-EQUIVALENT",
-   "expected": "equivalent",
+   "id": "V-REAL-INEFFECTIVE",
+   "expected": "ineffective",
    "context": "Goal GOAL_ROUTING_RELIABILITY (Preserve request progress across route failures)\nFeature FEAT_ROUTE_FALLBACK (Route fallback)\nRequirement REQ_ROUTE_TIMEOUT_FALLBACK (Route timeout fallback): An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.\nIts verification criteria: Sync and async requests both stop waiting on a timed-out route, then continue to another eligible route and succeed.; Sync and async requests with no fallback both expose the public timeout after exactly the terminal timed-out attempt.",
    "target": "RouterRuntime._call_sync_with_timeout",
    "original": "    def _call_sync_with_timeout(\n        self,\n        request: ResolvedRequest,\n        *,\n        timeout_seconds: float | None,\n    ) -> LLMRouterResponse:\n        \"\"\"Run one sync executor attempt with optional timeout.\"\"\"\n        if timeout_seconds is None:\n            return self._executor.execute(request)\n        pool = ThreadPoolExecutor(max_workers=1)\n        future = pool.submit(self._executor.execute, request)\n        timed_out = False\n        try:\n            return future.result(timeout=timeout_seconds)\n        except FutureTimeoutError as exc:\n            timed_out = True\n            future.cancel()\n            msg = \"Attempt timed out.\"\n            raise TimeoutError(msg) from exc\n        finally:\n            pool.shutdown(wait=not timed_out, cancel_futures=True)",
@@ -114,7 +132,8 @@
     "verdict_model": "claude-opus-5-5",
     "review": "equivalent",
     "review_model": "gemini-3.1-pro-high",
-    "pin": null
+    "pin": null,
+    "rejudged": "ADR_0007: future.cancel() cannot stop a running call, so the line does nothing; the records judged it equivalent before the disposition existed."
    }
   },
   {

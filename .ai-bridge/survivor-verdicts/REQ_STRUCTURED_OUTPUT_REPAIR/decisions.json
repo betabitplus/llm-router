@@ -1,0 +1,42 @@
+{
+ "41a277a968c393aa": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "kept",
+  "level": "requirement",
+  "reason": "Kept: validate_schema_output always reports why a validation failed, so the fallback text is never used; it stays as the repair prompt's default, and the requirement decided for 87ad8ca644dbe3d7 makes the reported reason a promise. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
+ },
+ "43eb66a1bd8232c0": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require one technical requirement under REQ_STRUCTURED_OUTPUT_REPAIR: every repair request sends the plan's schema as its structured-output constraint, offers no tools (a tool must not run during a repair), and tells the model why the previous output failed validation, or 'Validation failed.' when the validator gives no reason. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "7d7bccdbf94b90fa": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require one technical requirement under REQ_STRUCTURED_OUTPUT_REPAIR: every repair request sends the plan's schema as its structured-output constraint, offers no tools (a tool must not run during a repair), and tells the model why the previous output failed validation, or 'Validation failed.' when the validator gives no reason. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "868533cd04ee427f": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require one technical requirement under REQ_STRUCTURED_OUTPUT_REPAIR: every repair request sends the plan's schema as its structured-output constraint, offers no tools (a tool must not run during a repair), and tells the model why the previous output failed validation, or 'Validation failed.' when the validator gives no reason. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "9a81553c4311e34e": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require one technical requirement under REQ_STRUCTURED_OUTPUT_REPAIR: every repair request sends the plan's schema as its structured-output constraint, offers no tools (a tool must not run during a repair), and tells the model why the previous output failed validation, or 'Validation failed.' when the validator gives no reason. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

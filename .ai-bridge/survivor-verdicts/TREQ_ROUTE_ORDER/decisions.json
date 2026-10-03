@@ -1,0 +1,26 @@
+{
+ "14045e0aa1675aec": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: ordered_routes is internal and its one caller only iterates the routes, so the container type is invisible to a public caller. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "896165f2ae8f1610": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require, as a clause of TREQ_ROUTE_ORDER: fallbacks are shuffled only when the plan has at least min_routes_for_fallback_shuffle routes, a public policy setting; below it they keep their configured order. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "a27e03f14aab8822": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require, as a clause of TREQ_ROUTE_ORDER: fallbacks are shuffled only when the plan has at least min_routes_for_fallback_shuffle routes, a public policy setting; below it they keep their configured order. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

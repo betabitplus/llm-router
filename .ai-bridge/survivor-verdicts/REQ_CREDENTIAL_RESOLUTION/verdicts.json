@@ -117,38 +117,39 @@
  "50e4a41c052fa9e4": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T113700Z-365d21",
+   "call_id": "20261002T201412Z-86fbce",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "For any `Collection[int]`, checking `candidate in preferred_key_ids` gives the same answer as checking `candidate in set(preferred_key_ids)`, and `None` or an empty input becomes `()` in both versions. So the eligible keys, the selected key and the stored rotation offset are identical, and only lookup speed differs.",
-   "response_sha256": "afe02b2d16f862c7d2e8110c4690827acceba5f939b2f7d125115ff027fdeeec",
+   "reason": "The `candidate in preferred` check gives the same answer for integer key IDs whether `preferred` is a set or the original collection (list, tuple, set or frozenset). The mutant only skips copying the IDs into a set, so the rotation and the preferred-key selection stay the same.",
+   "response_sha256": "1b194d9004f0759f11b4c342d7421c578aa74f00235e52e7796cbb89b762f505",
    "sources": [
-    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
     "preferred = set(preferred_key_ids or ())",
     "preferred = preferred_key_ids or ()",
-    "preferred_key_ids: Collection[int] | None = None,"
+    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "13369f8f68fda400734d9f08e485aedaa4e7dbfa102927fa941292a4ab478a56",
+  "prompt_sha256": "fbd2cd3bb52e4f77ef168134468204b95c259c0ad986df951939f70007b730bb",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T113959Z-4a1192",
+   "call_id": "20261002T201519Z-6ca61e",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "13369f8f68fda400734d9f08e485aedaa4e7dbfa102927fa941292a4ab478a56",
-   "reason": "Removing the set conversion changes the internal data structure used for the membership check but does not alter the logical outcome. The deterministic resolution behavior remains exactly the same for all inputs.",
-   "response_sha256": "c4cda1b6f20b661a6ac1970e8898f6d0e91f9dad633bd81f78982b692e2442fd",
+   "prompt_sha256": "fbd2cd3bb52e4f77ef168134468204b95c259c0ad986df951939f70007b730bb",
+   "reason": "Omitting the set conversion leaves candidate membership testing in the list comprehension functionally identical because candidate in collection evaluates to the same boolean result for any collection of integer key IDs. Both versions select the identical key, update the rotation offset identically, and return the same resolved key for all inputs.",
+   "response_sha256": "8ddc90b6028f908f8eb37f3cf808e16f085eca53a7b59470c3cd70b9566dbaea",
    "sources": [
-    "Requirement REQ_CREDENTIAL_RESOLUTION (Credentials resolve deterministically): Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically.",
+    "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
     "preferred = set(preferred_key_ids or ())",
     "preferred = preferred_key_ids or ()"
    ],
@@ -364,43 +365,44 @@
  "87628559ec5d804c": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T113700Z-2f754e",
+   "call_id": "20261002T201412Z-228f7e",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant's ordered_keys starts with exactly the original rotated list (keys[start:] + keys[:start]) and then only adds repeats of keys[start:]. Picking the first eligible key, or the first key overall, therefore always gives the same key_id, and the rotation offset updates the same way, so rotation stays deterministic and observably identical.",
-   "response_sha256": "c925d7be8dcd38e9ac96940b507000ddf5aa3151fd61043376be0a62962c259b",
+   "reason": "The selected key is always the same. Because `start` is less than len(keys), `ordered_keys[0]` is still `keys[start]`. Any preferred key not found in `keys[start:]` must sit in `keys[:start]`, so `eligible[0]` is the same and the rotation offset stays the same too.",
+   "response_sha256": "5a3ed430fc0566d6a636c34088b2237c5d4391ec5a110b17f368d3d770e84c3b",
    "sources": [
     "ordered_keys = [*keys[start:], *keys[:]]",
     "ordered_keys = [*keys[start:], *keys[:start]]",
-    "key_id = eligible[0] if eligible else ordered_keys[0]",
     "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "slice",
-  "prompt_sha256": "cce538b7bf1f16426ec81b91d6e18a8092cd2be6336e912c31f8a5efd7e0079a",
+  "prompt_sha256": "27fdd16a0dec4867c6d17193d48952a18dfb26cf64e807284fbc6888f5a1dd85",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T113750Z-1b453f",
+   "call_id": "20261002T201519Z-8b3204",
    "confirmed": false,
    "effort": "",
+   "finding": "The slice bound 'start' in 'keys[:start]' is intended to prevent duplicate keys in 'ordered_keys', but it does nothing here because candidate selection only inspects the first matching key, making the duplicate trailing keys unreachable.",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "cce538b7bf1f16426ec81b91d6e18a8092cd2be6336e912c31f8a5efd7e0079a",
-   "reason": "The mutated `ordered_keys` list contains the exact same elements in the same order as the original for its first `len(keys)` elements, simply appending a redundant `keys[start:]` at the end. Since the algorithm only selects the first matching element (`eligible[0]`) or the very first element (`ordered_keys[0]`), these redundant trailing elements never affect the chosen `key_id`.",
-   "response_sha256": "9938fccf4ad6e686edde07f97caa3b659b6e0997eabc1b4bc7e3f65b17c60d7b",
+   "prompt_sha256": "27fdd16a0dec4867c6d17193d48952a18dfb26cf64e807284fbc6888f5a1dd85",
+   "reason": "Replacing 'keys[:start]' with 'keys[:]' appends the full list of keys after 'keys[start:]', duplicating candidates at the end of 'ordered_keys'. Because key selection only takes the first eligible candidate or first ordered key, these duplicate keys are always preceded by their earlier occurrences and can never be reached, leaving caller-visible behavior unchanged.",
+   "response_sha256": "54fb270a56b665f5707302d668bde3b24af25101519057fe03abbc8c35196bdf",
    "sources": [
     "Automatic key selection rotates deterministically for configured custom-key mappings and convention-discovered key IDs.",
-    "ordered_keys = [*keys[start:], *keys[:start]]",
-    "ordered_keys = [*keys[start:], *keys[:]]"
+    "Configured fixed keys, custom environment names, optional credentials, and automatically rotated keys shall resolve deterministically.",
+    "            ordered_keys = [*keys[start:], *keys[:start]]"
    ],
    "test_focus": "",
-   "verdict": "equivalent"
+   "verdict": "ineffective"
   }
  },
  "8bf6ec5f1367a5d6": {

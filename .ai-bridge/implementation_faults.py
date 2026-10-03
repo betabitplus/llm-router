@@ -463,13 +463,16 @@ def not_planted_mutants(plan: dict, report: dict, root: Path) -> list[dict]:
 
 
 def suppress_by_verdict(rows: list[dict], verdicts: dict[str, dict] | None) -> list[dict]:
-    """Mutant rows with every survivor or unreached mutant a current verdict judged equivalent or
-    irrelevant (ADR_0006) suppressed, with the verdict, its reason and who gave it."""
+    """Mutant rows with every survivor or unreached mutant a current verdict takes out of its class
+    suppressed: judged equivalent or irrelevant (ADR_0006), or named a finding, open or closed
+    (ADR_0007), with the verdict, its reason, who gave it and the finding's state."""
     for row in rows:
         verdict = (verdicts or {}).get(row["fingerprint"])
         if verdict and row["outcome"] in {"survived", "notreached"}:
             row["outcome"] = "suppressed"
-            row["suppression"] = {"verdict": verdict.get("verdict"), "reason": verdict.get("reason"), "by": verdict.get("by"), "reviewed_by": verdict.get("reviewed_by")}
+            row["suppression"] = {
+                key: verdict.get(key) for key in ("verdict", "reason", "by", "reviewed_by", "finding", "disposition", "finding_state")
+            }
     return rows
 
 
@@ -480,8 +483,8 @@ def project_classes(plan: dict, report: dict, root: Path, verdicts: dict[str, di
     every such mutant is caught; a mutant no test of the contract reaches is not
     caught. Invalid and suppressed mutants are counted apart and never count as
     caught; mutants in arid code were never planted and are counted by rule.
-    ``verdicts`` names, by fingerprint, surviving mutants a current verdict judged
-    equivalent or irrelevant (ADR_0006): they are suppressed, with the verdict.
+    ``verdicts`` names, by fingerprint, surviving mutants a current verdict takes out of
+    their class (ADR_0006, ADR_0007): they are suppressed, with the verdict.
     """
     rows = suppress_by_verdict(contract_mutants(plan, report, root), verdicts)
     arid = not_planted_mutants(plan, report, root)
@@ -522,8 +525,14 @@ def project_classes(plan: dict, report: dict, root: Path, verdicts: dict[str, di
                 parts.append(f"{counts['notreached']} are never reached")
             basis = f"The contract's tests catch {counts['caught']} of {faults(judged)}; " + " and ".join(parts) + "."
         extra = []
-        if judged and counts["suppressed"]:
-            extra.append(f"{counts['suppressed']} more are suppressed")
+        # An open finding leaves the class without being decided (ADR_0007): it is named apart.
+        findings = sum(
+            1 for row in class_rows if row["outcome"] == "suppressed" and (row.get("suppression") or {}).get("finding_state") in {"undecided", "decided"}
+        )
+        if judged and counts["suppressed"] - findings:
+            extra.append(f"{counts['suppressed'] - findings} more are suppressed")
+        if judged and findings:
+            extra.append(f"{findings} more " + ("is an open finding" if findings == 1 else "are open findings"))
         if judged and counts["invalid"]:
             extra.append(f"{counts['invalid']} more broke test collection")
         if extra:

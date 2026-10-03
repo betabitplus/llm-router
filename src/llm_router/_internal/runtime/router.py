@@ -9,12 +9,15 @@ Why:
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Sequence
+import contextvars
+import threading
+from collections.abc import Callable, Sequence
 from concurrent.futures import (
     ThreadPoolExecutor,
     TimeoutError as FutureTimeoutError,
 )
 from dataclasses import dataclass
+from functools import partial
 from time import sleep
 
 from py_lib_runtime import get_logger
@@ -40,6 +43,18 @@ from llm_router._internal.runtime.routes import (
 from llm_router._internal.runtime.tracing import build_attempt_trace
 
 logger = get_logger(__name__)
+
+
+# @impl Attempt keeps the caller's context, IMPL_ATTEMPT_CALLER_CONTEXT, [TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT[revision==1]]
+def _in_caller_context[T](call: Callable[[], T]) -> Callable[[], T]:
+    """Return ``call``, to run in a copy of the context its caller has now.
+
+    A worker thread starts with an empty context, so without the copy the tracing
+    span, the log fields and every other context variable the caller set would not
+    reach a timed attempt; ``asyncio.to_thread`` carries them over the same way.
+    """
+    context = contextvars.copy_context()
+    return partial(context.run, call)
 
 
 @dataclass(frozen=True, slots=True)
@@ -419,18 +434,22 @@ class RouterRuntime:
         """Run one sync executor attempt with optional timeout."""
         if timeout_seconds is None:
             return self._executor.execute(request)
+        left = threading.Event()
         pool = ThreadPoolExecutor(max_workers=1)
-        future = pool.submit(self._executor.execute, request)
+        attempt = partial(self._executor.execute, request, left=left)
+        future = pool.submit(_in_caller_context(attempt))
         timed_out = False
         try:
             return future.result(timeout=timeout_seconds)
         except FutureTimeoutError as exc:
             timed_out = True
-            future.cancel()
+            # The attempt keeps running in its thread; it starts nothing more once left.
+            # @impl Left attempt is told it was left, IMPL_TIMED_OUT_ATTEMPT_LEFT, [TREQ_TIMED_OUT_ATTEMPT_STOPS[revision==1]]
+            left.set()
             msg = "Attempt timed out."
             raise TimeoutError(msg) from exc
         finally:
-            pool.shutdown(wait=not timed_out, cancel_futures=True)
+            pool.shutdown(wait=not timed_out)
 
     async def _call_async_with_timeout(
         self,

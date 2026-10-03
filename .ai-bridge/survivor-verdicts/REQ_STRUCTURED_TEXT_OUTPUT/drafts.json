@@ -1302,6 +1302,99 @@
    ]
   }
  ],
+ "69c9a7cc23c00f7e": [
+  {
+   "at": "2026-10-02T20:28:14.057998Z",
+   "call_id": "20261002T202726Z-2afe4d",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b1f249c92ae8a97e4cfb89fbee6279af8120ff5eed05f364eaf08365702e3c51",
+   "reason": "it does not pass on the original 5 times in a row (pytest: assert 42 == ItemCount(root=42))",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-02T20:31:31.317337Z",
+   "call_id": "20261002T202814Z-75fe2f",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "e0788bc828aa88dda935a1e653513d977a4d9d876dfa51101b9de3e981de5371",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert {'id': 'chatc...l-model', ...} == {'id': 'chatc...l-model', ...} | Omitting 6 identical items, use -vv to show | Differing items: | {'choices': [{'index': 0, 'message': {'role': 'assistant', 'content': '\\x0c 42 \\xa0'}, 'finish_reason': 'stop'}]} != {'choices': [{'index': 0, 'message': {'role': 'assistant', 'content':",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "py_lib_testkit._internal.test_support.http.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-02T20:32:01.328875Z",
+   "call_id": "20261002T203132Z-4d82db",
+   "cause": "lint",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "8f59028c9e7ba683a8553150e826e2aa0af82a3c4ed2597b02e4bc168cd4bfd9",
+   "reason": "it breaks the project's lint rules (ruff: line 65: RUF001 String contains ambiguous `\u00a0` (NO-BREAK SPACE). Did you mean ` ` (SPACE)?)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-02T20:33:58.820317Z",
+   "call_id": "20261002T203201Z-0218fa",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "23b5887dea193bbff4bfef185291d7093bb0d8535daa8bb937e9418a28687b02",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.LLMRouterResponse",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
  "6dcac2e49b50d6c2": [
   {
    "at": "2026-09-29T10:38:22.578378Z",

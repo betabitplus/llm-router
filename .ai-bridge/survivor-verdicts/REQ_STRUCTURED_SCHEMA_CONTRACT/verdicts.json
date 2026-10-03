@@ -368,40 +368,40 @@
  "46f251ff0853b30b": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T113657Z-5c372d",
+   "call_id": "20261002T201409Z-67d548",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Draft202012Validator only reads the schema (via get/items and reference lookups) and never changes it. Since a shallow dict copy shares every nested subschema, both versions accept and reject the same outputs, raise the same exception type and return the same parsed object. The only leftover difference is how a non-dict mapping prints in the error text, which no requirement asks about.",
-   "response_sha256": "c13a24cb5ffb1781d31d30fac4ce5d8d10b4c903aeb15beb77fb7a8efbac88e3",
+   "reason": "The Draft 2020-12 validator only reads the schema through mapping access and never changes it. Validation runs right away, so passing the mapping itself or a shallow dict copy gives the same validated output and the same errors for every input.",
+   "response_sha256": "48afa6bb2addef3505537306752949034b0c11a7c151932eeacb6bdc378ce741",
    "sources": [
-    "Draft202012Validator(dict(schema)).validate(parsed)",
-    "Draft202012Validator(schema).validate(parsed)",
     "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them."
+    "Draft202012Validator(dict(schema)).validate(parsed)",
+    "Draft202012Validator(schema).validate(parsed)"
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "5de352dde8540bad4ef9352c98df4035c7ac042587891939da2d8ad91daba418",
+  "prompt_sha256": "bd27745092d0df3af638c6357fec6456c2d905404a0831587f7609a16527700d",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T113803Z-522450",
+   "call_id": "20261002T201533Z-587db7",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "5de352dde8540bad4ef9352c98df4035c7ac042587891939da2d8ad91daba418",
-   "reason": "The Draft202012Validator accepts any Mapping and does not mutate it. Passing the schema mapping directly instead of making a shallow dict copy produces identical validation behavior.",
-   "response_sha256": "db927305b1cae837a66d627025a23eb390e717f93450d9c689eae1c98b81c128",
+   "prompt_sha256": "bd27745092d0df3af638c6357fec6456c2d905404a0831587f7609a16527700d",
+   "reason": "Passing the mapping schema directly to Draft202012Validator instead of creating a shallow dict copy produces identical validation results without mutating the schema or altering return values. The removal of dict(schema) is a conversion that changes nothing and no caller input can distinguish between the two versions.",
+   "response_sha256": "39891a3bfebcf2c14fc7d80557aba954a6e9f7fc91dd168097826c5bb6a548e6",
    "sources": [
-    "Draft202012Validator(dict(schema)).validate(parsed)",
-    "Draft202012Validator(schema).validate(parsed)",
-    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution."
+    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
+    "Draft202012Validator(dict(schema)).validate(parsed)"
    ],
    "test_focus": "",
    "verdict": "equivalent"
@@ -471,43 +471,26 @@
  "5171091e759c5336": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260930T190046Z-f060a9",
+   "call_id": "20261002T201508Z-e3e270",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether a provider transform's explicit schema name must replace the original name sent to the provider. A requirement would say that when an adapter supplies a name, the transformed SchemaSpec carries that name.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant ignores the adapter-supplied name override, but the requirement covers only schema validity, router-side Draft 2020-12 validation, Pydantic schema preservation and reconstruction, and transforms not weakening validation. The name affects none of these, and the transformed json_schema is still applied exactly as in the original.",
-   "response_sha256": "418d36ec292a1cb7afaba73a8f072e588bff06b47644cb73d9c8860c8772b9e2",
+   "reason": "The mutant drops the adapter-supplied name override and keeps the original schema name. The confirmed input shows 'new' becoming 'old'. The requirement covers schema content, router-side validation and model reconstruction, but says nothing about the schema name a provider transform may set. The name does not affect validation.",
+   "response_sha256": "862583eb12fee5ac6cd1d2e14ec5c6f934e730787ff611ea5b2d5d23d5ab9fe9",
    "sources": [
-    "Provider-specific schema transforms shall not weaken router-side validation.",
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
+    "name=spec.name if name is None else name,",
     "return replace(spec, name=spec.name if True else name, json_schema=transformed)",
-    "name=spec.name if name is None else name,"
+    "Provider-specific schema transforms shall not weaken router-side validation.",
+    "Structured schemas normalize predictably"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "conditional",
-  "prompt_sha256": "eb0f34806a6e5b8f7835d3decaacf884bd15eee2033cd1814fff5397ba13de54",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T113803Z-513742",
-   "confirmed": true,
-   "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "eb0f34806a6e5b8f7835d3decaacf884bd15eee2033cd1814fff5397ba13de54",
-   "reason": "The mutation prevents renaming the schema specification during a transform by ignoring the `name` argument, but the requirement only mandates that provider-specific transforms do not weaken validation and preserve constraints, never mentioning the ability to rename specs.",
-   "response_sha256": "149be94e3ae075c5b99df27c6f365b16a4f93cb46e02902902884a9c6b026241",
-   "sources": [
-    "Provider-specific schema transforms shall not weaken router-side validation.",
-    "name=spec.name if name is None else name"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "6b9eca14bb6945ac9f105138da8a3b81ba452cbfad43c785da2a3decd0b58fda"
  },
  "589c1fbde8e85997": {
   "answer": {
@@ -719,44 +702,25 @@
  "87ad8ca644dbe3d7": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085809Z-a35042",
+   "call_id": "20261002T201412Z-ff6303",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says whether a failed structured-output validation must say why it failed. A requirement would state that a failed SchemaValidationResult carries a non-empty error_message describing the validation error.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "On a failed parse the mutant still returns valid=False, so router-side validation still rejects bad output exactly as before. It only leaves out the diagnostic error_message, and the requirement asks for enforcement, not for any message.",
-   "response_sha256": "12f0049b717767f2ce99cf9283274d1fcfc55b9b83e43919ebd6ef08e0880297",
+   "reason": "The mutant still rejects invalid output (`valid=False`), so the requirement's enforcement is unchanged. It does drop the failure explanation entirely: `error_message` becomes None instead of describing the parse error. A caller or repair loop could rely on that explanation, and no requirement says a failed validation must report why it failed.",
+   "response_sha256": "742be16b72275e0be58306e11f378f66cd1c780600129cf127bb8ddb17a0b504",
    "sources": [
     "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
-    "router-side validation enforces its declared nested/common constraints rather than silently ignoring them",
     "return SchemaValidationResult(valid=False)",
     "error_message=preview_value(exc),"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "argument",
-  "prompt_sha256": "293d569812c9e7457091e7fd9c50ef86a6bd9b25bb641805b5e80e93403c8952",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T090939Z-d536c3",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "293d569812c9e7457091e7fd9c50ef86a6bd9b25bb641805b5e80e93403c8952",
-   "reason": "The requirement mandates that invalid outputs are rejected by router-side validation, which the mutant still accomplishes by returning valid=False. The specific error message returned upon failure is an implementation detail not specified by the requirement.",
-   "response_sha256": "2425c95eaff32e2988bf17dd544c601606ec9ff00cc8f22980c5c396adfea4f8",
-   "sources": [
-    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
-    "error_message=preview_value(exc),",
-    "return SchemaValidationResult(valid=False)"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "349f058d0cf32c154ef07d7773aa38a1297a17b871fd340e60c02fece92469bb"
  },
  "SM-008E10B9": {
   "answer": {
@@ -875,14 +839,15 @@
  "SM-1C2A60D5": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-896e4a",
+   "call_id": "20261002T202135Z-c98045",
    "confirmed": false,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says how the structured-output schema name is chosen when an adapter passes an empty name override. A requirement should say whether an empty name is rejected, kept as-is, or replaced by the original spec name.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The versions differ only when an adapter passes name='' (the original keeps the empty name; the mutant falls back to spec.name). The requirement covers schema content, router-side validation and Pydantic model reconstruction, not the schema's name. The transformed json_schema is identical in both versions, so validation is not weakened.",
-   "response_sha256": "115e44c8356d806b8194c58588d212c59f61a1c4f8624604b485226e5da1e664",
+   "reason": "With name='' the original keeps the empty string as the schema name, while the mutant falls back to spec.name. That changes the name sent to the provider, but the requirement only covers schema validity, router-side validation and Pydantic reconstruction, not schema naming.",
+   "response_sha256": "6cd8cf053470bdf200c42636c185c91dc5ca648080a1efe4b009cedf53c2a969",
    "sources": [
     "name=spec.name if name is None else name,",
     "name=name or spec.name,",
@@ -890,29 +855,10 @@
     "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "semantic",
-  "prompt_sha256": "79e96fdc35d79e065942f8836fb4c53c17abbd4d0636a59f3175b7aa872504cf",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T081018Z-a0e51d",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "79e96fdc35d79e065942f8836fb4c53c17abbd4d0636a59f3175b7aa872504cf",
-   "reason": "The requirement focuses on valid object JSON Schemas, Draft 2020-12 semantics, and Pydantic model types, but does not specify how empty string name overrides should be handled during schema transformations. The change only alters this fallback logic, which is an implementation detail.",
-   "response_sha256": "b66e2ecb6791d589dfd3b500c5457d49cff81e873f1ae37486bbbd251441c005",
-   "sources": [
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
-    "name=spec.name if name is None else name,",
-    "name=name or spec.name,"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "13dc9c32bf3ac87ee3ed4632dc6ec08fdfa0eecc743f50e2876b04825f88c0d3"
  },
  "SM-2093BBD0": {
   "answer": {
@@ -977,88 +923,69 @@
  "SM-21182039": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-8ce9db",
+   "call_id": "20261002T202135Z-3ec6f7",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "No requirement says whether a provider schema transform must apply a caller-supplied schema name. A requirement would say that `with_schema_transform` uses the given `name` for the provider-facing spec and keeps `spec.name` only when `name` is None.",
    "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant drops the optional `name` override, so the transformed spec keeps its original name. The transformed json_schema is unchanged, and the requirement only covers schema validity, router-side Draft 2020-12 validation and Pydantic reconstruction, so the schema's name label is outside what it asks for.",
-   "response_sha256": "ed5b7e4750166ff79d11128bd1ffe68d4258a2ef0e3397f2f117945c0886d367",
+   "reason": "The mutant ignores the adapter's `name` override, so the provider would receive a different schema name. Router-side validation is unaffected, and the requirement only covers schema validity, Pydantic reconstruction and not weakening validation. Nothing says what the transformed spec's name must be.",
+   "response_sha256": "76bc7917d181d0fd782183a8be7c8d07bf845064c5e5844be833b221867cf982",
    "sources": [
-    "Provider-specific schema transforms shall not weaken router-side validation.",
-    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
     "name=spec.name if name is None else name,",
-    "name=spec.name,"
+    "Provider-specific schema transforms shall not weaken router-side validation.",
+    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "semantic",
-  "prompt_sha256": "17ffe0810e1aa695b39235415a6c4060219c81bb593c5de3c0f3eb8320484fbe",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T081018Z-b49d62",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "17ffe0810e1aa695b39235415a6c4060219c81bb593c5de3c0f3eb8320484fbe",
-   "reason": "The mutant ignores the `name` parameter and always retains `spec.name` during schema transformation. This renaming behavior is an implementation detail not covered by the requirement, which focuses on preserving JSON schema validation semantics and structural constraints rather than specification identifiers.",
-   "response_sha256": "f64cefee9cca7f2dbf2b5e098d9ca18c2bf9114faedf1e52f20c6c2caeeaeb12",
-   "sources": [
-    "Requirement REQ_STRUCTURED_SCHEMA_CONTRACT (Structured schemas normalize predictably): Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
-    "Provider-specific schema transforms shall not weaken router-side validation.",
-    "name=spec.name if name is None else name,",
-    "name=spec.name,"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "24aee0df6fa1e3ad2ccec78069aa2256c69bb8143e30d6a4b86886436b15146e"
  },
  "SM-2AE24515": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T114454Z-4c0fa0",
+   "call_id": "20261002T215744Z-0d4bac",
    "confirmed": true,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes behaviour when `value` is a dict. Both callers pass strings: `_structured_candidates` returns `tuple[str, ...]` and `ProviderResult.output_text` is a `str`. So stripping None-valued keys can never happen where router-side validation is observed.",
-   "response_sha256": "515b461522cb7c3b1d202658dcc45c3740d8bc865e091fcdbe1a52d612857152",
+   "reason": "The mutant only adds a None-stripping branch for dict values, but both callers pass strings. The prompted provider passes candidates from `_structured_candidates(text)` (tuple of str) and the executor passes `result.output_text` (str). Router-side validation therefore never reaches the added branch.",
+   "response_sha256": "88b576afe0d31c51bc8391690592ae2c0e1958b0d243e5ee889380cd22a59055",
    "sources": [
-    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution",
     "if isinstance(value, dict):",
     "validation = validate_schema_output(plan.schema, result.output_text)",
-    "for candidate in _structured_candidates(text):",
+    "for candidate in _structured_candidates(text):\n        result = validate_schema_output(spec, candidate)",
     "_structured_candidates(text: str) -> tuple[str, ...]",
-    "ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
+    "router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
   },
   "operator": "semantic",
-  "prompt_sha256": "e4ed968044d4db98e850a9387b32ecfe367838e139bc2fcb783e623058ff2970",
+  "prompt_sha256": "5a65fb1b5d731113023a75d10b77585eb4f7e8cc01f997063286d4e0400c8df8",
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T114546Z-05a2c1",
+   "call_id": "20261002T215922Z-dff621",
    "confirmed": true,
    "effort": "",
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
+   "finding": "",
+   "level": "implementation",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "e4ed968044d4db98e850a9387b32ecfe367838e139bc2fcb783e623058ff2970",
-   "reason": "The mutant removes `None` values from dictionary inputs, which would violate the requirement to enforce declared nested/common constraints rather than silently ignoring them. However, the only project callers (`_validate_structured_result` and `parse_prompted_structured_data`) pass string inputs (`result.output_text` and strings from `_structured_candidates(text)`) rather than dictionaries. Because no caller hands a dictionary to the function, the changed code is never executed and the difference cannot be observed where the requirement is observed.",
-   "response_sha256": "356de454616ee6fe85add045c4af4d682da572db7d9647f58b817400887ad2d9",
+   "prompt_sha256": "5a65fb1b5d731113023a75d10b77585eb4f7e8cc01f997063286d4e0400c8df8",
+   "reason": "The mutant only alters behavior when `value` is a dictionary, but all callers in the codebase pass a string to `validate_schema_output`. Because no caller ever hands the function a dictionary, the added behavior cannot be observed.",
+   "response_sha256": "89886bcbf36a1d376785833cdecdda2b79f3e0aa567b6a2e99faca9d44a5d000",
    "sources": [
-    "Requirement REQ_STRUCTURED_SCHEMA_CONTRACT (Structured schemas normalize predictably): Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
-    "A valid object JSON Schema mapping is preserved and router-side validation enforces its declared nested/common constraints rather than silently ignoring them.",
-    "if isinstance(value, dict):",
-    "validation = validate_schema_output(plan.schema, result.output_text)",
-    "for candidate in _structured_candidates(text):",
-    "_structured_candidates(text: str) -> tuple[str, ...]"
+    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
+    "    if isinstance(value, dict):",
+    "        result = validate_schema_output(spec, candidate)",
+    "- `_structured_candidates` (from llm_router._internal.providers._prompted): _structured_candidates(text: str) -> tuple[str, ...]",
+    "    validation = validate_schema_output(plan.schema, result.output_text)",
+    "- `ProviderResult` (from llm_router._internal.providers.base): ProviderResult(data: Mapping[str, Any], provider: Provider, model: Model, provider_model: str, output_text: str, usage: UsageStats | None = \u2026, tool_calls: tuple[ToolCall, ...] = \u2026, tool_call_metadata: tuple[Mapping[str, Any], ...] = \u2026)"
    ],
    "test_focus": "",
    "verdict": "irrelevant"
@@ -1367,44 +1294,26 @@
  "SM-BF818699": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-95685e",
+   "call_id": "20261002T202135Z-bc5845",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "Nothing says how a list-valued `type` (e.g. ['object']) is handled; the original crashes with a TypeError. A requirement should say it is accepted if it allows only objects, or rejected with a ValueError.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "For a list-valued type like ['object'], both versions reject the mapping during normalization: the original raises TypeError (a list can't be looked up in a set) and the mutant raises ValueError. Neither accepts it. The requirement only asks that the mapping be rejected before provider execution and says nothing about which exception is raised, so the difference is incidental to the implementation.",
-   "response_sha256": "82ff7ff656fe7cc1b14ea59d2c2735a6921e73375d6b339a6c5bd37c2572d420",
+   "reason": "For a valid schema with an array-valued type like ['object'], both versions reject it during normalization; the original crashes with TypeError, while the mutant raises the intended ValueError. The requirement says invalid mappings are rejected before provider execution, but it does not say which error is raised or whether an array-form object type is acceptable.",
+   "response_sha256": "2069d078da23414a7b4bf58abf1a5de75e00ca6c95b3510eb44aa4d205503194",
    "sources": [
+    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
     "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
-    "Mapping schema inputs shall be valid object JSON Schemas",
     "if schema.get(\"type\") not in {None, \"object\"}:",
     "if schema.get(\"type\", \"object\") != \"object\":"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "semantic",
-  "prompt_sha256": "08ac6770a6c9c7d56696a6d5e09fc65e8fb8ddc6a8e2e7c88f629d31ad02d851",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T081018Z-8db61f",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "08ac6770a6c9c7d56696a6d5e09fc65e8fb8ddc6a8e2e7c88f629d31ad02d851",
-   "reason": "The requirement specifies that mappings must be valid object schemas and invalid ones rejected, but it does not dictate the specific exception type (TypeError versus ValueError) when rejecting an unhashable type value. Both versions reject the input, making the difference an implementation detail.",
-   "response_sha256": "61a0f6d490db48d7257a5fb166b9639400ce1213a4b77e29bfe78f48740ba3f0",
-   "sources": [
-    "Mapping schema inputs shall be valid object JSON Schemas",
-    "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
-    "if schema.get(\"type\") not in {None, \"object\"}:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "9ee4031a3100e18aba5c1d7a135517af22f95b4f1bf0e5630532642a8aab2947"
  },
  "SM-C6EBF982": {
   "answer": {
@@ -1578,14 +1487,15 @@
  "SM-EF50CA95": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T080944Z-022ca6",
+   "call_id": "20261002T202135Z-a88582",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "Whether a non-mapping or otherwise malformed schema input that fails with something other than SchemaError surfaces as the 'valid Draft 2020-12' ValueError or keeps its own type (e.g. TypeError) is unsettled; a requirement would name the error contract for such inputs.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Both versions reject the input before provider execution. The mutant only turns errors that aren't SchemaError (such as the TypeError from dict(None) for a non-mapping) into a ValueError. The requirement asks that invalid schemas be rejected during normalization, and it never says which exception type that rejection must raise.",
-   "response_sha256": "99812e87e875abe8a5c2e5e92767761eada54404d7644774b86c5a4d00e31826",
+   "reason": "Both versions still reject invalid schema mappings before the provider runs. The only difference is the error class for failures other than SchemaError, such as a non-mapping None: TypeError in the original, ValueError in the mutant. The requirement only asks for rejection and never says which error a caller receives.",
+   "response_sha256": "6f7112ca9be6ef34fa750028a7868a0d074e54bc33a39750b2ccc3326c7292c4",
    "sources": [
     "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
     "Mapping schema inputs shall be valid object JSON Schemas",
@@ -1593,29 +1503,10 @@
     "    except SchemaError as exc:"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "semantic",
-  "prompt_sha256": "018af25a49eaa134a9ae6e8c5fed02d64feca8a0d159e9ef821e21b52879b28b",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T081018Z-d655e6",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "018af25a49eaa134a9ae6e8c5fed02d64feca8a0d159e9ef821e21b52879b28b",
-   "reason": "The requirement only mandates that invalid JSON Schema mappings are rejected, which both versions do for a None input. The specific exception type raised (TypeError vs ValueError) is an implementation detail not mandated by the requirement.",
-   "response_sha256": "13d636d176c4d9a890192850064b3cb9404f1ee1cc0032a0c780c83f1296b1b4",
-   "sources": [
-    "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
-    "except SchemaError as exc:",
-    "except Exception as exc:"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "e8de53c081775367d815eaf9682d478f496f8f5e552a779d5f7f58ceba30042e"
  },
  "SM-F375873A": {
   "answer": {
@@ -1953,39 +1844,65 @@
  "d84f7092509ce623": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T114021Z-2326e1",
+   "call_id": "20261002T201409Z-d0643d",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "Normalization rejects any mapping that isn't a valid JSON Schema, and Draft 2020-12 requires `title` and `$id` to be strings. The fallback is the string literal `'structured_response'`, so the name is always a string and `str()` changes nothing. The only suggested distinguishing input was tested and both versions behaved the same.",
-   "response_sha256": "a297c42119f3401952a7fc24145b78b731bf5699df9b11c5f1cbea3dc8e9a6e8",
+   "reason": "_validate_mapping_schema_definition checks the mapping against Draft 2020-12 before the name is computed, and that metaschema requires `title` and `$id` to be strings. The fallback is a string literal, so the name is always a string and `str()` changes nothing. The only input offered to tell the versions apart was refuted, because both versions behave the same on it.",
+   "response_sha256": "e97952d6c752d4d9b8a32dc66d3da5888ca126e502a05c072b8a3afaf6f5bd4c",
    "sources": [
-    "Mapping schema inputs shall be valid object JSON Schemas",
-    "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
-    "name = copied.get('title') or copied.get('$id') or 'structured_response'"
+    "name = copied.get('title') or copied.get('$id') or 'structured_response'",
+    "Mapping schema inputs shall be valid object JSON Schemas",
+    "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin."
    ],
    "test_focus": "",
    "verdict": "equivalent"
   },
   "operator": "conversion",
-  "prompt_sha256": "a663a3f7716452f1e25a6c0cae4396397bd40467b80958d94aae307b625e0d80",
+  "prompt_sha256": "060c2ac7813151847ba6b16c6f42eb4396c87211009e17ed4a13752ecc0e05ac",
+  "rechecks": {
+   "verdict_review": {
+    "asked_at": "2026-10-02T23:16:34.365816Z",
+    "backend": "antigravity-cli",
+    "call_id": "20261002T231524Z-237303",
+    "confirmed": false,
+    "effort": "",
+    "finding": "",
+    "level": "implementation",
+    "model": "gemini-3.8-flash-high",
+    "problems": [],
+    "prompt_sha256": "060c2ac7813151847ba6b16c6f42eb4396c87211009e17ed4a13752ecc0e05ac",
+    "reason": "Because schema validation ensures that any present 'title' or '$id' in a valid JSON Schema mapping is already a string, and the fallback is a string literal, the expression always evaluates to a string. Removing the redundant str() call is a conversion that changes nothing, so no input can distinguish the two versions.",
+    "response_sha256": "e20aa63d786bc80e1fb1ba82880991e80e70ab14d2519f9b37d1eb468c2940f2",
+    "sources": [
+     "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
+     "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
+     "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
+     "name = copied.get('title') or copied.get('$id') or 'structured_response'"
+    ],
+    "test_focus": "",
+    "verdict": "equivalent"
+   }
+  },
   "review": {
    "backend": "antigravity-cli",
-   "call_id": "20261001T114054Z-034fb8",
+   "call_id": "20261002T201533Z-a5dd80",
    "confirmed": false,
    "effort": "",
+   "finding": "",
    "level": "implementation",
-   "model": "gemini-3.1-pro-high",
+   "model": "gemini-3.8-flash-high",
    "problems": [],
-   "prompt_sha256": "a663a3f7716452f1e25a6c0cae4396397bd40467b80958d94aae307b625e0d80",
-   "reason": "The schema validation preceding the assignment ensures that any provided 'title' or '$id' are valid strings according to JSON schema rules. As a result, the fallback chain inherently evaluates to a string, rendering the explicit string conversion an identity operation.",
-   "response_sha256": "6bb1c00ca1c7af6a90f933c8008f61aa7a40ab4d1d1fec880afa7d6392564763",
+   "prompt_sha256": "060c2ac7813151847ba6b16c6f42eb4396c87211009e17ed4a13752ecc0e05ac",
+   "reason": "Because schema validation ensures that any present 'title' or '$id' is a string and the fallback is a string literal, the expression always evaluates to a string. The str() call is therefore an identity operation and removing it leaves the behavior unchanged for all inputs.",
+   "response_sha256": "6d740ac5e5915f95c42d0752791fcfed3eb9c501d95ef5d2dadb5cc28a57d8ee",
    "sources": [
+    "Mapping schema inputs shall be valid object JSON Schemas and router-side validation shall enforce their declared Draft 2020-12 semantics after provider execution.",
     "An invalid JSON Schema mapping is rejected during normalization before provider execution can begin.",
-    "name = str(copied.get(\"title\") or copied.get(\"$id\") or \"structured_response\")",
     "name = copied.get('title') or copied.get('$id') or 'structured_response'"
    ],
    "test_focus": "",
@@ -2106,14 +2023,15 @@
  "f149230e76762027": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261002T085809Z-b0a909",
+   "call_id": "20261002T201412Z-867d9a",
    "confirmed": false,
    "effort": "xhigh",
+   "finding": "The `name` override in with_schema_transform is meant to rename the transformed SchemaSpec. Its only caller (AI Studio's `_request_with_inlined_schema`) never passes `name`, so the override is never used and removing it changes nothing.",
    "level": "implementation",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The two versions differ only when a caller passes a non-None `name`. The only caller, the AI Studio adapter, never passes `name`, so the spec keeps its name in both versions and the schema and parser come out the same. The requirement says nothing about renaming specs; it covers schema preservation and validation.",
-   "response_sha256": "4e92a9d2159d58e670202d05567a8c4f538f19a7605d80387d2b92011233ca13",
+   "reason": "The mutant only differs when a non-None `name` is passed. The only caller, `_request_with_inlined_schema`, calls with_schema_transform without `name`, so the original keeps spec.name exactly as the mutant does. The transformed json_schema is the same in both versions, so router-side validation and parsing don't change.",
+   "response_sha256": "d70831ad61cd9bf18065af0daeaa7c32449fd23b71975b839b441da3ccad2f59",
    "sources": [
     "transformed = with_schema_transform(request.schema, inline_schema_refs)",
     "name=spec.name if name is None else name,",
@@ -2121,29 +2039,10 @@
     "Provider-specific schema transforms shall not weaken router-side validation."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "ineffective"
   },
   "operator": "argument",
-  "prompt_sha256": "5f98e351842b129b61dae898b10d0eae16557e65218e443c391150fee601465d",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261002T090957Z-87fae2",
-   "confirmed": false,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "5f98e351842b129b61dae898b10d0eae16557e65218e443c391150fee601465d",
-   "reason": "The mutated code ignores the `name` argument when replacing fields in the `SchemaSpec`, meaning the schema's name cannot be overridden. However, the project's only caller (`_request_with_inlined_schema`) does not pass a `name` argument. Since it defaults to `None`, both versions behave identically in practice by keeping the original `spec.name`. Thus, the mutation cannot be reached with the inputs needed to observe the difference.",
-   "response_sha256": "b6109bfe2c49fd62e1708e138efd906ae0a6f8990763840baaa07b1c2cd6b15a",
-   "sources": [
-    "Provider-specific schema transforms shall not weaken router-side validation.",
-    "transformed = with_schema_transform(request.schema, inline_schema_refs)",
-    "return replace(spec, json_schema=transformed)"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "8f3220d708f7a7258d054774979211ae577e02c1505f536e43aaac9cd4e75081"
  },
  "f8b19d9c5fd12b62": {
   "answer": {

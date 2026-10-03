@@ -1,0 +1,10 @@
+{
+ "SM-2DBB5B58": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "fix",
+  "level": "requirement",
+  "reason": "Fix: no caller passes build_public_response's tool_calls argument, so the override never runs. Remove the parameter in the dead-code stage (roadmap 14 and 16). Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "ineffective"
+ }
+}

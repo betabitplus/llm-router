@@ -57,40 +57,24 @@
  "SM-518AB7BA": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260929T171641Z-24d8f0",
+   "call_id": "20261002T202135Z-181bd4",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "finding": "No requirement says what error the router raises when a route names an unknown provider. A requirement should say whether this is a ValueError (a configuration error) or a TypeError, or that it is rejected earlier, during route expansion.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes which exception type is raised when the provider is unknown (ValueError becomes TypeError). The requirement covers skipping blocked routes, the all-blocked fail-or-wait policy, and credential rotation, and none of that depends on how an invalid provider is rejected.",
-   "response_sha256": "42fc984c5fc7831dbb8207634a679a855558b69ee13ee91b29386ceca2ee0c79",
+   "reason": "The mutant raises TypeError instead of ValueError for a route with an unknown provider, so the error a caller sees changes. The requirement only covers blocked-route skipping, all-blocked policy and credential rotation, and never says what error an unknown provider should raise.",
+   "response_sha256": "7f53de4aa5f8b771d1fb220749d6a8fb2d11a6884173402c4e29c8066e2d215a",
    "sources": [
     "raise ValueError(msg)  # noqa: TRY004",
     "raise TypeError(msg)",
-    "Blocked routes shall be skipped when another route is available. When all routes are blocked, the router shall fail immediately or wait according to configured policy. Available credentials shall rotate before reuse requires waiting."
+    "Blocked routes shall be skipped when another route is available. When all routes are blocked, the router shall fail immediately or wait according to configured policy."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "semantic",
-  "prompt_sha256": "e24f9dc9506c5b24f2ef016b005c2f345c5a6d67b749df74b2293faf5ea5a1a3",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T194428Z-0be1b1",
-   "confirmed": false,
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "e24f9dc9506c5b24f2ef016b005c2f345c5a6d67b749df74b2293faf5ea5a1a3",
-   "reason": "The change only alters the exception type from ValueError to TypeError when an incorrectly typed provider argument is passed. This is an implementation detail for input validation that does not affect the rate-limit-aware routing or key selection behavior specified by the requirement.",
-   "response_sha256": "a268b2a36a52812c9074383a2e0ad4464f78e1befa9acb127bc86c844e226d64",
-   "sources": [
-    "raise ValueError(msg)  # noqa: TRY004",
-    "raise TypeError(msg)",
-    "Blocked routes shall be skipped when another route is available. When all routes are blocked, the router shall fail immediately or wait according to configured policy. Available credentials shall rotate before reuse requires waiting."
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "6bc832fd9f482208298b872fb0690d4e5a1b04b0fdbd4610655addd54117f99b"
  }
 }

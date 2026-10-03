@@ -454,8 +454,9 @@ surviving mutant per line as a review finding. The operator of a line's finding 
 productive one: the recorded verdicts rank the operators by the share of their survivors a
 pin was asked for, starting from Google's order (comparison, boolean, arithmetic, statement,
 return, boundary, body) while few verdicts are recorded, as Google ranks its operators by how
-useful their mutants were. A survivor whose recorded verdict is equivalent or irrelevant is
-no finding: the summary lists it apart with the verdict and its reason. The retained
+useful their mutants were. A survivor whose recorded verdict takes it out of its class
+(equivalent, irrelevant or a finding) is no new finding of the diff: the summary lists it apart
+with the verdict and its reason. The retained
 campaign reruns every contract whose inputs changed since its last run, and every contract
 on request, several contracts at once, each in its own copy of the working tree, made at once
 and without the pilot's model records and the experiments, which no test reads. Its inputs
@@ -653,12 +654,15 @@ on the Model roles page, so a later verdict model can look at it again.
 A mutant every rung missed has its verdict asked once more, with what a person would look up
 next: every call of the function across the project's source, each with the function around it,
 and how the names those callers use are built. A branch no caller can take cannot be observed
-where the requirement is observed (a contextual equivalent, in GEM-LLM's terms), so the verdict
-then answers irrelevant and cites the caller lines that show it, and its review must agree, as
-for any suppression; a caller that reaches the change keeps the pin, and the verdict names that
-caller for the next climb. A mutant still pinned after that goes to the person's delegate, who
-decides below Goal and Feature level (ADR_0006): irrelevant when no public path can observe the
-change, or pin with the path a test can take, which the next climb is asked to follow. The Model
+where the requirement is observed (a contextual equivalent, in GEM-LLM's terms). When the change
+removes or alters code of the original that no caller reaches, that code never acts and the
+verdict answers ineffective (ADR_0007); when it only adds behaviour for what no caller hands the
+function, the verdict answers irrelevant and its review must agree, as for any suppression. Either
+cites the caller lines that show it; a caller that reaches the change keeps the pin, and the
+verdict names that caller for the next climb. A mutant still pinned after that goes to the
+person's delegate, who decides below Goal and Feature level (ADR_0006): ineffective or irrelevant
+when no public path can observe the change, or pin with the path a test can take, which the next
+climb is asked to follow. The Model
 roles page lists every pin verdict still waiting for its pin, with where its ladder stands.
 
 ##### Model generation
@@ -902,7 +906,7 @@ an assumed default (on 2026-10-01 four verdicts guessed a library's default wron
 that would take a mutant out of its class, equivalent or irrelevant, counts only when the
 Survivor verdict review, a model of another family asked the same question, agrees: a panel
 of models from different families is less biased toward its own (PoLL). When the review does
-not agree, the mutant is pinned. The verdict and the review each cite what they rest on,
+not agree, the mutant takes the review's finding when it names one, and is pinned otherwise. The verdict and the review each cite what they rest on,
 copied word for word from the question: the words of the requirement, Feature, Goal or criterion
 the verdict turns on and at least one line the change touches. A check finds every source in the
 question; an answer that breaks it, or another rule the schema cannot state, does not count and
@@ -919,12 +923,23 @@ uphold its suppression pins the mutant; the Model roles page shows each sample a
 When a sample disagrees, the person decides whether the rest of that answerer's suppressions are
 asked again, since that spends the verdict's budget.
 
-| Verdict      | Meaning                                                                                        | Effect                                                                                                                                                           |
-| ------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pin`        | The mutant changes something the requirement asks for.                                         | A test that pins it is drafted, kept only when it breaks no lint rule, passes on the original five times and fails on the mutant, and adopted as a mutation pin. |
-| `equivalent` | No input tells the versions apart as the contract observes them; never with a confirmed input. | The mutant leaves its class as suppressed, with the verdict's reason.                                                                                            |
-| `irrelevant` | The versions differ, but in nothing a requirement asks for.                                    | The mutant leaves its class as suppressed, with the verdict's reason.                                                                                            |
-| `escalate`   | Deciding changes what a Feature or Goal promises, and no requirement settles it.               | The mutant stays in its class, and the decision waits for the person.                                                                                            |
+| Verdict       | Meaning                                                                                                                                                                                                 | Effect                                                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pin`         | The mutant changes something the requirement asks for.                                                                                                                                                  | A test that pins it is drafted, kept only when it breaks no lint rule, passes on the original five times and fails on the mutant, and adopted as a mutation pin. |
+| `unspecified` | The versions differ in what a caller could rely on (whether a request is sent, a tool runs, data is kept, a resource is held, the result, an error, the cost), and no requirement says what it must be. | The mutant leaves its class and opens a silent requirement on the contract's Completeness layer (ADR_0007).                                                      |
+| `ineffective` | The code the change removes or alters does not do what it is meant to do here (it cannot cancel, close, release or guard what it aims at, or nothing ever reaches it).                                  | The mutant leaves its class and opens a finding of code with no effect (ADR_0007).                                                                               |
+| `irrelevant`  | The versions differ only in what no caller should rely on, such as formatting, the wording of a message or log line, or the order of internal steps.                                                    | The mutant leaves its class as suppressed, with the verdict's reason.                                                                                            |
+| `equivalent`  | No input tells the versions apart, and the code the change touches still does its job, only in another form; never with a confirmed input.                                                              | The mutant leaves its class as suppressed, with the verdict's reason.                                                                                            |
+| `escalate`    | Deciding changes what a Feature or Goal promises, and no requirement settles it.                                                                                                                        | The mutant stays in its class, and the decision waits for the person.                                                                                            |
+
+A verdict judges a change by what a caller of the public API would see: a requirement covers a
+function's result whenever that result decides the behaviour it names. A finding names itself in one
+sentence: the behaviour no requirement settles and what a requirement would say, or what the code means to do and why it does nothing. It stays open until a test catches
+its mutant, the mutant is gone, or the delegate closes it. The delegate decides each finding below
+Goal and Feature and records the disposition with the decision: `require` keeps a silent
+requirement open until a requirement settles it and a test holds it, `not-required` closes it;
+`fix` keeps code with no effect open until it acts or is gone, `kept` closes it. A contract fails
+its Completeness layer while a silent requirement stays open, and its overall verdict with it.
 
 The person decides only escalations: a comparison, a type, a default or a message inside a
 requirement's scope is the verdict model's to decide, never a reason to escalate. An escalation
@@ -962,7 +977,7 @@ pins that kill its mutant, and its file waits beside the record. The matrix cann
 that only a removed pin killed without pinning it, so the campaign after the removal is the
 check: the next `--subsume-pins` brings back, as they were, the fewest removed pins that kill
 every mutant the campaign caught before the removal and misses now, unless a verdict that counts
-takes that mutant out as equivalent or irrelevant, and a pin brought back stays. A removed pin whose mutant survives again comes back first when its verdict is decided,
+takes that mutant out of its class, and a pin brought back stays. A removed pin whose mutant survives again comes back first when its verdict is decided,
 judged again from its stored draft without asking a model. `--subsume-pins --verify` only
 brings back what earlier removals cost and removes nothing: the last pass before a gate, since
 another removal would need another campaign to check it. A pin the cascade keeps alone can still
@@ -983,10 +998,12 @@ A model's answers count for a role only after it passed that role's canaries, a 
 with a known outcome. The generator must propose a well-formed, confined defect for a canary
 target; the draft author, and each of its rungs with tools in a copy of the canary's project,
 must write a test the cascade keeps for a known distinguishable mutant; the verdict model and the verdict review must pin a known gap, judge a known
-equivalent equivalent and escalate a known product decision, and judge three real survivors
-as their records settled them: one a kept pin proves distinct, one both families judged
-irrelevant and one both judged equivalent; asked again with the callers in view, they must
-judge a change no caller reaches irrelevant and pin one a caller reaches. An assessor must meet the
+equivalent equivalent, escalate a known product decision, name a known silent requirement
+unspecified and a known guard that can never act ineffective, and judge three real survivors as
+their records settled them: one a kept pin proves distinct, one both families judged irrelevant and
+the line that cannot cancel a running call ineffective (ADR_0007); asked again with the callers in
+view, they must judge irrelevant a change that only adds behaviour for what no caller hands the
+function, and pin one a caller reaches. The verdict review is asked only whether a suppression holds, so it passes a case when it suppresses exactly the cases settled as suppressions: a finding where a pin was settled keeps the mutant out of the suppressions as a pin does. An assessor must meet the
 calibration floors: an input confirmed for at least 80% of the labelled distinct pairs, and
 at most the false-equivalent rate of all distinct pairs, labelled or observed, judged
 equivalent; an assessor model that misses them does not answer, and at a level of a ladder

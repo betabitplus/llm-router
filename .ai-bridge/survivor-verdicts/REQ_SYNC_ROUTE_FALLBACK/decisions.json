@@ -1,4 +1,12 @@
 {
+ "3d3d1491ad30ff05": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "require",
+  "level": "requirement",
+  "reason": "Require, as a clause of REQ_ROUTE_STICKY_START: a success reached after skipping a rate-limited route counts as a fallback success, so the next request starts from that route, as the code does today. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
  "80df5312d68d38ac": {
   "by": "person",
   "decided_at": "2026-09-28",
@@ -7,5 +15,21 @@
   "resolved_by": "tests/llm_router/unit/test_internal_sync_failure_recording.py: a person's test, after four drafts invented the router's public API",
   "test_focus": "Run one synchronous request over two Provider.OPENROUTER routes (key_id 1 and 2, round_robin_start=False, shuffle_fallbacks=False) whose first route answers an error status and whose second succeeds, with limits_by_provider={Provider.OPENROUTER: ProviderLimits(rps=0.0, rpm=0.0, cooldown_seconds=60.0, cooldown_after_failures=1)}. Then the failed key is cooling down in the router's limiter: router._runtime._limiter.wait_seconds(provider=Provider.OPENROUTER, key_id=1) is above zero, while the same call for key_id=2 returns 0.0.",
   "verdict": "pin"
+ },
+ "9c900d047ce4eab2": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: no public call reaches it. A route spec needs at least one route and every layer that sets max_attempts is validated to 1 or more (config, router defaults, profile policy defaults), so a request always attempts or defers a route; the branch is a defensive end. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "bfb51170ab51a102": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: no public call reaches it. A route spec needs at least one route and every layer that sets max_attempts is validated to 1 or more (config, router defaults, profile policy defaults), so a request always attempts or defers a route; the branch is a defensive end. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
  }
 }

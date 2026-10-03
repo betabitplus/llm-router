@@ -1,0 +1,10 @@
+{
+ "7d8cf2a980915b49": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required here: the router's structured log events belong to the ternforge runtime that emits them (py_lib_runtime), not to llm-router's requirements, as the owner placed them on 2026-10-03; the only llm-router rule on them is TREQ_RUNTIME_LOG_SAFETY's (no protected values). Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

@@ -1,0 +1,10 @@
+{
+ "62173758417ffc7d": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required here: REQ_MULTIMODAL_CONTENT_NORMALIZATION already says an unsupported media part fails before provider execution, and the exception class is not promised. Under the mutant only an object that mimics VideoUrlSchema's fields would pass, which no caller sends. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

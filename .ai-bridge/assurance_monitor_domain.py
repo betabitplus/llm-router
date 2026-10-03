@@ -451,8 +451,28 @@ def linked_tests_state(contract: dict) -> dict:
     return {"rows": rows, "failed": failed, "status": "NOT MET" if failed else "N/A"}
 
 
+def completeness_state(contract: dict) -> dict:
+    """Whether a requirement or the delegate's decision settles every behaviour of the contract a
+    caller can see (ADR_0007): an open silent requirement, undecided or decided as a requirement to
+    add, does not. Not applicable where no fault campaign judges the contract."""
+    actual = contract.get("completeness_actual") or {}
+    if not actual.get("applicable"):
+        return {"status": "N/A", "open": 0, "closed": 0, "undecided": 0, "to_add": 0}
+    silent = [finding for finding in actual.get("findings") or [] if finding.get("kind") == "unspecified"]
+    undecided = sum(finding.get("state") == "undecided" for finding in silent)
+    to_add = sum(finding.get("state") == "decided" for finding in silent)
+    open_count = undecided + to_add
+    return {
+        "status": "NOT MET" if open_count else "MET",
+        "open": open_count,
+        "closed": len(silent) - open_count,
+        "undecided": undecided,
+        "to_add": to_add,
+    }
+
+
 def contract_domain_state(contract: dict, policy: dict) -> dict:
-    """Return direct Verification/Fault/Overall state for one first-class contract."""
+    """Return direct Verification/Fault/Completeness/Overall state for one first-class contract."""
     coverage_states = [
         cell_state(contract, target)["overall"]
         for target in (contract.get("target") or {}).get("coverage", [])
@@ -464,10 +484,12 @@ def contract_domain_state(contract: dict, policy: dict) -> dict:
     ]
     coverage = combine(coverage_states)
     fault = combine(fault_states)
+    completeness = completeness_state(contract)["status"]
     return {
         "coverage": coverage,
         "coverage_states": coverage_states,
         "fault": fault,
         "fault_states": fault_states,
-        "overall": combine([coverage, fault]),
+        "completeness": completeness,
+        "overall": combine([coverage, fault, completeness]),
     }

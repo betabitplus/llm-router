@@ -1,0 +1,18 @@
+{
+ "5ecf3277f62095b3": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required here: the router's structured log events belong to the ternforge runtime that emits them (py_lib_runtime), not to llm-router's requirements, as the owner placed them on 2026-10-03; the only llm-router rule on them is TREQ_RUNTIME_LOG_SAFETY's (no protected values). The state_sink the mutant also drops has no production caller. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "95c295ed20ab677a": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required here: the router's structured log events belong to the ternforge runtime that emits them (py_lib_runtime), not to llm-router's requirements, as the owner placed them on 2026-10-03; the only llm-router rule on them is TREQ_RUNTIME_LOG_SAFETY's (no protected values). The state_sink the mutant also drops has no production caller. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ }
+}

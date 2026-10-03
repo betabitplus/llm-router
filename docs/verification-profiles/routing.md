@@ -128,6 +128,13 @@ external provider fidelity.
 | Freshness              | ALL  | retained evidence for satisfied criteria                           |
 | M&S validation         | ALL  | applicable surrogate/model evidence                                |
 
+### Required technical support
+
+| Technical requirement                                                                  | Target |
+| -------------------------------------------------------------------------------------- | ------ |
+| {need}`A timed-out attempt starts no further work <TREQ_TIMED_OUT_ATTEMPT_STOPS>`      | PASS   |
+| {need}`A timed attempt keeps the caller's context <TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT>` | PASS   |
+
 ### Fault applicability
 
 | REQUIRED                                                                                                              | OPTIONAL | N/A                                                                                                                       |
@@ -153,6 +160,142 @@ external provider fidelity.
 | `spec.missing-partition`           | `src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
 | `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout` |      2 | an order or a before/after boundary its requirement names is broken                   |
 | `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/router.py::RouterRuntime._call_sync_with_timeout` |      2 | an external interaction its requirement rules out happens anyway                      |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
+(verification-profile-treq-timed-out-attempt-stops)=
+
+## Profile · TREQ_TIMED_OUT_ATTEMPT_STOPS
+
+**Verification intent.** Prove that an attempt the router leaves at its timeout starts no
+further work: no provider request, no retry and no tool call, while the fallback route
+answers the request.
+
+**Models:** {ref}`Routing fallback <test-plan-routing-fallback-model>`
+
+### Required coverage
+
+| Test level         | Boundary   | Representation | M&S target |          Target |
+| ------------------ | ---------- | -------------- | ---------- | --------------: |
+| System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
+
+**Coverage basis.** The left attempt behaves differently in the two public execution modes:
+a synchronous attempt keeps running in its thread and must stop itself, an asynchronous one
+is cancelled. Both must start nothing after the router leaves them, so the criterion requires
+both paths.
+
+**Representation basis.** A scripted provider substitute answers the first route late with a
+tool call: the claim is what the left attempt does with a late answer, not provider fidelity.
+
+### Verification criteria
+
+| Criterion                    | Contract                                      | Test level         | Boundary   | Required paths | Required path IDs | Success criterion                                                                                                                      |
+| ---------------------------- | --------------------------------------------- | ------------------ | ---------- | -------------: | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `VC_TIMED_OUT_ATTEMPT_STOPS` | {need}`[[id]] <TREQ_TIMED_OUT_ATTEMPT_STOPS>` | System Integration | Substitute |              2 | `sync` · `async`  | After the router leaves a timed-out attempt, its late tool call runs no tool and sends no further provider request, in sync and async. |
+
+### Evidence aggregation
+
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer  |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
+
+### Fault applicability
+
+| REQUIRED                                                                                                                      | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.comparison` · `impl.control-flow` · `impl.effect` · `interface.unexpected-interaction` · `spec.wrong-ordering-boundary` | —        | `impl.boundary` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.missing-partition` |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The check whether the attempt was left, its stop and the router telling the attempt it was left are the mechanisms; a dropped check lets the attempt go on. |
+| Runtime / dependency  | The timeout that makes the router leave the attempt is the parent requirement's; this contract starts after it.                                             |
+| Interface / protocol  | A provider request or a tool call after the router left the attempt is the failure this contract rules out.                                                 |
+| Architecture          | No internal layering topology is normative for stopping a left attempt.                                                                                     |
+| Specification / model | Nothing may start after the router leaves the attempt: a before/after boundary.                                                                             |
+
+### Semantic mutants
+
+| Fault class                        | Target                                                                      | Budget | Risk                                                                |
+| ---------------------------------- | --------------------------------------------------------------------------- | -----: | ------------------------------------------------------------------- |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/executor.py::_stop_if_left`               |      2 | an order or a before/after boundary its requirement names is broken |
+| `spec.wrong-ordering-boundary`     | `src/llm_router/_internal/runtime/executor.py::_LeftAttemptAdapter.execute` |      2 | an order or a before/after boundary its requirement names is broken |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/executor.py::_stop_if_left`               |      2 | an external interaction its requirement rules out happens anyway    |
+| `interface.unexpected-interaction` | `src/llm_router/_internal/runtime/executor.py::_LeftAttemptAdapter.execute` |      2 | an external interaction its requirement rules out happens anyway    |
+
+Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
+requires, at each function of the contract's `@impl` scope. Rule operators change operators and
+statements; they cannot change what the requirement means.
+
+(verification-profile-treq-attempt-keeps-caller-context)=
+
+## Profile · TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT
+
+**Verification intent.** Prove that an attempt run under an attempt timeout sees the context
+variables its caller set: the tool it calls reads the caller's value.
+
+**Models:** {ref}`Routing fallback <test-plan-routing-fallback-model>`
+
+### Required coverage
+
+| Test level         | Boundary   | Representation | M&S target |          Target |
+| ------------------ | ---------- | -------------- | ---------- | --------------: |
+| System Integration | Substitute | Surrogate      | L0         | **1 criterion** |
+
+**Coverage basis.** Only an attempt timeout moves a synchronous attempt to another thread; an
+untimed one runs on the caller's thread. The criterion requires the timed attempt in both
+public execution modes: a synchronous one runs in a worker thread, an asynchronous one in the
+caller's task.
+
+**Representation basis.** A scripted provider substitute asks for a tool call at once and then
+answers: the claim is what the tool sees, not provider fidelity.
+
+### Verification criteria
+
+| Criterion                         | Contract                                           | Test level         | Boundary   | Required paths | Required path IDs | Success criterion                                                                                                                                |
+| --------------------------------- | -------------------------------------------------- | ------------------ | ---------- | -------------: | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `VC_ATTEMPT_KEEPS_CALLER_CONTEXT` | {need}`[[id]] <TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT>` | System Integration | Substitute |              2 | `sync` · `async`  | With an attempt timeout set, the tool the attempt calls reads the value the caller set in a context variable before the call, in sync and async. |
+
+### Evidence aggregation
+
+| Signal                 | Rule | Applies to                                                         |
+| ---------------------- | ---- | ------------------------------------------------------------------ |
+| Semantic coverage      | ALL  | required verification criteria and each criterion's declared paths |
+| Representation         | ALL  | retained evidence for satisfied criteria                           |
+| Provenance             | ALL  | retained evidence for satisfied criteria                           |
+| Producer qualification | ALL  | retained evidence for satisfied criteria; every required producer  |
+| Freshness              | ALL  | retained evidence for satisfied criteria                           |
+| M&S validation         | ALL  | applicable surrogate/model evidence                                |
+
+### Fault applicability
+
+| REQUIRED                                       | OPTIONAL | N/A                                                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `impl.control-flow` · `spec.missing-partition` | —        | `impl.comparison` · `impl.boundary` · `impl.effect` · `impl.arithmetic` · `runtime.latency-timeout` · `runtime.unavailable-disconnect` · `runtime.malformed-response` · `interface.error-status` · `interface.payload-schema` · `interface.unexpected-interaction` · `architecture.forbidden-edge` · `architecture.layer-bypass` · `spec.wrong-outcome` · `spec.wrong-ordering-boundary` |
+
+#### Fault-group rationale
+
+| Group                 | Why                                                                                                                                                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Implementation        | The helper copies the caller's context and returns the call bound to it, so its one fault site is that return; it holds no effect site, and the copy itself is challenged by the semantic missing-partition mutants. |
+| Runtime / dependency  | The timeout itself is the parent requirement's; this contract is about what the attempt sees while it runs.                                                                                                          |
+| Interface / protocol  | The provider and the tool are called as before; only the context they run in is at stake.                                                                                                                            |
+| Architecture          | No internal layering topology is normative for carrying the context.                                                                                                                                                 |
+| Specification / model | The promise holds with and without a timeout and in both modes: a timed attempt that loses the context is a missing partition.                                                                                       |
+
+### Semantic mutants
+
+| Fault class              | Target                                                           | Budget | Risk                                                                                  |
+| ------------------------ | ---------------------------------------------------------------- | -----: | ------------------------------------------------------------------------------------- |
+| `spec.missing-partition` | `src/llm_router/_internal/runtime/router.py::_in_caller_context` |      2 | one input partition its requirement or criteria name is no longer handled as they say |
 
 Chosen by the default selection (050): every `spec.*` and `interface.*` class this profile
 requires, at each function of the contract's `@impl` scope. Rule operators change operators and

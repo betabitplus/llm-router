@@ -1,0 +1,255 @@
+{
+ "39d5d1ce764651c8": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T215744Z-941a1a",
+   "confirmed": true,
+   "effort": "xhigh",
+   "finding": "",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The requirement blocks further work only once the router has left a timed-out attempt. An attempt with no left-event (left=None, presumably no timeout) must still start its provider request and tool calls. The mutant raises AttributeError for left=None, so that work cannot start.",
+   "response_sha256": "ff2bd2ba2e3302ba3066d56114f3a129b66b14a9f04d1015b3c57c49c279d97a",
+   "sources": [
+    "Once an attempt timeout makes the router leave an attempt, that attempt shall start no further provider request, provider retry or tool call",
+    "if left is not None and left.is_set():",
+    "if left.is_set():",
+    "_stop_if_left(left=None); the original gives None and the mutant gives ('raises', 'AttributeError')"
+   ],
+   "test_focus": "Run an attempt with no attempt timeout (left=None) in sync and async. Check that the provider request is sent and the tool call runs normally instead of failing with AttributeError.",
+   "verdict": "pin"
+  },
+  "operator": "condition",
+  "pin": {
+   "adopted_at": "2026-10-02T22:13:36.797025Z",
+   "answer_sha256": "0efe1e1c186c8c11303f5722fe8efaa488b72210cbbbe45bebc63bb1fadaae73",
+   "call_id": "20261002T220930Z-d54b55",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "0efe1e1c186c8c11303f5722fe8efaa488b72210cbbbe45bebc63bb1fadaae73",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_timed_out_attempt_stops_39d5d1ce764651c8.py",
+   "response_sha256": "04efa133b2f7c023606265ac30545733a3e509eaa2c166d2c0c2ee4e42b80499",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  "prompt_sha256": "21b06512222679eb82a7720a99a90dc4697238e2f9110deda31a8d824204408d"
+ },
+ "698b8ee7e7d54a5c": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T215744Z-c93fc6",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The wrapper is meant to block only new work once the attempt is left, and stay transparent otherwise. If capabilities returns None, an attempt run under an attempt timeout no longer sees its provider's capabilities, so capability-dependent steps of that attempt can break or behave differently. This changes what the caller gets back from the route, which this requirement covers.",
+   "response_sha256": "4a600e3c3ac100b71d0dec7deb598572783ad28cd3a41514f41e946ed6650728",
+   "sources": [
+    "An attempt timeout shall stop waiting on the current route, continue to another eligible route when one remains, and surface a timeout error when no fallback remains.",
+    "Once an attempt timeout makes the router leave an attempt, that attempt shall start no further provider request, provider retry or tool call",
+    "return self._adapter.capabilities",
+    "return None"
+   ],
+   "test_focus": "With an attempt timeout configured, check in sync and async that an attempt reading the adapter's capabilities through the wrapper gets the wrapped adapter's capabilities (not None) and completes as it would without the wrapper.",
+   "verdict": "pin"
+  },
+  "operator": "return",
+  "pin": {
+   "adopted_at": "2026-10-02T22:33:31.162779Z",
+   "answer_sha256": "808ae51d55c041c41888df4e43c19a6866cbdcd437c7666b32af4f7a5f7acff7",
+   "call_id": "20261002T223203Z-9b2bbb",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "808ae51d55c041c41888df4e43c19a6866cbdcd437c7666b32af4f7a5f7acff7",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_timed_out_attempt_stops_698b8ee7e7d54a5c.py",
+   "response_sha256": "313852b15fbbae97e3a0919d0a192ca29025c9010735cb15f2cc38577c33d56a",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  "prompt_sha256": "02ebf36bb5518db8e5d0acda1ddeaa51c5b1d1f806bdb1fd5bfbfcad547d604d"
+ },
+ "945e435cc8d61652": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T215744Z-9b292a",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "_LeftAttemptAdapter.aexecute is meant to forward async provider requests. Async attempts are cancelled when they time out, so no left attempt ever calls it, and replacing it with `return None` changes nothing a caller can observe.",
+   "level": "implementation",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The async method on the left-attempt adapter is only a pass-through, because async attempts are cancelled at their timeout. No left async attempt goes on to call it, and no test of the requirement, sync or async, runs it. Even if one did reach it, the original would send the very request the requirement forbids, so the mutant can't break the requirement.",
+   "response_sha256": "ca06a1b9e68fba0f0514f15298620ca12bb939750dd954c3a2d36cf36d19a886",
+   "sources": [
+    "\"\"\"An asynchronous attempt is cancelled at its timeout instead.\"\"\"",
+    "return await self._adapter.aexecute(request)",
+    "Once an attempt timeout makes the router leave an attempt, that attempt shall start no further provider request, provider retry or tool call"
+   ],
+   "test_focus": "",
+   "verdict": "ineffective"
+  },
+  "operator": "return",
+  "prompt_sha256": "035a84c3712f77411597705a43b4c1dcb9c483628d7879a9d1a2e9c2637fe9d6"
+ },
+ "SM-5BEF46E5": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T215744Z-cc3446",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "The removed `_stop_if_left` check is the guard that stops a left attempt from starting a provider request. Without it, a late provider request or retry after a timeout reaches the adapter, which breaks \"that attempt shall start no further provider request, provider retry or tool call\".",
+   "response_sha256": "bf0e094da35f6913a3d21e8d1b75f15df5ea7df84d6e291d0470396e407e861d",
+   "sources": [
+    "Once an attempt timeout makes the router leave an attempt, that attempt shall start no further provider request, provider retry or tool call; a provider request already sent may still complete, and its result is discarded.",
+    "After the router leaves a timed-out attempt, its late tool call runs no tool and sends no further provider request, in sync and async.",
+    "        _stop_if_left(self._left)"
+   ],
+   "test_focus": "After the router leaves a timed-out attempt, a late provider request or retry from that attempt must raise AttemptLeftError, and the wrapped adapter's execute must never be called, in both sync and async.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-10-02T22:09:48.873396Z",
+   "answer_sha256": "78f8e458b31ef233fd6123af30de1655b8c6509da62a75b2ac907421014d03be",
+   "call_id": "20261002T220756Z-620701",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "78f8e458b31ef233fd6123af30de1655b8c6509da62a75b2ac907421014d03be",
+   "effort": "medium",
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_timed_out_attempt_stops_sm_5bef46e5.py",
+   "response_sha256": "8c2fc6059625c40b200e31f82ead01da3894a5a50e261355d6cab15d5c4b88b9",
+   "source": "draft author with tools",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.errors.AttemptLeftError",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult"
+   ]
+  },
+  "prompt_sha256": "2e4024355ecb07e664930ed170c703c2c74dc793c1cf1ff23f79312e4364d108"
+ },
+ "SM-5E109C65": {
+  "answer": {
+   "backend": "claude-cli",
+   "call_id": "20261002T215744Z-0b5808",
+   "confirmed": false,
+   "effort": "xhigh",
+   "finding": "",
+   "level": "requirement",
+   "model": "claude-opus-5-5",
+   "problems": [],
+   "reason": "After the attempt is left, the mutant still calls the wrapped adapter, so a new provider request goes out and only then is AttemptLeftError raised. The requirement says a timed-out attempt shall start no further provider request, so the mutant breaks it even though the caller sees the same error.",
+   "response_sha256": "e2da04f53d4d0c7d9a6ae288a2aadebd3b2125b77b5e35960e07ea28725b1141",
+   "sources": [
+    "Once an attempt timeout makes the router leave an attempt, that attempt shall start no further provider request, provider retry or tool call",
+    "After the router leaves a timed-out attempt, its late tool call runs no tool and sends no further provider request, in sync and async.",
+    "        _stop_if_left(self._left)\n        return self._adapter.execute(request)",
+    "        result = self._adapter.execute(request)\n        _stop_if_left(self._left)"
+   ],
+   "test_focus": "Once the router leaves a timed-out attempt, make that attempt send a late provider request (for example, the follow-up after a tool call), in both sync and async. Check that the underlying adapter's execute is never called and that AttemptLeftError is raised.",
+   "verdict": "pin"
+  },
+  "operator": "semantic",
+  "pin": {
+   "adopted_at": "2026-10-02T22:14:37.239593Z",
+   "answer_sha256": "2f237e63855d3c584e292b0b200f01b2932bb41a9f8edda4bad462d3889d314b",
+   "call_id": "20261002T220924Z-c2334f",
+   "cascade": {
+    "accepted": true,
+    "fails_on_mutant": true,
+    "imports_beyond_allowed": [],
+    "lint": [],
+    "passes_on_original": 5,
+    "primitives": []
+   },
+   "draft_sha256": "2ace8fa313e857f5b160dbad21e647663744b0cc41b4e1fe8b8c32b1955a4b8a",
+   "effort": "xhigh",
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "normalizer": "ruff 0.16.3",
+   "path": "tests/llm_router/mutation_pins/test_pin_treq_timed_out_attempt_stops_sm_5e109c65.py",
+   "response_sha256": "3500c6f05fc90c26784f41156fc390052bc91d03dad962b8fb6df8f57d2a6a4c",
+   "source": "last resort",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ToolCall",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.get_config",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderFailure",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.errors.AttemptLeftError",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.requests.ResolvedRequest"
+   ]
+  },
+  "prompt_sha256": "49a47b04eea94b188de3e58804b00b93ea39dd0be1b3b7a12ac5391d90de7a63"
+ }
+}

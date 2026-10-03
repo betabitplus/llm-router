@@ -8,6 +8,8 @@ Why:
 
 from __future__ import annotations
 
+import contextvars
+import threading
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, replace
 from typing import Any
@@ -34,6 +36,7 @@ from llm_router._internal.capabilities.tools import (
 from llm_router._internal.config import LLMRouterConfig
 from llm_router._internal.providers.base import (
     ProviderAdapter,
+    ProviderCapabilities,
     ProviderCredential,
     ProviderRequest,
     ProviderResult,
@@ -44,6 +47,7 @@ from llm_router._internal.providers.retry import (
     build_provider_retrying,
     is_retryable_provider_error,
 )
+from llm_router._internal.runtime.errors import AttemptLeftError
 from llm_router._internal.runtime.output import build_public_response
 from llm_router._internal.runtime.requests import ResolvedRequest
 from llm_router._internal.runtime.tracing import (
@@ -101,27 +105,39 @@ class ProviderRouteExecutor:
         self._config = config
         self._adapter_getter = adapter_getter or _default_adapter_getter
 
-    def execute(self, request: ResolvedRequest) -> LLMRouterResponse:
-        """Execute one synchronous resolved request."""
-        plan = _build_execution_plan(request=request)
-        state = _initial_loop_state(request=request, plan=plan)
+    def execute(
+        self, request: ResolvedRequest, *, left: threading.Event | None = None
+    ) -> LLMRouterResponse:
+        """Execute one synchronous resolved request.
 
-        while True:
-            provider_request = _provider_request_from_state(
-                request=request,
-                state=state,
-            )
-            result = self._execute_provider_sync(provider_request)
-            step = _advance_after_result(
-                config=self._config,
-                provider_request=provider_request,
-                plan=plan,
-                state=state,
-                result=result,
-            )
-            if step.response is not None:
-                return step.response
-            state = step.state
+        ``left`` is set when the router leaves the attempt at its timeout: from then
+        on the attempt starts no provider request, retry or tool round.
+        """
+        token = _LEFT_ATTEMPT.set(left)
+        try:
+            plan = _build_execution_plan(request=request)
+            state = _initial_loop_state(request=request, plan=plan)
+
+            while True:
+                provider_request = _provider_request_from_state(
+                    request=request,
+                    state=state,
+                )
+                result = self._execute_provider_sync(provider_request)
+                # A late answer of a left attempt runs no tool and asks for no more.
+                _stop_if_left(left)
+                step = _advance_after_result(
+                    config=self._config,
+                    provider_request=provider_request,
+                    plan=plan,
+                    state=state,
+                    result=result,
+                )
+                if step.response is not None:
+                    return step.response
+                state = step.state
+        finally:
+            _LEFT_ATTEMPT.reset(token)
 
     async def aexecute(self, request: ResolvedRequest) -> LLMRouterResponse:
         """Execute one asynchronous resolved request."""
@@ -198,8 +214,56 @@ class ProviderRouteExecutor:
         raise RuntimeError(msg)
 
     def _adapter_for(self, request: ProviderRequest) -> ProviderAdapter:
-        """Return the adapter selected for one provider request."""
-        return self._adapter_getter(request.provider, self._config)
+        """Return the adapter selected for one provider request.
+
+        An attempt the router may leave gets the adapter through a guard, so that no
+        request, not even a retry, starts after it is left.
+        """
+        adapter = self._adapter_getter(request.provider, self._config)
+        left = _LEFT_ATTEMPT.get()
+        return adapter if left is None else _LeftAttemptAdapter(adapter, left)
+
+
+# The attempt the current thread runs, as the router may leave it at its timeout.
+_LEFT_ATTEMPT: contextvars.ContextVar[threading.Event | None] = contextvars.ContextVar(
+    "llm_router_left_attempt", default=None
+)
+
+
+# @impl Left attempt starts no further work, IMPL_TIMED_OUT_ATTEMPT_STOPS, [TREQ_TIMED_OUT_ATTEMPT_STOPS[revision==1]]
+def _stop_if_left(left: threading.Event | None) -> None:
+    """Stop an attempt the router left at its timeout.
+
+    A running thread cannot be stopped from outside, so the attempt checks before
+    every step it would start.
+    """
+    if left is not None and left.is_set():
+        msg = "The router left this attempt at its timeout."
+        raise AttemptLeftError(msg)
+
+
+# @impl Left attempt sends no further provider request, IMPL_TIMED_OUT_ATTEMPT_PROVIDER, [TREQ_TIMED_OUT_ATTEMPT_STOPS[revision==1]]
+class _LeftAttemptAdapter:
+    """A provider adapter as an attempt the router may leave uses it."""
+
+    def __init__(self, adapter: ProviderAdapter, left: threading.Event) -> None:
+        """Wrap the adapter with the event the router sets on leaving the attempt."""
+        self._adapter = adapter
+        self._left = left
+
+    @property
+    def capabilities(self) -> ProviderCapabilities:
+        """The wrapped adapter's capabilities."""
+        return self._adapter.capabilities
+
+    def execute(self, request: ProviderRequest) -> ProviderResult:
+        """Start the request only while the attempt is not left."""
+        _stop_if_left(self._left)
+        return self._adapter.execute(request)
+
+    async def aexecute(self, request: ProviderRequest) -> ProviderResult:
+        """An asynchronous attempt is cancelled at its timeout instead."""
+        return await self._adapter.aexecute(request)
 
 
 @dataclass(frozen=True, slots=True)

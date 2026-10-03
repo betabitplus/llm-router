@@ -99,4 +99,5 @@ strict Sphinx graph build; it never executes the project test suite itself.
 0004-metered-model-generation
 0005-survivor-judgement
 0006-survivor-verdicts
+0007-survivor-dispositions
 ```

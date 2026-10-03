@@ -26,7 +26,9 @@ is never allowed for a survivor with a confirmed input. An equivalent or irrelev
 takes the mutant out of its class as suppressed, with the reason and the model that gave it,
 only when the Test Plan's Survivor verdict review, a model of another family asked the same
 question, agrees; when it does not, the mutant is pinned (amended 2026-09-27, after PoLL:
-judges of one family favour their own). The verdict and the review cite what they rest on,
+judges of one family favour their own). Two more dispositions, unspecified and ineffective, open a
+finding instead of suppressing, and a review that names one opens it instead of pinning (amended
+2026-10-02, ADR_0007). The verdict and the review cite what they rest on,
 copied word for word from their question: the words of the requirement it turns on and a line
 the change touches; a check finds each in the question, and an answer that breaks it does not
 count and is asked once more with what broke (amended 2026-09-28). A pin verdict asks the draft author for a test; the

@@ -99,42 +99,26 @@
  "5fd031363386257e": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T235009Z-913222",
+   "call_id": "20261002T201412Z-e73572",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "finding": "The session-lifecycle requirement doesn't say what error load must raise when the file can't be read. A persistence requirement should say that an unreadable session file raises SessionSerializationError rather than an internal error.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant changes only what happens when a session file can't be read: instead of SessionSerializationError, the caller gets an UnboundLocalError. REQ_SESSION_LIFECYCLE covers remembered turns, ignoring history, forks, clearing and concurrency, and none of these touches loading from disk. That load path is tagged to REQ_SESSION_PERSISTENCE, so a pin for it belongs there, not here.",
-   "response_sha256": "6aad2861289081d1c8aa30b06357fac38134a25a3a35b66eee93c2785bc39797",
+   "reason": "When the session file can't be read, the mutant skips raising SessionSerializationError, so the caller gets an UnboundLocalError on `text` instead. That is a change a caller could see, but REQ_SESSION_LIFECYCLE only covers remembering, ignoring, forking, clearing and isolating history, not loading from disk.",
+   "response_sha256": "c951d11fc91bbb148dd770c36091478c43b715dbd2d8d393a170102414cc5788",
    "sources": [
-    "Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state.",
+    "Session history remains explicit and isolated",
     "Clearing removes history and the same session can immediately accept a new turn.",
     "raise SessionSerializationError(msg) from exc",
     "# @impl Session persistence, IMPL_SESSION_PERSISTENCE, [REQ_SESSION_PERSISTENCE[revision==1]]"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "statement",
-  "prompt_sha256": "0e34ffce9e869c882add153c1d04e83fcf96f654e33d30e3e933bbf825924e2a",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260929T085951Z-59bae7",
-   "confirmed": false,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "0e34ffce9e869c882add153c1d04e83fcf96f654e33d30e3e933bbf825924e2a",
-   "reason": "The mutant replaces the explicit session serialization error with a pass statement, which will cause an unbound local error when decoding the unassigned text variable. This alters the error handling for file IO during session loading, which relates to session persistence rather than the in-memory isolation, forking, and history management rules defined by the session lifecycle requirement.",
-   "response_sha256": "54528115dbd11839f2fc5f691431f250d2415a966337c2ae9787593034ffb99d",
-   "sources": [
-    "Requirement REQ_SESSION_LIFECYCLE (Session history remains explicit and isolated): Remembered turns shall be available to later requests; a caller shall be able to ignore history for one request; forks shall diverge independently; clearing shall leave the session reusable; and concurrent requests shall not mix session state.",
-    "raise SessionSerializationError(msg) from exc",
-    "pass"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "9458ae3ea7f90859fc58b1c51f8935164073fc085f3540fdee329a61cf90e93d"
  },
  "74a8e8713ff6d32b": {
   "answer": {

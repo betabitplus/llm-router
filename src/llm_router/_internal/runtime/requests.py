@@ -7,6 +7,7 @@ Why:
 
 from __future__ import annotations
 
+import threading
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -31,8 +32,10 @@ class ResolvedRequest:
 class RouteExecutor(Protocol):
     """Protocol for provider-neutral execution ports."""
 
-    def execute(self, request: ResolvedRequest) -> LLMRouterResponse:
-        """Execute one synchronous request."""
+    def execute(
+        self, request: ResolvedRequest, *, left: threading.Event | None = None
+    ) -> LLMRouterResponse:
+        """Execute one synchronous request; ``left`` is set if the router leaves it."""
 
     async def aexecute(self, request: ResolvedRequest) -> LLMRouterResponse:
         """Execute one asynchronous request."""

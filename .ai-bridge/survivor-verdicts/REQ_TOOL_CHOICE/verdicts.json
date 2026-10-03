@@ -74,64 +74,26 @@
  "667bb68e1a41ac4b": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20260928T160557Z-85d643",
+   "call_id": "20261002T201753Z-86a2fb",
    "confirmed": false,
-   "level": "implementation",
+   "effort": "xhigh",
+   "finding": "No requirement says what happens when tool_choice has an unsupported type (such as an int). A requirement would say such input must be rejected with a TypeError, not passed on silently as None.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes what happens with unsupported tool_choice types (not None, a string or a mapping): they return None instead of raising TypeError. REQ_TOOL_CHOICE only covers explicit named choices and \"required\", and all of those return before the changed line.",
-   "response_sha256": "7a2e314d62400f4b61eae0cee553dba76ea4091c18469afecbd7538b77ea00f7",
+   "reason": "The mutant no longer raises for tool_choice values that are not a string, mapping or None. It returns None instead of raising TypeError, which a caller can see. REQ_TOOL_CHOICE only covers named choices and \"required\", so nothing says how unsupported input types must be rejected.",
+   "response_sha256": "35e68c06939888ba759b35ade4e9af54d63fe51bf8f92b785042fb0aec4c8c69",
    "sources": [
     "Both supported public named-choice input forms normalize to the same selected registered tool.",
-    "When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool.",
-    "msg = 'tool_choice must be a string, mapping, or None.'\n    pass"
+    "msg = \"tool_choice must be a string, mapping, or None.\"",
+    "raise TypeError(msg)",
+    "When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool."
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
+   "verdict": "unspecified"
   },
   "operator": "statement",
-  "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401",
-  "rechecks": {
-   "verdict": {
-    "asked_at": "2026-09-30T14:21:01.058547Z",
-    "backend": "claude-cli",
-    "call_id": "20260930T142038Z-c61d33",
-    "confirmed": false,
-    "effort": "xhigh",
-    "level": "implementation",
-    "model": "claude-opus-5-5",
-    "problems": [],
-    "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401",
-    "reason": "The mutant only changes what happens to an unsupported input type, such as an int. It returns None where the original raised TypeError. REQ_TOOL_CHOICE and its criteria cover only the supported named-choice forms (string and mapping) and \"required\". Every one of those paths returns before the changed line, so their behaviour is identical and rejecting other types is outside what this requirement asks for.",
-    "response_sha256": "4b0db442627efc54d6dea6653e23a71478881eafdb9a5fe3fdb42d5b52cbdbc8",
-    "sources": [
-     "Both supported public named-choice input forms normalize to the same selected registered tool.",
-     "The public \"required\" choice normalizes to a required call, and each distinct provider translation asks for a call to any registered tool.",
-     "raise TypeError(msg)",
-     "msg = 'tool_choice must be a string, mapping, or None.'\n    pass"
-    ],
-    "test_focus": "",
-    "verdict": "irrelevant"
-   }
-  },
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20260928T195411Z-0de985",
-   "confirmed": false,
-   "level": "requirement",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "8ff5e5472808ffeb3282af8f58c4ba3d249b94a20b8530ac0fe2752524cee401",
-   "reason": "The requirement dictates behavior when a tool is explicitly named or when a call is required, but it does not specify error handling for invalid input types. Removing the TypeError for invalid inputs does not violate this requirement.",
-   "response_sha256": "c142dcaf42f1b64751751a16b2201c9d3b595f30372d6f9d82e8c98e8c0a2496",
-   "sources": [
-    "When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool. When the caller requires a tool call without naming one, a supported provider route shall ask the provider to call one of the registered tools.",
-    "raise TypeError(msg)",
-    "pass"
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  }
+  "prompt_sha256": "fa28d2f22d1e86d70c730475b9fce93cd461e386793c8b30c5a8076b0c1fba60"
  },
  "SM-B25D86B3": {
   "answer": {
@@ -195,43 +157,26 @@
  "b9226947eece89d0": {
   "answer": {
    "backend": "claude-cli",
-   "call_id": "20261001T062428Z-c186a9",
+   "call_id": "20261002T201753Z-8344b5",
    "confirmed": true,
    "effort": "xhigh",
-   "level": "implementation",
+   "finding": "No requirement says how a tool_choice that is neither a string, a mapping nor None is handled. A requirement should say that such input is rejected with TypeError before any provider request is built.",
+   "level": "requirement",
    "model": "claude-opus-5-5",
    "problems": [],
-   "reason": "The mutant only changes what happens with unsupported input types such as lists: they now fail with ValueError from dict() instead of TypeError, and a list of pairs may even be accepted. Strings, mappings, None, \"auto\", \"none\" and \"required\" behave exactly as before. REQ_TOOL_CHOICE and its criteria cover only the supported named-choice forms and the \"required\" choice, not how other input types are rejected.",
-   "response_sha256": "37cd3dfee98794c66ce2970345611cb9bafa26a2d90eeebdfbed49184ac81276",
-   "sources": [
-    "Both supported public named-choice input forms normalize to the same selected registered tool.",
-    "if isinstance(choice, Mapping):",
-    "if True:",
-    "msg = \"tool_choice must be a string, mapping, or None.\""
-   ],
-   "test_focus": "",
-   "verdict": "irrelevant"
-  },
-  "operator": "conditional",
-  "prompt_sha256": "7d4407c570a4e784aa0db6138903ea6e152b201e35ff9b7bd4b9f22f2425f4ca",
-  "review": {
-   "backend": "antigravity-cli",
-   "call_id": "20261001T114054Z-070da5",
-   "confirmed": true,
-   "effort": "",
-   "level": "implementation",
-   "model": "gemini-3.1-pro-high",
-   "problems": [],
-   "prompt_sha256": "7d4407c570a4e784aa0db6138903ea6e152b201e35ff9b7bd4b9f22f2425f4ca",
-   "reason": "The mutant replaces the `Mapping` type check with `if True:`, changing the error thrown for unsupported inputs like a list from a custom `TypeError` to an error within `dict(choice)`. The requirement governs the normalization and execution of valid tool choices, but does not specify the exact exception types for invalid inputs.",
-   "response_sha256": "00a318cbfb7b04c243904a5eec2ea11affeb64e7e7ffecfe54c4a15ef13731e5",
+   "reason": "The mutant changes how tool_choice values that are neither strings nor mappings are handled. A list like [\"a\"] now raises ValueError instead of TypeError, and a list of pairs is accepted as a raw choice instead of being rejected. REQ_TOOL_CHOICE only covers named and \"required\" choices. It says nothing about rejecting tool_choice types that aren't supported.",
+   "response_sha256": "5637808479860591698e12d9f6d4691ac96ef3a5cc1d9d5c46a6b0f46e4e1d75",
    "sources": [
     "When the caller explicitly selects a named tool, a supported provider route shall request and execute that tool rather than silently choosing another registered tool.",
-    "if isinstance(choice, Mapping):"
+    "Both supported public named-choice input forms normalize to the same selected registered tool.",
+    "if True:",
+    "msg = 'tool_choice must be a string, mapping, or None.'"
    ],
    "test_focus": "",
-   "verdict": "irrelevant"
-  }
+   "verdict": "unspecified"
+  },
+  "operator": "conditional",
+  "prompt_sha256": "35ba9ed7822daf3f9bd03b34fab551dceebcc421dcdc2d080faaf88bea87d8b9"
  },
  "e6293e4c0f29961b": {
   "answer": {

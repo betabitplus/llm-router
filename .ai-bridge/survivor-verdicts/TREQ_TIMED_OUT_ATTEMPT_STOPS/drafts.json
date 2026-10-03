@@ -1,0 +1,293 @@
+{
+ "39d5d1ce764651c8": [
+  {
+   "at": "2026-10-02T22:04:28.828544Z",
+   "call_id": "20261002T220144Z-f78b6a",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "d7e6460ebe0e1110eb784fb74a5e20001e97f4b02cbbb84a5542343469d57b31",
+   "reason": "it does not pass on the original 5 times in a row (pytest: [100%] | fixture 'server' not found)",
+   "sources": [
+    "llm_router._api.router.LLMRouter",
+    "llm_router._api.types.LLMRouterResponse",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.workers.retry.openai_chat_path"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:13:36.795653Z",
+   "call_id": "20261002T220930Z-d54b55",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "9245a661a78455dc9e21bf236b3d58285d056f505dd6811108c89a49bf6ecc2a",
+   "reason": "",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "llm_router.get_config",
+    "llm_router.install_config",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  }
+ ],
+ "698b8ee7e7d54a5c": [
+  {
+   "at": "2026-10-02T22:27:52.629812Z",
+   "call_id": "20261002T222446Z-e119be",
+   "cause": "weak",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "a83ab2f7eea323a2fa278ff511decd03531f427f18b29dec772a6df5ffb1b0ef",
+   "reason": "it does not fail on the mutant: it never runs the function under test, so it never reaches the changed line 256",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:32:03.242900Z",
+   "call_id": "20261002T222752Z-c3cf01",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "cafe878619517043001a087f412758fa049787de9bb6d876425ac5b05a89a69b",
+   "reason": "it breaks the project's lint rules (ruff: line 101: ARG002 Unused method argument: `request` | line 115: ARG002 Unused method argument: `request`)",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ToolCall",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.errors.AttemptLeftError",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:33:31.160886Z",
+   "call_id": "20261002T223203Z-9b2bbb",
+   "cause": "kept",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "44ebdf72922a3927db598ea19dfe42eec63284fb4895e8e4bc1bc1e5384a905d",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ]
+  }
+ ],
+ "SM-5BEF46E5": [
+  {
+   "at": "2026-10-02T22:04:08.090041Z",
+   "call_id": "20261002T220144Z-bd21cc",
+   "cause": "lint",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "ec92a97b3533945ef99955a86f31194d266c9db97ae2c833ff1151f91380500d",
+   "reason": "it breaks the project's lint rules (ruff: line 26: ARG002 Unused method argument: `request` | line 33: RSE102 Unnecessary parentheses on raised exception)",
+   "sources": [
+    "llm_router._internal.runtime.errors.AttemptLeftError"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:07:55.549005Z",
+   "call_id": "20261002T220408Z-0c0558",
+   "cause": "grounding",
+   "context_gaps": [],
+   "grounding": [
+    "llm_router._api.types has no ProviderCredential (it lives in llm_router._internal.providers.base)",
+    "llm_router._internal.runtime.requests has no ProviderRequest (it lives in llm_router._internal.providers.base)"
+   ],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "c4e0c9d551c4ee6845754a936946f950826921abd534f2c9c17202e9d1e9dded",
+   "reason": "it uses vars; it does not fit the project's code as written: llm_router._api.types has no ProviderCredential (it lives in llm_router._internal.providers.base) | llm_router._internal.runtime.requests has no ProviderRequest (it lives in llm_router._internal.providers.base)",
+   "sources": [
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ProviderCredential",
+    "llm_router._internal.runtime.errors.AttemptLeftError",
+    "llm_router._internal.runtime.executor",
+    "llm_router._internal.runtime.output.ProviderResult",
+    "llm_router._internal.runtime.requests.ProviderRequest"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:09:48.871565Z",
+   "call_id": "20261002T220756Z-620701",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor"
+   ],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "30882a2095bb9ee9b00c81ec27f4cda53cfa1b6f6c8d1bd8b8594fd55f079bca",
+   "reason": "",
+   "sources": [
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.errors.AttemptLeftError",
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult"
+   ]
+  }
+ ],
+ "SM-5E109C65": [
+  {
+   "at": "2026-10-02T22:04:22.827472Z",
+   "call_id": "20261002T220144Z-a63065",
+   "cause": "rules",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.8-flash-medium",
+   "question_sha256": "b6ee5d8637b8dd1d3be03a449eb0df9d047bb38e8f9cab1b1519b5549a53c950",
+   "reason": "it imports threading; it uses threading",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:08:37.113448Z",
+   "call_id": "20261002T220423Z-577646",
+   "cause": "runtime-api",
+   "context_gaps": [],
+   "grounding": [],
+   "level": 1,
+   "model": "gemini-3.1-pro-high",
+   "question_sha256": "6637abbfa603846f9d03c0297c3ff7ccacc1def71ebc38d1b0b97ab6f45663d7",
+   "reason": "it does not pass on the original 5 times in a row (pytest: TypeError: ScriptedHTTPServer.__init__() missing 2 required keyword-only arguments: 'port' and 'routes')",
+   "sources": [
+    "typing.Any",
+    "pytest.MonkeyPatch",
+    "pytest.mark.asyncio",
+    "pytest.mark.parametrize",
+    "pytest.mark.verification_kind",
+    "pytest.mark.verifies",
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.fault_server.retain_fault_injection",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:09:24.211967Z",
+   "call_id": "20261002T220837Z-107e18",
+   "cause": "behaviour",
+   "context_gaps": [],
+   "effort": "medium",
+   "grounding": [],
+   "level": 2,
+   "model": "claude-sonnet-5-5",
+   "question_sha256": "1417307d33175de3b2736e43be35121ba9c3c687d2111942b05b2642dd4efba7",
+   "reason": "it does not pass on the original 5 times in a row (pytest: AssertionError: assert 'late follow-up' == 'route two ok' | - route two ok | + late follow-up)",
+   "sources": [
+    "llm_router.LLMRouter",
+    "llm_router.Model",
+    "llm_router.Provider",
+    "llm_router.RouterProfile",
+    "tests.llm_router.support.fault_server.ScriptedHTTPServer",
+    "tests.llm_router.support.fault_server.ScriptedResponse",
+    "tests.llm_router.support.workers.retry.openai_chat_path",
+    "tests.llm_router.support.workers.retry.openai_success_response",
+    "tests.llm_router.support.workers.tool_failure.openai_tool_call_response",
+    "tests.llm_router.support.workers.worker_patches.patched_openai_sdk"
+   ]
+  },
+  {
+   "at": "2026-10-02T22:14:37.238152Z",
+   "call_id": "20261002T220924Z-c2334f",
+   "cause": "kept",
+   "context_gaps": [
+    "llm_router._internal.providers.base.ProviderFailure",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.requests.ResolvedRequest"
+   ],
+   "effort": "xhigh",
+   "grounding": [],
+   "level": 3,
+   "model": "claude-opus-5-5",
+   "question_sha256": "2df5b740cd374a63984bc570283e63f2808ed1283b6c184eab112a79021ac818",
+   "reason": "",
+   "sources": [
+    "llm_router._api.errors.ProviderError",
+    "llm_router._api.types.Model",
+    "llm_router._api.types.Provider",
+    "llm_router._api.types.ToolCall",
+    "llm_router._internal.config.LLMRouterConfig",
+    "llm_router._internal.config.RetryPolicy",
+    "llm_router._internal.config.get_config",
+    "llm_router._internal.providers.base.ProviderCapabilities",
+    "llm_router._internal.providers.base.ProviderCredential",
+    "llm_router._internal.providers.base.ProviderFailure",
+    "llm_router._internal.providers.base.ProviderRequest",
+    "llm_router._internal.providers.base.ProviderResult",
+    "llm_router._internal.runtime.errors.AttemptLeftError",
+    "llm_router._internal.runtime.executor.ProviderRouteExecutor",
+    "llm_router._internal.runtime.requests.ResolvedRequest"
+   ]
+  }
+ ]
+}

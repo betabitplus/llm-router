@@ -1,10 +1,36 @@
 {
+ "3455f92045d0119f": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: the difference needs a loop state already past max_rounds, which the tool loop never reaches since it stops at the limit, and the state is internal, never returned to a caller. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
+ "4d9aa4fd0372304b": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required here: the router's structured log events belong to the ternforge runtime that emits them (py_lib_runtime), not to llm-router's requirements, as the owner placed them on 2026-10-03; the only llm-router rule on them is TREQ_RUNTIME_LOG_SAFETY's (no protected values). Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
+ },
  "b286d88b39b3a8e6": {
   "by": "delegate claude-opus-5-5",
-  "decided_at": "2026-10-01",
+  "decided_at": "2026-10-02",
+  "disposition": "kept",
+  "finding": "Keeping the outstanding tool calls in the loop state at the round limit never matters: nothing reads that state there.",
   "level": "requirement",
-  "reason": "The mutant only drops the outstanding tool calls kept in the tool-loop state when the round limit is already reached. At the limit the executor builds the public response from the provider's own tool calls (result.tool_calls) and the executed steps, never from that state, so no caller can observe it; the requirement promises only that execution stops at the limit, which still holds. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
-  "verdict": "irrelevant"
+  "reason": "Re-decided under ADR_0007 on 2026-10-02 (irrelevant before): Keeping the outstanding calls in the loop state at the limit never matters: nothing reads that state there. Kept so the state stays whole for a later reader. Earlier reason: The mutant only drops the outstanding tool calls kept in the tool-loop state when the round limit is already reached. At the limit the executor builds the public response from the provider's own tool calls (result.tool_calls) and the executed steps, never from that state, so no caller can observe it; the requirement promises only that execution stops at the limit, which still holds. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "ineffective"
+ },
+ "b93510947e39b6d5": {
+  "by": "delegate claude-opus-5-5",
+  "decided_at": "2026-10-03",
+  "disposition": "not-required",
+  "level": "requirement",
+  "reason": "Not required: the difference needs a loop state already past max_rounds, which the tool loop never reaches since it stops at the limit, and the state is internal, never returned to a caller. Decided on the owner's delegation below Goal and Feature (ADR_0007), checked against the code on 2026-10-03.",
+  "verdict": "unspecified"
  },
  "c7d2d7e9975406e2": {
   "by": "delegate claude-opus-5-5",
@@ -22,9 +48,11 @@
  },
  "f7f884d8946a1724": {
   "by": "delegate claude-opus-5-5",
-  "decided_at": "2026-10-01",
+  "decided_at": "2026-10-02",
+  "disposition": "kept",
+  "finding": "Keeping earlier steps on the already-limited path of run_tool_round never matters: through the executor that path has no earlier steps.",
   "level": "requirement",
-  "reason": "The mutant drops earlier steps on the already-limited path of run_tool_round. Through the executor that path is reached only when the limit is zero, before any step ran, so there are no earlier steps to drop; with a limit of one or more the executor returns right after the round that reaches it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
-  "verdict": "irrelevant"
+  "reason": "Re-decided under ADR_0007 on 2026-10-02 (irrelevant before): Keeping earlier steps on the already-limited path never matters: through the executor that path has no earlier steps. Kept as harmless handling of the path. Earlier reason: The mutant drops earlier steps on the already-limited path of run_tool_round. Through the executor that path is reached only when the limit is zero, before any step ran, so there are no earlier steps to drop; with a limit of one or more the executor returns right after the round that reaches it. Decided on the owner's delegation: below Goal and Feature level the agent decides (2026-09-26, repeated 2026-10-01).",
+  "verdict": "ineffective"
  }
 }

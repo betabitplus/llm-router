@@ -112,6 +112,48 @@ Contracts in this capability:
 
 ::::
 
+```{treq} A timed-out attempt starts no further work
+:id: TREQ_TIMED_OUT_ATTEMPT_STOPS
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;bdd
+:derives: REQ_ROUTE_TIMEOUT_FALLBACK
+
+**Statement.** Once an attempt timeout makes the router leave an attempt, that attempt shall start no further provider request, provider retry or tool call; a provider request already sent may still complete, and its result is discarded.
+
+**Rationale.** The router has moved on to another route or to the public timeout error. Further work by the left attempt would repeat the caller's tool side effects beside the fallback route and spend provider quota on a result nobody reads. A running thread cannot be stopped, so the attempt checks before each step it would start.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_TIMED_OUT_ATTEMPT_STOPS' in derives or 'TREQ_TIMED_OUT_ATTEMPT_STOPS' in implements or 'TREQ_TIMED_OUT_ATTEMPT_STOPS' in verifies"
+```
+
+::::
+
+```{treq} A timed attempt keeps the caller's context
+:id: TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT
+:collapse: true
+:status: accepted
+:revision: 1
+:required_evidence: impl;bdd
+:derives: REQ_ROUTE_TIMEOUT_FALLBACK
+
+**Statement.** An attempt shall run with the context variables the caller set before the call, with or without an attempt timeout, so the tools it calls and the provider client it uses see them; which thread runs the attempt is not part of this promise.
+
+**Rationale.** Tracing spans, log fields and request-scoped settings live in context variables; OpenTelemetry keeps the active span there. A timed synchronous attempt runs in a worker thread, and a thread starts with an empty context, so without a copy an attempt timeout would cut the attempt's spans and log fields off from the caller's. `asyncio.to_thread` carries the context into its thread for the same reason, and an asyncio task copies it when it is created.
+```
+
+::::{dropdown} Follow this contract to proof
+
+```{needlist}
+:filter: "'TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT' in derives or 'TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT' in implements or 'TREQ_ATTEMPT_KEEPS_CALLER_CONTEXT' in verifies"
+```
+
+::::
+
 ```{req} Route attempt limit
 :id: REQ_ROUTE_ATTEMPT_LIMIT
 :collapse: true
