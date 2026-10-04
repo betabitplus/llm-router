@@ -1,0 +1,97 @@
+{
+ "comment|src/llm_router/__init__.py|pragma: no cover||59f5f82953e5": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "The fallback runs only when the package is imported without being installed, so it has no version metadata; every test imports the installed package."
+ },
+ "comment|src/llm_router/_api/config.py|noqa|F401|6e2e37cb173f": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "The module re-exports the public config names from the private package, as its docstring says; importers use the names, the module itself does not."
+ },
+ "comment|src/llm_router/_api/config.py|pyright|reportUnusedImport=false|e3b0c44298fc": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "The module re-exports the public config names from the private package, as its docstring says; importers use the names, the module itself does not."
+ },
+ "comment|src/llm_router/_api/router.py|noqa|PLR0913|1d5ce47f74d4": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "The public Router API takes its documented settings as keyword-only arguments; grouping them would change the API."
+ },
+ "comment|src/llm_router/_api/router.py|noqa|PLR0913|29b36ada7e74": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "The public Router API takes its documented settings as keyword-only arguments; grouping them would change the API."
+ },
+ "comment|src/llm_router/_api/router.py|noqa|PLR0913|b4403dd5b2a5": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "The public Router API takes its documented settings as keyword-only arguments; grouping them would change the API."
+ },
+ "comment|src/llm_router/_internal/config/state.py|noqa|PLW0603|71160055b56c": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "The installed configuration is one value for the process; install_config replaces it under _config_lock (REQ_CONFIG_INSTALLATION_COHERENCE)."
+ },
+ "comment|src/llm_router/_internal/providers/base.py|noqa|N818|b1bb20d66c1e": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "ProviderFailure classifies a provider failure inside the runtime before the public boundary turns it into ProviderError; the Error suffix is kept for the public exceptions."
+ },
+ "comment|src/llm_router/_internal/providers/gemini_webapi.py|noqa|ANN401|8a8d6d24cd71": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Returns the gemini_webapi client: the package ships no type information (no py.typed) and is imported only when a client is first needed."
+ },
+ "comment|src/llm_router/_internal/providers/google_genai.py|noqa|ANN401|7022a734f2e3": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Loose by choice: google-genai types its client, so this could return genai.Client; nothing requires Any here."
+ },
+ "comment|src/llm_router/_internal/providers/registry.py|noqa|E402|764e77c0c292": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Each adapter's import sits beside its registration. Nothing requires the place: a copy with the imports at the top of the module imports and registers the same adapters (checked 2026-10-03)."
+ },
+ "comment|src/llm_router/_internal/providers/registry.py|noqa|E402|87cacf802f95": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Each adapter's import sits beside its registration. Nothing requires the place: a copy with the imports at the top of the module imports and registers the same adapters (checked 2026-10-03)."
+ },
+ "comment|src/llm_router/_internal/providers/registry.py|noqa|E402|a472bbf762ba": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Each adapter's import sits beside its registration. Nothing requires the place: a copy with the imports at the top of the module imports and registers the same adapters (checked 2026-10-03)."
+ },
+ "comment|src/llm_router/_internal/providers/registry.py|noqa|E402|be0dcc8cb5ac": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Each adapter's import sits beside its registration. Nothing requires the place: a copy with the imports at the top of the module imports and registers the same adapters (checked 2026-10-03)."
+ },
+ "comment|src/llm_router/_internal/providers/registry.py|noqa|E402|c42804d00ffb": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Each adapter's import sits beside its registration. Nothing requires the place: a copy with the imports at the top of the module imports and registers the same adapters (checked 2026-10-03)."
+ },
+ "comment|src/llm_router/_internal/runtime/router.py|noqa|TRY004|9875e754a485": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "A route whose provider is not a known Provider is a configuration value the router cannot use, so it raises ValueError like other bad configuration values; the check tests a resolved route, not a caller's argument type."
+ },
+ "import|private-core-layering|llm_router._internal.config.state -> llm_router._internal.providers.registry": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "install_config clears the adapter caches the providers registry keeps (TREQ_CONFIG_CACHE_INVALIDATION); the import sits inside the function, so loading the config layer does not load the providers layer."
+ },
+ "pin|tests/llm_router/mutation_pins/test_pin_req_request_override_precedence_55b2f9299d7194b1.py": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-02",
+  "reason": "Accepted before the pin oracle rule (2026-10-02), which applies to new pins only: it hands the public API an unset key id its types do not admit. It stays until it is rewritten (history 057)."
+ },
+ "skip|tests/llm_router/support/media/gemini_webapi.py|skip|b801bd16ccef": {
+  "by": "delegate claude-opus-5-5",
+  "decided": "2026-10-03",
+  "reason": "Only a live run (--disable-recording) of the Gemini WebAPI scenarios reaches it, and it skips when the machine has no browser cookie for google.com; the retained hermetic run replays recordings."
+ }
+}

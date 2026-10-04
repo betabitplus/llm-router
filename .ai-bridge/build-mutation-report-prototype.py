@@ -28,7 +28,7 @@ import xml.etree.ElementTree as ET
 import zlib
 from collections import Counter, defaultdict
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, as_completed, wait
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from html import escape as html_escape
 from importlib.metadata import version as package_version
 from pathlib import Path
@@ -167,6 +167,17 @@ ARCHITECTURE=importlib.util.module_from_spec(ARCHITECTURE_SPEC)
 sys.modules.setdefault("architecture_mutants",ARCHITECTURE)
 ARCHITECTURE_SPEC.loader.exec_module(ARCHITECTURE)
 ARCHITECTURE_RESULTS_PATH=ROOT/"test-results/architecture-mutants/results.json"
+# The exception registry, the metric bases and the monitor's history with its release snapshots (ADR_0009). No model.
+def _bridge_module(name,what):
+    spec=importlib.util.spec_from_file_location(name,ROOT/f".ai-bridge/{name}.py")
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Could not load {what}")
+    module=importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+EXC=_bridge_module("exception_registry","the exception registry")
+BASES=_bridge_module("metric_bases","the metric bases")
+HISTORY=_bridge_module("monitor_history","the monitor history")
 ARCHITECTURE_PRODUCERS=("PRODUCER_ARCHITECTURE_MUTANTS",)
 ASSESSOR_CALIBRATION_DIR=SEMANTIC.PROPOSAL_ROOT/"assessor-calibration"
 EQUIVALENCE_PAIRS_DIR=SEMANTIC.PROPOSAL_ROOT/"calibration"/"equivalence"
@@ -264,8 +275,11 @@ def git_sha(ref="HEAD"):
     """A commit of the repository; the builder commits nothing, so a run asks git once per ref."""
     return subprocess.check_output(["git","rev-parse",ref],cwd=ROOT,text=True).strip()
 
+REPO_URL="https://github.com/betabitplus/llm-router"
+
+
 def repo_blob_url(path,ref=None):
-    return f"https://github.com/betabitplus/llm-router/blob/{ref or git_sha()}/{path}"
+    return f"{REPO_URL}/blob/{ref or git_sha()}/{path}"
 
 
 # TERNFORGE-P34-CLEAN-MAPS-START
@@ -363,7 +377,12 @@ def portal_map_shell(shell_path, title, article_html):
         raise RuntimeError(
             f"clean map generation requires the native Sphinx shell at {shell_path.relative_to(ROOT)}"
         )
-    text = shell_path.read_text()
+    return portal_shell_text(shell_path.read_text(), title, article_html)
+
+
+def portal_shell_text(text, title, article_html):
+    """A page in the portal's shell: the native Sphinx page with its title, breadcrumb and article replaced. A release
+    snapshot's list takes the Releases page's shell, which has no Sphinx source of its own (ADR_0009)."""
     text = re.sub(
         r"<title>.*?( &#8212; .*?</title>)",
         lambda match: f"<title>{html_escape(title)}{match.group(1)}",
@@ -1224,12 +1243,15 @@ def health_run_stamp(root):
     provenance=json.loads(EVIDENCE_RUN_PROVENANCE_PATH.read_text()) if EVIDENCE_RUN_PROVENANCE_PATH.exists() else {}
     execution=root["layers"]["execution"]
     freshness=next((metric for metric in root["layers"]["evidence"].get("metrics") or [] if metric.get("label")=="Freshness"),None)
+    head,inputs=run_commit()
     return {
       "run_id":provenance.get("run_id"),
       "started_at":(provenance.get("execution") or {}).get("started_at"),
       "commit":str(provenance.get("git_head") or "")[:7],
       "checks":execution.get("total"),
       "fresh":{"passed":freshness["passed"],"total":freshness["total"]} if freshness else None,
+      # Whether the run's inputs were byte for byte its commit's files (ADR_0009): its trend point says so.
+      "tree":HISTORY.tree_state(ROOT,inputs,head) if head==str(provenance.get("git_head") or "") else None,
     }
 
 
@@ -1287,6 +1309,7 @@ def health_map_insights(payload):
       "causes":health_layer_causes(rows,contracts,implementation_fault_plans()),
       "run":stamp,
       "delta":health_run_delta(rows,stamp),
+      "trend":history_trend("health",HEALTH_LAYER_KEYS,stamp.get("run_id")),
     }
 
 
@@ -1699,6 +1722,8 @@ def explorer_causes():
     causes={cause_id:{"label":label,"hint":hint} for entries in HEALTH_CAUSES.values() for cause_id,label,hint in entries}
     causes.update({"metric:"+name:{"label":label,"hint":hint} for name,(label,hint) in HEALTH_METRIC_CAUSES.items()})
     causes.update({cause_id:{"label":label,"hint":hint} for cause_id,(label,hint) in EXPLORER_CAUSES.items()})
+    causes.update({"exception:"+key:{"label":label,"hint":hint} for key,(label,hint) in EXCEPTION_CAUSES.items()})
+    causes.update({"base:"+key:{"label":label,"hint":hint} for key,(label,hint) in BASE_CAUSES.items()})
     return causes
 
 
@@ -1792,12 +1817,33 @@ def finding_note(verdict):
 def finding_item(contract_id,key,verdict,klass,name,origin,producers,links):
     """One finding as an explorer item of its own kind, under the contract that owns the survivor."""
     kind=FINDING_KINDS[verdict["verdict"]]
-    status,word,cause=FINDING_STATES[verdict["verdict"]][EQ.finding_state(verdict)]
+    state=EQ.finding_state(verdict)
+    status,word,cause=FINDING_STATES[verdict["verdict"]][state]
     return {
       "id":f"{kind}|{contract_id}|{key}","kind":kind,"owner":contract_id,"object":f"fault|{contract_id}|{klass}",
       "layers":["completeness"] if kind=="silent" else ["faults"],"status":status,"state":word,"causes":[cause] if cause else [],
       "name":name,"what":" ".join(str(verdict.get("finding") or "").split()),"note":finding_note(verdict),
       "attrs":{"class":klass,"origin":origin},"producers":producers,"links":links,
+      # A finding the owner or the delegate closed (not required, kept) is an exception (ADR_0009).
+      **({"exception":verdict_exception(contract_id,key,verdict,f"{FINDING_WORDS[verdict['verdict']].lower()} at {name}")} if state=="closed" else {}),
+    }
+
+
+def verdict_exception(contract_id,key,verdict,excuses):
+    """The exception a counting verdict makes of a survivor (ADR_0009): a closed finding, a survivor a person or the
+    delegate decided out, or one a model judged out and another family confirmed. A model's verdict holds while its
+    question is unchanged; a decision holds for the registry's review period from the day it was made."""
+    if verdict.get("verdict") in FINDINGS:
+        kind="not-required" if verdict["verdict"]=="unspecified" else "kept"
+    else:
+        kind="decided" if verdict.get("decided_at") else "judged"
+    by=str(verdict.get("by") or "")
+    return {
+      "type":kind,"key":f"{kind}|{contract_id}|{key}","excuses":excuses,
+      "reason":" ".join(str(verdict.get("reason") or "").split()),
+      "by":by+(f", confirmed by {verdict['reviewed_by']}" if verdict.get("reviewed_by") and kind=="judged" else ""),
+      "decided":str(verdict.get("decided_at") or "")[:10] or EXC.call_date(verdict.get("call_id")),
+      **({"holds":"question"} if kind=="judged" else {}),
     }
 
 
@@ -1900,11 +1946,16 @@ def explorer_mutant_change(mutant):
 
 def working_changed_lines(base_ref="main"):
     """Lines the working tree changes against its merge base with the base branch:
-    the lines a pull request from this branch would change."""
+    the lines a pull request from this branch would change. A clone that has only the remote's
+    branch (CI) takes origin's."""
     try:
-        merge_base=subprocess.run(
-          ["git","merge-base","HEAD",base_ref],cwd=ROOT,text=True,capture_output=True,check=True,
-        ).stdout.strip()
+        merge_base=""
+        for ref in (base_ref,f"origin/{base_ref}"):
+            merge_base=subprocess.run(["git","merge-base","HEAD",ref],cwd=ROOT,text=True,capture_output=True,check=False).stdout.strip()
+            if merge_base:
+                break
+        if not merge_base:
+            return set(),None
         diff=subprocess.run(
           ["git","diff","--unified=0","--no-color",merge_base,"--","src"],cwd=ROOT,text=True,capture_output=True,check=True,
         ).stdout
@@ -2096,6 +2147,7 @@ def explorer_payload(health_payload):
                 suppression=mutant.get("suppression") or {}
                 status,word,causes,note=EXPLORER_MUTANT_OUTCOMES[outcome]
                 triaged=None
+                excused=None
                 if outcome=="suppressed" and suppression.get("verdict") in FINDINGS:
                     word=f"{FINDING_WORDS[suppression['verdict']]} · "+FINDING_STATES[suppression["verdict"]][suppression.get("finding_state") or "undecided"][1]
                     note=finding_note(suppression)
@@ -2103,6 +2155,7 @@ def explorer_payload(health_payload):
                     word=f"Suppressed · {suppression['verdict']}"
                     confirmed=f" (confirmed by {suppression['reviewed_by']})" if suppression.get("reviewed_by") else ""
                     note=f"Judged {suppression['verdict']} by {suppression.get('by')}{confirmed}: "+explorer_clip(" ".join(str(suppression.get("reason") or "").split()),300)
+                    excused=verdict_exception(contract_id,mutant["fingerprint"],suppression,f"mutant {Path(mutant['source']).name}:{mutant['line']}")
                 elif outcome=="suppressed":
                     word=f"Suppressed · {suppression.get('category') or 'pardoned'}"
                     note=str(suppression.get("reason") or "Suppressed by a pragma.")
@@ -2137,6 +2190,7 @@ def explorer_payload(health_payload):
                     *([["Draft attempts","model-roles.html#draft-author","semantic"]] if recorded_drafts(contract_id,mutant["fingerprint"]) else []),
                     *answer_links(contract_id,mutant["fingerprint"],triaged),
                   ],
+                  **({"exception":excused} if excused else {}),
                 })
                 # A survivor whose verdict names a finding is also listed as that finding (ADR_0007).
                 counting=((((verdict_state().get(contract_id) or {}).get("items") or {}).get(str(mutant["fingerprint"])) or {}).get("verdict")) or {}
@@ -2208,6 +2262,9 @@ def explorer_payload(health_payload):
                 **({"judgement":judged["status"]} if judged.get("status") else {}),
               },
               "producers":list(SEMANTIC_PRODUCERS),"links":links,
+              # A semantic mutant a verdict takes out is an exception as a rule mutant is (ADR_0009).
+              **({"exception":verdict_exception(contract_id,proposal["id"],counting or {"verdict":(result or {}).get("verdict")},f"semantic mutant {proposal['id']}")}
+                 if taken_out and counting.get("verdict") not in FINDINGS else {}),
             })
             if taken_out and counting.get("verdict") in FINDINGS and f"{FINDING_KINDS[counting['verdict']]}|{contract_id}|{proposal['id']}" not in {item["id"] for item in items}:
                 items.append(finding_item(
@@ -2313,6 +2370,19 @@ def explorer_payload(health_payload):
               "links":[["Opens",href.get(child.get("id")) or child.get("url") or "","semantic"]] if (href.get(child.get("id")) or child.get("url")) else [],
             })
 
+    # The exceptions that live in the code and in the monitor's own records, and the review of every exception, as of
+    # the retained run's day (ADR_0009); then the metric bases changed together with the code.
+    contract_ids={row["id"] for row in tree if row["level"] in {"requirement","treq"}}
+    items.extend(code_exception_items(contract_ids,head))
+    exception_day=EXC.run_date((health_payload.get("insights") or {}).get("run",{}).get("started_at") or datetime.now(UTC).isoformat())
+    exception_records=EXC.load(EXCEPTION_RECORDS_PATH)
+    for item in items:
+        if item.get("exception"):
+            item["exception"]=EXC.review(item["exception"],exception_records,exception_day)
+            if item["kind"]=="exception":
+                exception_state(item)
+    items.extend(base_change_items())
+
     # The evidence producers, each with the contracts whose evidence it made.
     users=defaultdict(set)
     for item in items:
@@ -2347,6 +2417,172 @@ def explorer_payload(health_payload):
 EXPLORER_RUN_SNAPSHOTS=ROOT/"test-results/explorer/runs"
 EXPLORER_FAILING={"fail","unknown"}
 
+# --- the exception registry and the metric bases (ADR_0009) ----------------------
+EXCEPTION_RECORDS_PATH=ROOT/".ai-bridge/exception-records.json"
+EXCEPTIONS_BASELINE_PATH=ROOT/".ai-bridge/exceptions-baseline.json"
+BASE_CHANGES_CACHE_PATH=ROOT/"test-results/metric-bases/cache.json"
+EXCEPTION_PRODUCERS=("PRODUCER_EXCEPTION_REGISTRY",)
+BASE_PRODUCERS=("PRODUCER_METRIC_BASES",)
+# What makes an exception fail, and how to fix it.
+EXCEPTION_CAUSES={
+  "unreasoned":("No reason recorded","Nothing says why this exception is allowed: write the reason after the comment's codes (# noqa: E402 - why) or record it in .ai-bridge/exception-records.json."),
+  "undated":("No decision date","The exception has a reason but no day it was decided, so it cannot be reviewed on time: record the day."),
+  "overdue":("Review overdue","The exception's review date has passed: confirm it with a new date, or remove it."),
+  "orphan":("Excuses nothing","The record's exception is gone (the line changed or the comment went): remove the record."),
+}
+BASE_CAUSES={
+  "loosened":("Base loosened with the code","The same commit changed the product's code or tests and loosened what a number is measured against: a reviewer should look whether the number improved because the product did."),
+}
+
+
+def exception_owner(path,line,contract_ids,functions):
+    """The contract an exception in the product belongs to: the one the function around its line serves, when it
+    serves exactly one; else the product."""
+    around=[row for row in functions if row["path"]==path and row["start"]<=line<=row["end"]]
+    inner=min(around,key=lambda row:row["end"]-row["start"]) if around else None
+    owners=[owner for owner in (inner or {}).get("owners") or [] if owner in contract_ids]
+    return owners[0] if len(owners)==1 else ASSURANCE_REGISTRY.PRODUCT_SYSTEM_ID
+
+
+def code_exception_items(contract_ids,head):
+    """The exceptions that live in the code and beside it, one explorer item each: the comments in the product that
+    tell a tool to look away, the places in the tests that skip, the pins the oracle rule spares, the imports an
+    architecture contract lets through, the Code map's exemptions, and the records that excuse nothing any more."""
+    functions=code_map_facts()["functions"]
+    found=[
+      *EXC.tool_comments(ROOT,CODE_MAP_PACKAGE),*EXC.test_skips(ROOT),*EXC.ignored_imports(ROOT),
+      *EXC.spared_pins(ROOT,str(PINS_DIR.relative_to(ROOT)),ORACLE.oracle_problems),
+    ]
+    for function_id,record in sorted(CODE_MAP.load_exemptions(CODE_EXEMPTIONS_PATH).items()):
+        path,_,qualname=function_id.partition("::")
+        row=next((row for row in functions if row["id"]==function_id),{})
+        found.append({
+          "type":"exemption","key":f"exemption|{function_id}","path":path,"line":int(row.get("start") or 1),"marker":"code exemption","codes":"",
+          "excuses":f"{qualname} serves no requirement","reason":str((record or {}).get("reason") or ""),
+          "decided":str((record or {}).get("decided") or ""),"by":str((record or {}).get("by") or ""),
+        })
+    records=EXC.load(EXCEPTION_RECORDS_PATH)
+    found.extend({**orphan,"orphaned":True} for orphan in EXC.orphans(records,found))
+    items=[]
+    for exception in found:
+        path,line=str(exception["path"]),int(exception.get("line") or 0)
+        pin_contract=next((contract for contract in sorted(contract_ids,key=len,reverse=True) if Path(path).name.startswith(f"test_pin_{contract.lower()}_")),None)
+        owner=pin_contract or (exception_owner(path,line,contract_ids,functions) if path.startswith("src/") else ASSURANCE_REGISTRY.PRODUCT_SYSTEM_ID)
+        links=[["Source",repo_blob_url(path,head)+(f"#L{line}" if line else ""),"raw"]] if path and (ROOT/path).is_file() else []
+        if exception["type"]=="exemption":
+            links.append(["Code map",f"code-map.html#owner:{CODE_MAP._module_name(path)}.{exception['key'].split('::',1)[1]}","semantic"])
+        if not exception.get("orphaned") and exception["type"]!="exemption" and exception["key"] not in records:
+            links.append(["Record its reason",repo_blob_url(str(EXCEPTION_RECORDS_PATH.relative_to(ROOT)),head),"raw"])
+        items.append({
+          "id":f"exception|{exception['key']}","kind":"exception","owner":owner,"object":"","layers":[],
+          "status":"pass","state":"","causes":[],
+          "name":f"{path}:{line}" if line else path,"what":f"{EXC.TYPES[exception['type']][0]}: {exception['excuses']}","note":"",
+          "attrs":{"marker":exception.get("marker") or "","codes":exception.get("codes") or ""},
+          "producers":list(EXCEPTION_PRODUCERS),"links":links,
+          "exception":{key:value for key,value in exception.items() if key!="orphaned"} if not exception.get("orphaned") else exception,
+        })
+    return items
+
+
+def exception_state(item):
+    """An exception item's status, state word, cause and note from its review."""
+    exception=item["exception"]
+    state=exception["state"]
+    item["status"]="fail" if state in EXC.FAILING else "pass"
+    item["causes"]=[f"exception:{state}"] if state in EXC.FAILING else []
+    item["state"]=exception_word(exception)
+    if exception["state"]=="unreasoned":
+        item["note"]="No reason recorded."+(f" Its line was written {exception['decided']}." if exception.get("decided") else "")
+    else:
+        item["note"]=exception["reason"]+(f" Decided {exception['decided']}"+(f" by {exception['by']}" if exception.get("by") else "")+"." if exception.get("decided") else "")
+
+
+def exception_day(iso):
+    """A day as the pages name it: 1 Jan 2027."""
+    day=date.fromisoformat(iso)
+    return f"{day.day} {day:%b %Y}"
+
+
+def exception_word(exception):
+    """How long an exception holds, in a few words."""
+    state=exception["state"]
+    if state=="valid":
+        return "While its question is unchanged" if exception.get("holds")=="question" else f"Until {exception_day(exception['review_by'])}"
+    if state=="overdue":
+        return f"Overdue since {exception_day(exception['review_by'])}"
+    return EXC.STATES[state]
+
+
+def exception_numbers(items):
+    """Per type, the exceptions and how many of them fail; and the numbers the gate holds: per type, how many there
+    are, which may only fall (ADR_0009)."""
+    exceptions=[item["exception"] for item in items if item.get("exception")]
+    counts=EXC.counts(exceptions)
+    baseline=EXC.load(EXCEPTIONS_BASELINE_PATH)
+    held,rises=EXC.ratchet({kind:row["all"] for kind,row in counts.items()},baseline)
+    # Only a build whose producers are qualified for the current code moves the baseline: with the campaign's results
+    # not counting, the survivors judged out are not listed, and the baseline would fall to a wrong number.
+    if held!=baseline and _producer_qualified("PRODUCER_EXCEPTION_REGISTRY"):
+        EXCEPTIONS_BASELINE_PATH.write_text(json.dumps(held,indent=2,sort_keys=True)+"\n")
+    return {"counts":counts,"held":held["numbers"],"rises":rises,"reasons":held.get("reasons") or {},"accepted":held.get("accepted") or []}
+
+
+def base_changes():
+    """The metric bases changed since the merge base with main, read back per commit while the reader is unchanged."""
+    reader=sha256_file(ROOT/".ai-bridge/metric_bases.py")
+    try:
+        kept=json.loads(BASE_CHANGES_CACHE_PATH.read_text())
+    except (OSError,ValueError):
+        kept={}
+    cache=kept.get("commits") if kept.get("reader")==reader else {}
+    cache=dict(cache or {})
+    found=BASES.base_changes(ROOT,"main",cache)
+    BASE_CHANGES_CACHE_PATH.parent.mkdir(parents=True,exist_ok=True)
+    BASE_CHANGES_CACHE_PATH.write_text(json.dumps({"reader":reader,"commits":cache},sort_keys=True)+"\n")
+    return found
+
+
+def base_change_text(bases):
+    """What a change did to its bases, one part per kind of base: a base with many files (the survivor verdicts of
+    many contracts) says how many went which way and the first few."""
+    by_label=defaultdict(list)
+    for base in bases:
+        by_label[base["label"]].append(base)
+    parts=[]
+    for label,entries in by_label.items():
+        if len(entries)==1:
+            parts.append(f"{label}: {entries[0]['direction']}, {entries[0]['detail']}")
+            continue
+        ways=", ".join(f"{count} {way}" for way,count in Counter(entry["direction"] for entry in entries).most_common())
+        named="; ".join(f"{Path(entry['path']).parent.name}: {entry['detail']}" for entry in entries[:3])
+        parts.append(f"{label} in {len(entries)} files ({ways}): {named}"+(f"; and {len(entries)-3} more" if len(entries)>3 else ""))
+    return "; ".join(parts)
+
+
+def base_change_items():
+    """Each commit since the merge base with main (and the uncommitted change) that changes a metric base, one explorer
+    item: what it loosened or tightened, and whether it changed the product's code or tests too (ADR_0009). A base
+    loosened together with the code fails; the gate does not."""
+    found=base_changes()
+    items=[]
+    for change in found["changes"]:
+        looser=change["direction"]=="looser"
+        status="fail" if looser and change["with_code"] else "pass" if change["direction"]=="tighter" else "na"
+        commit=change["commit"]
+        items.append({
+          "id":f"basechange|{commit or 'working-tree'}","kind":"basechange","owner":ASSURANCE_REGISTRY.PRODUCT_SYSTEM_ID,"object":"","layers":[],
+          "status":status,"causes":["base:loosened"] if status=="fail" else [],
+          "state":{"looser":"Looser","tighter":"Tighter"}.get(change["direction"],"Changed")+(" with the code" if change["with_code"] else ""),
+          "name":(change["short"]+" · "+change["subject"]) if commit else "Uncommitted changes",
+          "what":base_change_text(change["bases"]),
+          "note":(f"The same {'commit' if commit else 'change'} changes {len(change['code'])} file{'s' if len(change['code'])!=1 else ''} of the product's code or tests"+(": "+", ".join(change["code"][:4])+(" and more" if len(change["code"])>4 else "") if change["code"] else "")+"." if change["with_code"] else "No code or test changes with it.")
+                 +(f" Committed {change['date']}." if change.get("date") else ""),
+          "attrs":{"direction":change["direction"],"code":"yes" if change["with_code"] else "no","bases":" · ".join(sorted({base["label"] for base in change["bases"]}))},
+          "producers":list(BASE_PRODUCERS),
+          "links":[["Commit",f"{REPO_URL}/commit/{commit}","raw"]] if commit else [],
+        })
+    return items
+
 
 def explorer_changes(before,after):
     """Up: an item that fails now and did not before; down: one that failed and passes now; new: one the earlier run did
@@ -2365,6 +2601,9 @@ def render_explorer_page(health_payload):
     payload=explorer_payload(health_payload)
     values={item["id"]:item["status"] for item in payload["items"]}
     payload["delta"]=run_delta(EXPLORER_RUN_SNAPSHOTS,"explorer-run-1",payload["run"],values,explorer_changes)
+    payload["exceptions"]=exception_numbers(payload["items"])
+    payload["exception_types"]=[[kind,label,what] for kind,(label,what) in EXC.TYPES.items()]
+    payload["review_days"]=EXC.REVIEW_DAYS
     article=MAP_PAGES.explorer_article(stable_json(payload))
     EXPLORER_PAGE.write_text(portal_map_shell(EXPLORER_PAGE,"Verification Explorer",article))
     return payload
@@ -3688,6 +3927,9 @@ def current_evidence_qualification_environment():
       "pin_oracle_sha256":code(ROOT/".ai-bridge/pin_oracle.py"),
       "callee_cards_sha256":code(ROOT/".ai-bridge/callee_cards.py"),
       "code_map_sha256":code(ROOT/".ai-bridge/code_map.py"),
+      "exception_registry_sha256":code(ROOT/".ai-bridge/exception_registry.py"),
+      "metric_bases_sha256":code(ROOT/".ai-bridge/metric_bases.py"),
+      "monitor_history_sha256":code(ROOT/".ai-bridge/monitor_history.py"),
       "qualification_harness_sha256":code(ROOT/".ai-bridge/qualify-evidence-confidence.py"),
       "trace_bridge_sha256":code(ROOT/"tests/conftest.py"),
     }
@@ -7131,7 +7373,7 @@ def verdict_suppressions(contract_id):
     equivalent or irrelevant (ADR_0006), or named a finding, open or closed (ADR_0007)."""
     items=(verdict_state().get(contract_id) or {}).get("items") or {}
     return {
-      key:{**{name:entry["verdict"].get(name) for name in ("verdict","reason","by","reviewed_by","finding","disposition")},"finding_state":EQ.finding_state(entry["verdict"])}
+      key:{**{name:entry["verdict"].get(name) for name in ("verdict","reason","by","reviewed_by","finding","disposition","decided_at","call_id")},"finding_state":EQ.finding_state(entry["verdict"])}
       for key,entry in items.items()
       if entry["item"]["kind"]=="rule" and entry["verdict"] and entry["verdict"]["verdict"] in LEAVING
     }
@@ -10356,10 +10598,10 @@ CODE_RUN_SNAPSHOTS=ROOT/"test-results/code-map/runs"
 CODE_MAP_PACKAGE="llm_router"
 
 
-def code_map_inputs():
+def code_map_inputs(changed):
     """What the Code map's facts are made of: the retained run's coverage and JUnit records, the requirements, the
-    product's code, the exemptions and the code map itself."""
-    return memo_key(CODE_MAP.VULTURE,files_state(
+    product's code, the exemptions, the code map itself and the lines the branch changes against its merge base."""
+    return memo_key(CODE_MAP.VULTURE,sha256_text(stable_json(sorted(changed))),files_state(
       str(COVERAGE_JSON_PATH.relative_to(ROOT)),str(JUNIT_PATH.relative_to(ROOT)),"docs/_build/html/needs.json",
       "src/**/*.py",str(CODE_EXEMPTIONS_PATH.relative_to(ROOT)),".ai-bridge/code_map.py",
     ))
@@ -10369,7 +10611,8 @@ def code_map_facts():
     """Every function and class of the product with whom it serves and how, the tests that run it, what nothing
     uses and why its unexecuted lines stay unrun (ADR_0008); read back while its inputs are unchanged, since the
     retained run's coverage is hundreds of MB."""
-    key=code_map_inputs()
+    changed,merge_base=working_changed_lines()
+    key=code_map_inputs(changed)
     try:
         kept=json.loads(CODE_MAP_CACHE_PATH.read_text())
     except (OSError,ValueError):
@@ -10380,8 +10623,9 @@ def code_map_facts():
     coverage=json.loads(COVERAGE_JSON_PATH.read_text())
     facts=CODE_MAP.code_map(
       ROOT,coverage,IMPL_FAULTS.resolve_impl_scopes(ROOT,needs),IMPL_FAULTS.descendants_map(needs),
-      junit_depth_rows(),CODE_MAP.load_exemptions(CODE_EXEMPTIONS_PATH),CODE_MAP_PACKAGE,
+      junit_depth_rows(),CODE_MAP.load_exemptions(CODE_EXEMPTIONS_PATH),CODE_MAP_PACKAGE,changed,
     )
+    facts["change_base"]={"base":"main","merge_base":merge_base or ""}
     del coverage
     CODE_MAP_CACHE_PATH.parent.mkdir(parents=True,exist_ok=True)
     CODE_MAP_CACHE_PATH.write_text(json.dumps({"inputs":key,"facts":facts},sort_keys=True)+"\n")
@@ -10417,10 +10661,11 @@ def contract_code_actual(facts):
 
 def code_map_ratchet(facts):
     """The numbers the map may only lower (ADR_0008): the baseline drops with every number that falls and keeps
-    a rise, which the gate fails until a reason recorded in the baseline names it."""
+    a rise, which the gate fails until a reason recorded in the baseline names it. Only a build whose producer is
+    qualified for the current code moves the baseline: a degraded build would lower it to numbers that are wrong."""
     baseline=json.loads(CODE_MAP_BASELINE_PATH.read_text()) if CODE_MAP_BASELINE_PATH.is_file() else {}
     lowered,rises=CODE_MAP.ratchet(facts["counts"],baseline)
-    if lowered!=baseline:
+    if lowered!=baseline and _producer_qualified("PRODUCER_CODE_MAP"):
         CODE_MAP_BASELINE_PATH.write_text(json.dumps(lowered,indent=2,sort_keys=True)+"\n")
     return {"held":lowered["numbers"],"rises":rises,"reasons":lowered.get("reasons") or {}}
 
@@ -10477,6 +10722,8 @@ def code_map_model(facts,health_payload):
                   "ref":row["id"],"path":row["path"],"start":row["start"],"end":row["end"],"kind":row["kind"],
                   "layers":row["layers"],"owners":row["owners"],"via":row["via"],"tests":row["tests"],"owner_tests":row["owner_tests"],
                   "causes":row["causes"],"unused":(row.get("unused") or {}).get("what") or "",
+                  "statements":row["statements"],"executed":row["executed"],"branches":row.get("branches") or 0,"branches_taken":row.get("branches_taken") or 0,
+                  "missing_branches":row.get("missing_branches") or [],"new_lines":row.get("new_lines") or [],"new_missing":row.get("new_missing") or [],
                   "markers":[[marker["impl_id"],marker["kind"],marker["start"],marker["end"]] for marker in row.get("markers") or []],
                   "exemption":(row.get("exemption") or {}).get("reason") or "",
                 })
@@ -10488,8 +10735,10 @@ def code_map_model(facts,health_payload):
     return {
       "qualified":qualified,
       "rows":rows,"counts":facts["counts"],"failing":CODE_MAP.failing(facts["counts"]),"loose":facts.get("loose") or [],
+      "change_base":facts.get("change_base") or {},
       "contracts":{contract_id:contracts.get(contract_id) or {"title":contract_id,"href":""} for contract_id in sorted({owner for row in functions for owner in row["owners"]})},
-      "insights":{"run":stamp,"delta":run_delta(CODE_RUN_SNAPSHOTS,"code-map-run-1",run,values,code_changes)},
+      "insights":{"run":stamp,"delta":run_delta(CODE_RUN_SNAPSHOTS,"code-map-run-1",run,values,code_changes),
+                  "trend":history_trend("code",[*CODE_MAP.LAYERS,*CODE_MAP.MEASURES],run.get("run_id"))},
     }
 
 
@@ -10502,6 +10751,198 @@ def render_code_map_page(health_payload):
     CODE_MAP_FACTS_PATH.write_text(json.dumps({**facts,"ratchet":ratchet},indent=1,sort_keys=True)+"\n")
     CODE_MAP_PAGE.write_text(portal_map_shell(CODE_MAP_PAGE,"Code map",MAP_PAGES.code_map_article(stable_json(model),vendored_d3_hierarchy())))
     return model
+
+
+# --- the monitor's history and release snapshots (ADR_0009) ----------------------
+MONITOR_HISTORY_PATH=ROOT/".ai-bridge/monitor-history.jsonl"
+RELEASE_SNAPSHOTS_DIR=ROOT/".ai-bridge/release-snapshots"
+RELEASES_PAGE=ROOT/"docs/_build/html/releases.html"
+# --release-snapshot asks to freeze the run drawn now; a release tag freezes its own first run.
+RELEASE_ASKED=False
+
+
+def history_trend(page,keys,run_id):
+    """Each number of a page over the earlier retained runs, oldest first, without the run drawn now: the page adds
+    that one from its own numbers, so a trend ends where its card does."""
+    rows=[row for row in HISTORY.load(MONITOR_HISTORY_PATH) if row["run_id"]!=run_id]
+    return {key:HISTORY.series(rows,page,key) for key in keys}
+
+
+def history_numbers(health_payload,explorer,code_model):
+    """The numbers the pages show for one run, each as [failing, of]: the Health Map's failing marks per layer of the
+    marks it judges there; the Code map's per layer, with its line and branch coverage and the lines the branch
+    changes; the Explorer's failing items per kind; the exceptions per type; the metric bases loosened with the code."""
+    health={}
+    for key in HEALTH_LAYER_KEYS:
+        statuses=[row["own"][key]["status"] for row in health_payload["rows"]]
+        health[key]=[sum(status=="failed" for status in statuses),sum(status!="na" for status in statuses)]
+    items=explorer["items"]
+    kinds=sorted({item["kind"] for item in items})
+    counts=code_model["counts"]
+    cover=counts.get("coverage") or {}
+    leaves=counts["functions"]+counts["classes"]
+    owned=leaves-counts["layers"]["owner"]["none"]-counts["layers"]["owner"]["exempt"]
+    code={
+      "owner":[code_model["failing"]["owner"],leaves],"run":[code_model["failing"]["run"],owned],"used":[code_model["failing"]["used"],leaves],
+      "lines":[code_model["failing"]["lines"],cover.get("statements",0)],
+      "branches":[cover.get("branches",0)-cover.get("branches_taken",0),cover.get("branches",0)] if counts.get("branches_measured") else None,
+      "new":[cover.get("new_lines",0)-cover.get("new_run",0),cover.get("new_lines",0)],
+    }
+    exceptions=explorer.get("exceptions") or {}
+    return {
+      "health":health,
+      "code":{key:value for key,value in code.items() if value is not None},
+      "explorer":{kind:[sum(item["kind"]==kind and item["status"] in EXPLORER_FAILING for item in items),sum(item["kind"]==kind for item in items)] for kind in kinds},
+      "exceptions":{kind:[row["failing"],row["all"]] for kind,row in (exceptions.get("counts") or {}).items()},
+      "bases":{"looser-with-code":[sum(item["kind"]=="basechange" and item["status"]=="fail" for item in items),sum(item["kind"]=="basechange" for item in items)]},
+    }
+
+
+def run_commit():
+    """The retained run's commit and its inputs, as the test run recorded them."""
+    inputs=json.loads(EVIDENCE_RUN_INPUTS_PATH.read_text()) if EVIDENCE_RUN_INPUTS_PATH.is_file() else {}
+    return str(inputs.get("git_head") or ""),inputs.get("inputs") or {}
+
+
+def record_history(health_payload,explorer,code_model):
+    """Add the run drawn now to the monitor's history, or replace its earlier drawing (ADR_0009)."""
+    run=(health_payload.get("insights") or {}).get("run") or {}
+    if not run.get("run_id") or not run.get("started_at"):
+        return None
+    head,inputs=run_commit()
+    row={
+      "run_id":run["run_id"],"started_at":run["started_at"],"commit":head[:7] or None,
+      "tree":HISTORY.tree_state(ROOT,inputs,head),"drawn_at":datetime.now(UTC).isoformat().replace("+00:00","Z"),
+      # A build whose producers are not qualified for the current code draws degraded pages; its row says so, and the
+      # run's next qualified drawing replaces it.
+      "qualified":qualification_is_current(load_evidence_qualification()),
+      "numbers":history_numbers(health_payload,explorer,code_model),
+    }
+    HISTORY.record(MONITOR_HISTORY_PATH,row)
+    return row
+
+
+def take_release_snapshot(row,explorer,asked):
+    """Freeze the run drawn now as a snapshot (ADR_0009): on --release-snapshot, or on its own when the run's commit is
+    a release tag and its inputs are that commit's files. Its name is what git describe calls the commit; a snapshot is
+    never rewritten. It keeps the numbers, every item that failed, and every exception in force."""
+    if row is None:
+        return None
+    head,_inputs=run_commit()
+    if not head:
+        return None
+    name,tagged=HISTORY.describe(ROOT,head)
+    if not asked and not (tagged and row.get("tree")=="clean"):
+        return None
+    chosen=[item for item in explorer["items"] if item["status"] in EXPLORER_FAILING or item.get("exception")]
+    # The fault classes the kept mutants sit under come along, as they stood, so the list reads as it did.
+    by_id={item["id"]:item for item in explorer["items"]}
+    parents=[by_id[object_id] for object_id in sorted({item.get("object") for item in chosen} & set(by_id)) if by_id[object_id] not in chosen]
+    kept=[
+      {
+        **{key:item.get(key) for key in ("id","kind","owner","name","state","status","causes","what","attrs","links","object","layers")},
+        "note":explorer_clip(" ".join(str(item.get("note") or "").split()),600),
+        **({"exception":item["exception"]} if item.get("exception") else {}),
+      }
+      for item in [*chosen,*parents]
+    ]
+    objects={object_id:value for object_id,value in (explorer.get("objects") or {}).items() if object_id in {item.get("object") for item in kept}}
+    snapshot={
+      "name":name,"tagged":tagged,"commit":head,"run_id":row["run_id"],"started_at":row["started_at"],"tree":row.get("tree"),
+      "taken_at":datetime.now(UTC).isoformat().replace("+00:00","Z"),"numbers":row["numbers"],"items":kept,"objects":objects,
+      # Which monitor drew it: the tools and the code of every producer, as the qualification fingerprints them.
+      "monitor":current_evidence_qualification_environment(),"qualified":row.get("qualified"),
+    }
+    path=HISTORY.write_snapshot(RELEASE_SNAPSHOTS_DIR,snapshot)
+    print(f"[RELEASE] {'froze '+path.name if path else name+' is frozen already, kept as it is'}",flush=True)
+    return path
+
+
+def release_page_path(snapshot):
+    return RELEASES_PAGE.with_name(f"release-{HISTORY.snapshot_name(snapshot['name'])}.html")
+
+
+def release_since(snapshot,now):
+    """What became of a snapshot's failing items: fixed since, still failing, gone from the current run."""
+    failing=[item for item in snapshot["items"] if item["status"] in EXPLORER_FAILING]
+    fixed=sum(1 for item in failing if item["id"] in now and now[item["id"]] not in EXPLORER_FAILING)
+    gone=sum(1 for item in failing if item["id"] not in now)
+    return {"failing":len(failing),"fixed":fixed,"gone":gone,"still":len(failing)-fixed-gone}
+
+
+def release_model(snapshot,explorer):
+    """One snapshot as the Explorer draws it (ADR_0009): its items as they stood under the current tree, and what each
+    became since; the counts of its exceptions as they stood."""
+    now={item["id"]:item["status"] for item in explorer["items"]}
+    before={item["id"]:item["status"] for item in snapshot["items"]}
+    changes=explorer_changes(before,{item_id:now[item_id] for item_id in before if item_id in now})["items"]
+    changes["gone_ids"]=sorted(item_id for item_id in before if item_id not in now)
+    counted=((snapshot.get("numbers") or {}).get("exceptions")) or {}
+    return {
+      **{key:explorer.get(key) for key in ("rows","causes","levels","boundaries","exception_types","review_days")},
+      "items":snapshot["items"],"objects":snapshot.get("objects") or {},
+      "run":{"run_id":snapshot["run_id"],"started_at":snapshot["started_at"],"commit":str(snapshot.get("commit") or "")[:7],"snapshot":snapshot["name"]},
+      "delta":{"baseline":{"run_id":snapshot["run_id"],"started_at":snapshot["started_at"]},"layers":{"items":changes}},
+      "release":{"name":snapshot["name"],"tagged":bool(snapshot.get("tagged"))},
+      "change_base":{},
+      "exceptions":{"counts":{kind:{"failing":value[0],"all":value[1]} for kind,value in counted.items()},"held":{kind:value[1] for kind,value in counted.items()},"rises":{}},
+    }
+
+
+def releases_rows(snapshots,explorer):
+    """The Releases page's rows: each snapshot, what it froze, and what became of its failing items since."""
+    now={item["id"]:item["status"] for item in explorer["items"]}
+    out=[]
+    for snapshot in snapshots:
+        numbers=snapshot.get("numbers") or {}
+        health=numbers.get("health") or {}
+        since=release_since(snapshot,now)
+        by_kind=Counter(item["kind"] for item in snapshot["items"] if item["status"] in EXPLORER_FAILING)
+        exceptions=[item for item in snapshot["items"] if item.get("exception")]
+        failing_exceptions=sum(1 for item in exceptions if item["exception"].get("state") in EXC.FAILING)
+        commit=str(snapshot.get("commit") or "")
+        tree={"clean":"inputs are this commit's files","dirty":'<span class="tf-rel-dirty">inputs had uncommitted changes</span>'}.get(snapshot.get("tree"),"inputs not checked")
+        layers=", ".join(f"{label} {health[key][0]}" for key,label in (("faults","Fault model"),("coverage","Coverage"),("completeness","Completeness"),("assurance","Assurance"),("evidence","Evidence"),("execution","Execution")) if health.get(key) and health[key][0])
+        out.append(
+          "<tr>"
+          f'<td><a class="tf-rel-name" href="{html_escape(release_page_path(snapshot).name)}">{html_escape(snapshot["name"])}</a>'
+          f'<span class="tf-rel-kind">{"Release" if snapshot.get("tagged") else "Snapshot between releases"}</span></td>'
+          f'<td class="num"><time datetime="{html_escape(str(snapshot.get("started_at") or ""))}">{html_escape(str(snapshot.get("started_at") or "")[:16].replace("T"," "))} UTC</time><span class="tf-rel-kind">commit <a href="{REPO_URL}/commit/{commit}">{commit[:7]}</a> · {tree}</span></td>'
+          f'<td class="num">'+(f'<span class="{"tf-rel-failed" if health.get("overall",[0])[0] else ""}">{health["overall"][0]} of {health["overall"][1]}</span>' if health.get("overall") else "–")
+          +(f'<span class="tf-rel-kind">{html_escape(layers)}</span>' if layers else "")+"</td>"
+          f'<td class="num">{since["failing"]}<span class="tf-rel-kind">{html_escape(", ".join(f"{EXPLORER_KIND_NAMES.get(kind,kind)} {count}" for kind,count in by_kind.most_common(4)))}</span></td>'
+          f'<td class="num">{len(exceptions)}'+(f' <span class="tf-rel-failed">({failing_exceptions} failing)</span>' if failing_exceptions else "")+"</td>"
+          f'<td class="num">{since["fixed"]} fixed · {since["still"]} still failing · {since["gone"]} gone</td>'
+          "</tr>"
+        )
+    head="".join(f"<th>{label}</th>" for label in ("Snapshot","Run","Failing on the Health Map","Failing items","Exceptions","Since then"))
+    return f'<table class="tf-rel-table"><thead><tr>{head}</tr></thead><tbody>{"".join(out)}</tbody></table>'
+
+
+EXPLORER_KIND_NAMES={"path":"paths","unbound":"unbound tests","fault":"fault classes","mutant":"mutants","silent":"silent requirements","noeffect":"code with no effect","check":"checks","support":"support","producer":"producers","exception":"exceptions","basechange":"base changes"}
+
+
+def render_releases_page(explorer):
+    """The Releases page and one list per frozen snapshot, each drawn by the Explorer from what the snapshot kept
+    (ADR_0009). A list a snapshot no longer has is removed."""
+    if not RELEASES_PAGE.exists():
+        return
+    snapshots=HISTORY.snapshots(RELEASE_SNAPSHOTS_DIR)
+    shell=RELEASES_PAGE.read_text()
+    for snapshot in snapshots:
+        title=("Release " if snapshot.get("tagged") else "Snapshot ")+snapshot["name"]
+        since=release_since(snapshot,{item["id"]:item["status"] for item in explorer["items"]})
+        lead=html_escape(
+          f"What was open when {snapshot['name']} was frozen from the run below, at commit {str(snapshot.get('commit') or '')[:7]}: every item "
+          f"that failed and every exception in force, as they stood. Since then {since['fixed']} of its {since['failing']} failing items pass, "
+          f"{since['still']} still fail and {since['gone']} are gone; Changes keeps what became of each."
+        )
+        page=release_page_path(snapshot)
+        page.write_text(portal_shell_text(shell,title,MAP_PAGES.explorer_article(stable_json(release_model(snapshot,explorer)),title,lead)))
+    for stale in RELEASES_PAGE.parent.glob("release-*.html"):
+        if stale.name not in {release_page_path(snapshot).name for snapshot in snapshots}:
+            stale.unlink()
+    RELEASES_PAGE.write_text(portal_map_shell(RELEASES_PAGE,"Releases",MAP_PAGES.releases_article(releases_rows(snapshots,explorer),len(snapshots))))
 
 
 def integrate_mutation_portal():
@@ -10522,7 +10963,10 @@ def integrate_mutation_portal():
     health_payload,_depth_payload=render_health_map_page()
     explorer=render_explorer_page(health_payload)
     render_model_roles_page()
-    render_code_map_page(health_payload)
+    code_model=render_code_map_page(health_payload)
+    row=record_history(health_payload,explorer,code_model)
+    take_release_snapshot(row,explorer,RELEASE_ASKED)
+    render_releases_page(explorer)
     patch_monitor_history(explorer)
     patch_traceability_contract_evidence_links()
     patch_verification_contract_evidence_path()
@@ -10771,6 +11215,7 @@ def parse_args():
     parser.add_argument("--consolidate-pins",action="store_true",help="write one pin for all the pins of each function that has two or more, adopted when the cascade keeps it for every one of their mutants; then --subsume-pins removes the pins it makes redundant (ADR_0006)")
     parser.add_argument("--subsume-pins",action="store_true",help="remove the pins other pins of their contract make redundant, by the kill matrix of each contract's pins against its pinned mutants, after bringing back what an earlier removal cost; asks no model")
     parser.add_argument("--verify",action="store_true",help="with --subsume-pins: only bring back what earlier removals cost, and remove nothing")
+    parser.add_argument("--release-snapshot",action="store_true",help="rebuild the pages and freeze the run as a snapshot named as git describe names its commit (a release tag freezes its own first run); a snapshot is never rewritten (ADR_0009)")
     return parser.parse_args()
 
 
@@ -10843,6 +11288,9 @@ def main():
         layers=((facts.get("contracts") or {}).get("REQ_INVALID_CONFIGURATION_ERRORS") or {}).get("layers") or {}
         print(f"[PROBES] REQ_INVALID_CONFIGURATION_ERRORS: {sum(bool(row.get('detected')) for row in layers.values())}/{len(layers)} specialized probes caught their fault"
               +(" (inputs unchanged since the retained run, not run again)" if facts is retained else ""),flush=True)
+    if args.release_snapshot:
+        global RELEASE_ASKED
+        RELEASE_ASKED=True
     refresh_portal()
 
 

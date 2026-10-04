@@ -90,12 +90,13 @@ jobs:
         run: uv sync --locked --all-groups --python "$PYTHON_VERSION"
 
       - name: Run the hermetic tests
-        # Their results and coverage decide which contract owns a line and which tests cover it.
+        # Their results and coverage decide which contract owns a line and which tests cover it; the
+        # Code map shows the branches they take as well (ADR_0009).
         run: |
           mkdir -p test-results/allure-results
           COVERAGE_FILE=test-results/.coverage uv run --no-sync pytest -c pyproject.toml -n 2 \
             --record-mode=none --block-network --allowed-hosts='localhost,127\.0\.0\.1' \
-            --cov-context=test --junitxml=test-results/pytest-junit.xml \
+            --cov-context=test --cov-branch --junitxml=test-results/pytest-junit.xml \
             --alluredir=test-results/allure-results --clean-alluredir
           COVERAGE_FILE=test-results/.coverage uv run --no-sync coverage json --show-contexts -o test-results/coverage.json
 

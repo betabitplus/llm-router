@@ -47,7 +47,8 @@ html[data-theme=dark] #verification-health-map{--tf-map-ring:color-mix(in srgb,v
 .tf-map-group{position:relative;display:flex;flex:1 0 auto;flex-direction:column;gap:5px;min-width:0}
 .tf-map-group-cards{display:flex;flex:1 1 auto;gap:8px}
 .tf-map-group-cards>.tf-map-tab-wrap{display:flex;flex:1 0 auto;min-width:206px}
-.tf-map-tab-wrap>.tf-map-tab{flex:1 0 206px;min-width:0}
+.tf-map-tab-wrap>.tf-map-tab-box{position:relative;display:flex;flex:1 0 206px;min-width:0}
+.tf-map-tab-box>.tf-map-tab{flex:1 1 auto;min-width:0}
 .tf-map-group-head{display:flex;align-items:center;height:20px;min-width:0;font-size:.64rem;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--pst-color-text-muted)}
 .tf-map-group-head::after{content:"";flex:1 1 auto;height:1px;background:currentColor;opacity:.38}
 .tf-map-group.pinned .tf-map-group-head::after{content:none}
@@ -69,8 +70,8 @@ html[data-theme=dark] #verification-health-map{--tf-map-ring:color-mix(in srgb,v
 .tf-map-chevron{font-size:.6rem;transition:transform var(--tf-map-medium) var(--tf-map-ease)}
 .tf-map-table-toggle[aria-expanded=true] .tf-map-chevron{transform:rotate(180deg)}
 .tf-map-tab{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto auto auto;column-gap:.5rem;align-items:center;min-width:0;padding:.5rem .45rem .5rem .7rem;border:1px solid var(--tf-map-line);border-radius:var(--tf-map-radius);background:var(--tf-map-goal);color:inherit;font:inherit;text-align:left;cursor:pointer;transition:border-color var(--tf-map-medium) var(--tf-map-ease),background-color var(--tf-map-medium) var(--tf-map-ease)}
-.tf-map-tab:hover{border-color:var(--tf-map-line-strong)}
-.tf-map-tab[aria-selected=true]{border-color:var(--tf-map-selected);background:var(--tf-map-raised)}
+.tf-map-tab:hover,.tf-map-tab-box:hover>.tf-map-tab{border-color:var(--tf-map-line-strong)}
+.tf-map-tab[aria-current=true]{border-color:var(--tf-map-selected);background:var(--tf-map-raised)}
 .tf-map-tab:focus-visible{outline:2px solid var(--tf-map-ring);outline-offset:-2px}
 .tf-map-tab-title{min-width:0;font-size:.78rem;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tf-map-tab-status{display:flex;align-items:center;gap:.4rem;min-width:0;font-size:.78rem;white-space:nowrap}
@@ -85,7 +86,7 @@ html[data-theme=dark] #verification-health-map{--tf-map-ring:color-mix(in srgb,v
 /* A layer with several views shows them on its open card: a slider of their thumbnails grows out of the card, the
    chosen view on a knob that glides between them. Only the slider's two ends are rounded; a view between them is
    square. */
-.tf-map-tab-wrap.open>.tf-map-tab{border-top-right-radius:0;border-bottom-right-radius:0;border-right-color:var(--tf-map-line)}
+.tf-map-tab-wrap.open>.tf-map-tab-box>.tf-map-tab{border-top-right-radius:0;border-bottom-right-radius:0;border-right-color:var(--tf-map-line)}
 .tf-map-views{position:relative;display:flex;flex:none;align-items:stretch;max-width:0;overflow:hidden;opacity:0;padding:5px 0;border:1px solid transparent;border-left:0;border-radius:0 var(--tf-map-radius) var(--tf-map-radius) 0;transition:max-width 360ms var(--tf-map-ease),opacity 220ms var(--tf-map-ease),padding 360ms var(--tf-map-ease),border-color var(--tf-map-medium) var(--tf-map-ease),background-color var(--tf-map-medium) var(--tf-map-ease)}
 /* The open slider is as wide as its track, its 5 + 6 px padding and its 1 px border, so it grows and folds over the
    whole transition. */
@@ -132,7 +133,7 @@ html:not([data-theme=dark]) .tf-map-views-track{box-shadow:inset 0 1px 2px rgba(
 .tf-map-dots>i.on{background:var(--pst-color-text-muted)}
 .tf-map-tab:hover>.tf-map-dots>i.on{background:var(--pst-color-text-base)}
 .tf-map-tab-wrap.open .tf-map-dots{opacity:0}
-@media(max-width:640px){.tf-map-tab[aria-selected=true]>.tf-map-dots{opacity:0}}
+@media(max-width:640px){.tf-map-tab[aria-current=true]>.tf-map-dots{opacity:0}}
 /* A narrow page has no room beside the open card: the open layer's views take a row of their own under the strip,
    a lone view too, so the row keeps its height from layer to layer. */
 .tf-map-views-row{display:none}
@@ -412,6 +413,66 @@ html:not([data-theme=dark]) .tf-map-views-track{box-shadow:inset 0 1px 2px rgba(
 .tf-map-find-id{font-family:var(--pst-font-family-monospace);font-size:.66rem;color:var(--pst-color-text-muted)}
 .tf-map-find-empty{padding:1rem;text-align:center;font-size:.82rem;color:var(--pst-color-text-muted)}
 .tf-map-find-foot{padding:.45rem .9rem;border-top:1px solid var(--tf-map-line);font-size:.7rem;color:var(--pst-color-text-muted)}
+/* A number's trend over the retained runs (ADR_0009). A word-sized line in the card's top right corner, beside the
+   number it follows (Tufte's sparkline), with the expand mark: line and mark are one button that opens the details,
+   the way a dashboard's focus mode opens a visual larger (Power BI, Datadog); a "?" would read as help. What fails
+   rising is red, falling green, unchanged muted. The card's mini-map moves under the button. */
+.tf-map-tab.has-trend>.tf-map-tab-title,.tf-map-tab.has-trend>.tf-map-tab-status,.tf-map-tab.has-trend>.tf-map-count{grid-column:1}
+.tf-map-tab.has-trend>.tf-map-thumb{grid-row:2/span 2}
+.tf-map-tab.has-trend>.tf-map-thumb.radial{width:38px;height:38px}
+.tf-trend-open{position:absolute;top:4px;right:5px;display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 5px;border:1px solid transparent;border-radius:6px;background:none;color:var(--pst-color-text-muted);font:inherit;line-height:1;cursor:pointer;transition:border-color var(--tf-map-fast) var(--tf-map-ease),background-color var(--tf-map-fast) var(--tf-map-ease),color var(--tf-map-fast) var(--tf-map-ease)}
+.tf-trend-open:hover,.tf-trend-open[aria-expanded=true]{border-color:var(--tf-map-line-strong);background:var(--tf-map-raised);color:var(--pst-color-text-base)}
+.tf-trend-open:focus-visible{outline:2px solid var(--tf-map-ring);outline-offset:1px}
+.tf-trend-open>i{font-size:.58rem}
+.tf-trend{display:block;flex:none;overflow:visible}
+.tf-trend path{fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.tf-trend path.up,.tf-trend-chart path.up{stroke:var(--tf-hm-fail-ink)}
+.tf-trend path.down,.tf-trend-chart path.down{stroke:var(--tf-hm-pass-ink)}
+.tf-trend path.flat,.tf-trend-chart path.flat{stroke:color-mix(in srgb,var(--pst-color-text-base) 40%,transparent)}
+.tf-trend circle{fill:color-mix(in srgb,var(--pst-color-text-base) 40%,transparent)}
+.tf-trend circle.up{fill:var(--tf-hm-fail-ink)}
+.tf-trend circle.down{fill:var(--tf-hm-pass-ink)}
+/* The All layers table: a trend column at the end of every row, the range beside the line; a view without a history
+   keeps the column empty. */
+.tf-map-rows.tf-with-trend .tf-map-row{grid-template-columns:var(--tf-row-head,250px) minmax(0,1fr) 116px}
+.tf-map-row-trend{display:flex;align-items:center;justify-content:flex-end;gap:.45rem;min-width:0;font-size:.66rem;font-variant-numeric:tabular-nums;color:var(--pst-color-text-muted);white-space:nowrap}
+/* The details: a popover beside its button. Esc, a click outside or its close button close it. */
+.tf-trend-pop{position:fixed;inset:auto;z-index:1300;box-sizing:border-box;width:min(25rem,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;margin:0;padding:.7rem .85rem .75rem;border:1px solid var(--tf-map-line-strong);border-radius:12px;background:var(--pst-color-surface);color:var(--pst-color-text-base);box-shadow:0 12px 32px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.08);font-size:.74rem;line-height:1.4}
+.tf-trend-pop:not(:popover-open):not(.open){display:none}
+.tf-trend-pop-head{display:flex;align-items:flex-start;gap:.6rem}
+.tf-trend-pop-title{display:block;margin:0;font-size:.88rem;font-weight:700;line-height:1.3}
+.tf-trend-pop-sub{display:block;margin-top:.1rem;font-size:.7rem;color:var(--pst-color-text-muted)}
+.tf-trend-pop-close{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;margin:-3px -4px 0 auto;border:1px solid transparent;border-radius:7px;background:none;color:var(--pst-color-text-muted);cursor:pointer}
+.tf-trend-pop-close:hover{border-color:var(--tf-map-line-strong);background:var(--tf-map-raised);color:var(--pst-color-text-base)}
+.tf-trend-pop-close:focus-visible,.tf-trend-pop-action:focus-visible{outline:2px solid var(--tf-map-ring);outline-offset:1px}
+.tf-trend-chart{display:block;width:100%;height:auto;margin:.45rem 0 .25rem}
+.tf-trend-chart path{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tf-trend-chart .rule{stroke:var(--tf-map-line);stroke-width:1}
+.tf-trend-chart text{fill:var(--pst-color-text-muted);font-size:9.5px;font-variant-numeric:tabular-nums}
+/* A run the history recorded is a dot in its step's colour; one retained before the history began is hollow. */
+.tf-trend-chart circle{fill:color-mix(in srgb,var(--pst-color-text-base) 55%,transparent);stroke:color-mix(in srgb,var(--pst-color-text-base) 55%,transparent);stroke-width:1.5}
+.tf-trend-chart circle.up{fill:var(--tf-hm-fail-ink);stroke:var(--tf-hm-fail-ink)}
+.tf-trend-chart circle.down{fill:var(--tf-hm-pass-ink);stroke:var(--tf-hm-pass-ink)}
+.tf-trend-chart circle.seeded{fill:var(--pst-color-surface)}
+.tf-trend-chart circle.now{fill:currentColor;stroke:var(--pst-color-surface);stroke-width:2}
+.tf-trend-chart circle.now.up{color:var(--tf-hm-fail-ink)}
+.tf-trend-chart circle.now.down{color:var(--tf-hm-pass-ink)}
+.tf-trend-chart circle.now.flat{color:var(--pst-color-text-base)}
+.tf-trend-summary{margin:.1rem 0 .5rem}
+.tf-trend-summary b{font-weight:700}
+.tf-trend-summary .up,.tf-trend-runs .up{color:var(--tf-hm-fail-ink);font-weight:650}
+.tf-trend-summary .down,.tf-trend-runs .down{color:var(--tf-hm-pass-ink);font-weight:650}
+.tf-trend-runs{width:100%;border-collapse:collapse;font-size:.68rem}
+.tf-trend-runs th{padding:.2rem .3rem;font-size:.62rem;font-weight:650;letter-spacing:.04em;text-transform:uppercase;text-align:left;color:var(--pst-color-text-muted);border-bottom:1px solid var(--tf-map-line)}
+.tf-trend-runs td{padding:.22rem .3rem;border-bottom:1px solid var(--tf-map-line);white-space:nowrap}
+.tf-trend-runs .num{text-align:right;font-variant-numeric:tabular-nums}
+.tf-trend-runs code{font-size:.64rem}
+.tf-trend-runs tr.now td{font-weight:650}
+.tf-trend-runs .muted,.tf-trend-runs td.more{color:var(--pst-color-text-muted)}
+.tf-trend-note{margin:.5rem 0 0;font-size:.66rem;color:var(--pst-color-text-muted)}
+.tf-trend-pop-actions{display:flex;justify-content:flex-end;margin-top:.55rem}
+.tf-trend-pop-action{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .6rem;border:1px solid var(--tf-map-line-strong);border-radius:8px;background:none;color:var(--pst-color-text-base);font:inherit;font-size:.7rem;font-weight:600;cursor:pointer}
+.tf-trend-pop-action:hover{background:var(--tf-map-raised)}
 @media(prefers-reduced-motion:reduce){#verification-health-map *,.tf-map-card{animation:none!important;transition:none!important}}"""
 
 MAP_SHARED_JS = r"""// The Verification Health Map's runtime: the tree, both views, the layer strip, the filters, the table, the hover
@@ -476,6 +537,7 @@ function mapStamp(run){
  return"Retained run <b>"+escapeHtml(mapRunLabel(run.started_at))+"</b> ("+mapRunAge(run.started_at)+")"
    +(run.checks?" · "+run.checks+" checks":"")
    +(run.commit?" · commit <code>"+escapeHtml(run.commit)+"</code>":"")
+   +(run.snapshot?" · frozen as <b>"+escapeHtml(run.snapshot)+"</b>":"")
    +(fresh?' · evidence <span class="'+(stale?"failed":"passed")+'">'+(stale?stale+" stale":"all current")+"</span>":"")
    +(run.note?' · <span class="failed">'+escapeHtml(run.note)+"</span>":"");
 }
@@ -563,6 +625,135 @@ function mapDelta(delta,key,words){
  return'<span class="tf-map-delta" data-tip="Since the run of '+escapeHtml(mapRunLabel(delta.baseline.started_at))+": "+change.up.length+" "+words[0]+", "+change.down.length+" "+words[1]+'">'
    +(change.up.length?'<span class="up">▲'+change.up.length+"</span>":"")+(change.down.length?'<span class="down">▼'+change.down.length+"</span>":"")+"</span>";
 }
+// A number's trend over the retained runs (ADR_0009). The monitor's history gives the earlier runs and the page the
+// run it draws, so a trend ends where its card does: [{run,at,value,of,commit,tree,seeded,qualified,now}], oldest
+// first.
+function mapTrendPoints(earlier,now,run){
+ const points=(earlier||[]).filter(point=>point.run!==run?.run_id).map(point=>({...point,now:false}));
+ if(now&&run?.started_at)points.push({run:run.run_id,at:run.started_at,value:now[0],of:now[1],commit:run.commit||"",tree:run.tree||"",seeded:false,qualified:true,now:true});
+ return points;
+}
+const mapTrendWay=(before,after)=>after>before?"up":after<before?"down":"flat";
+// Tufte's sparkline: word-sized, no frame or axis, quantified by the number beside it; each step coloured by its way.
+function mapSpark(points,w,h){
+ const values=points.map(point=>point.value),max=Math.max(...values),min=Math.min(...values),span=Math.max(1,max-min);
+ const x=index=>1.5+index*(w-3)/Math.max(1,points.length-1),y=value=>max===min?h/2:h-1.5-(value-min)*(h-3)/span;
+ const steps=points.slice(1).map((point,index)=>'<path class="'+mapTrendWay(points[index].value,point.value)+'" d="M'+x(index).toFixed(1)+","+y(points[index].value).toFixed(1)+"L"+x(index+1).toFixed(1)+","+y(point.value).toFixed(1)+'"/>').join("");
+ const last=points[points.length-1],way=points.length>1?mapTrendWay(points[points.length-2].value,last.value):"flat";
+ return'<svg class="tf-trend" width="'+w+'" height="'+h+'" viewBox="0 0 '+w+" "+h+'" aria-hidden="true" focusable="false">'+steps+'<circle class="'+way+'" cx="'+x(points.length-1).toFixed(1)+'" cy="'+y(last.value).toFixed(1)+'" r="2"/></svg>';
+}
+// A trend in words: where it ends, its last step and its range.
+function mapTrendWords(points){
+ const values=points.map(point=>point.value),last=points[points.length-1],before=points[points.length-2];
+ const step=!before?"":last.value>before.value?", up "+(last.value-before.value)+" since the run before":last.value<before.value?", down "+(before.value-last.value)+" since the run before":", unchanged since the run before";
+ return last.value+(last.of!=null?" of "+last.of:"")+" now"+step+"; lowest "+Math.min(...values)+", highest "+Math.max(...values);
+}
+// The details of a trend: a popover beside its button (the Popover API: top layer, Esc and a click outside close it,
+// as a toggletip does), with the trend drawn larger, each run with its number, step, commit and inputs, and the page's
+// Changes one click away. A browser without the API gets the same box, closed by Esc and a click outside.
+function mapTrendPopover(host,o){
+ const pop=document.createElement("div");
+ pop.className="tf-trend-pop";pop.id="tf-trend-pop";pop.setAttribute("role","dialog");pop.setAttribute("aria-labelledby","tf-trend-pop-title");
+ const native=typeof pop.showPopover==="function";
+ if(native)pop.setAttribute("popover","");
+ host.appendChild(pop);
+ let trigger=null,frame=0,opened="";
+ const day=iso=>{const at=new Date(iso);return Number.isNaN(at.getTime())?"":new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"short"}).format(at)};
+ // Whether a run's inputs were its commit's files, byte for byte.
+ const inputs=point=>point.seeded?["muted","not recorded"]:point.tree==="clean"?["","as committed"]:point.tree==="dirty"?["up","uncommitted"]:["muted","not checked"];
+ function chart(points){
+  const W=340,H=104,L=30,R=12,T=10,B=22,values=points.map(point=>point.value),max=Math.max(...values),min=Math.min(...values),span=Math.max(1,max-min);
+  // A level trend runs through the middle, not along the floor.
+  const x=index=>L+index*(W-L-R)/Math.max(1,points.length-1),y=value=>max===min?T+(H-T-B)/2:T+(H-T-B)*(1-(value-min)/span);
+  const rule=value=>'<line class="rule" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(value).toFixed(1)+'" y2="'+y(value).toFixed(1)+'"/><text x="'+(L-6)+'" y="'+(y(value)+3).toFixed(1)+'" text-anchor="end">'+value+"</text>";
+  const steps=points.slice(1).map((point,index)=>'<path class="'+mapTrendWay(points[index].value,point.value)+'" d="M'+x(index).toFixed(1)+","+y(points[index].value).toFixed(1)+"L"+x(index+1).toFixed(1)+","+y(point.value).toFixed(1)+'"/>').join("");
+  const dots=points.map((point,index)=>{
+   const way=index?mapTrendWay(points[index-1].value,point.value):"flat";
+   const said=mapRunLabel(point.at)+": "+point.value+(point.of!=null?" of "+point.of:"")+(point.commit?" · commit "+point.commit:" · commit not recorded")+(point.now?" · the run on this page":"");
+   return'<circle class="'+way+(point.seeded?" seeded":"")+(point.now?" now":"")+'" cx="'+x(index).toFixed(1)+'" cy="'+y(point.value).toFixed(1)+'" r="'+(point.now?4.5:3)+'"><title>'+escapeHtml(said)+"</title></circle>";
+  }).join("");
+  // The ends of the time axis by day, or by time when the runs share one day.
+  const oneDay=day(points[0].at)===day(points[points.length-1].at);
+  const when=iso=>oneDay?new Intl.DateTimeFormat("en-GB",{hour:"2-digit",minute:"2-digit"}).format(new Date(iso)):day(iso);
+  const label=(index,anchor)=>'<text x="'+x(index).toFixed(1)+'" y="'+(H-6)+'" text-anchor="'+anchor+'">'+escapeHtml(when(points[index].at))+"</text>";
+  return'<svg class="tf-trend-chart" viewBox="0 0 '+W+" "+H+'" role="img" aria-label="'+escapeHtml("Trend: "+mapTrendWords(points))+'">'
+   +rule(max)+(min!==max?rule(min):"")+steps+dots+label(0,"start")+(points.length>1?label(points.length-1,"end"):"")+"</svg>";
+ }
+ function runs(points){
+  const latest=points.slice().reverse(),shown=latest.slice(0,6);
+  const rows=shown.map(point=>{
+   const index=points.indexOf(point),before=index?points[index-1]:null,diff=before?point.value-before.value:0;
+   const step=!before?'<span class="muted">–</span>':diff>0?'<span class="up">▲'+diff+"</span>":diff<0?'<span class="down">▼'+(-diff)+"</span>":'<span class="muted">0</span>';
+   const[tone,word]=inputs(point);
+   return'<tr'+(point.now?' class="now"':"")+"><td>"+escapeHtml(mapRunLabel(point.at))+(point.now?' <span class="muted">now</span>':"")+'</td><td class="num">'+point.value+(point.of!=null?' <span class="muted">/ '+point.of+"</span>":"")+'</td><td class="num">'+step+"</td><td>"+(point.commit?"<code>"+escapeHtml(point.commit)+"</code>":'<span class="muted">—</span>')+'</td><td class="'+tone+'">'+word+"</td></tr>";
+  }).join("");
+  const more=latest.length-shown.length;
+  return'<table class="tf-trend-runs"><thead><tr><th>Run</th><th class="num">Value</th><th class="num">Step</th><th>Commit</th><th title="Whether the run\'s inputs were its commit\'s files, byte for byte">Inputs</th></tr></thead><tbody>'+rows
+   +(more?'<tr><td class="more" colspan="5">and '+more+" earlier "+(more===1?"run":"runs")+" in the chart</td></tr>":"")+"</tbody></table>";
+ }
+ function body(title,phrase,points){
+  const last=points[points.length-1],before=points[points.length-2],peak=points.reduce((best,point)=>point.value>best.value?point:best,points[0]);
+  const diff=before?last.value-before.value:0;
+  const step=!before?"":diff>0?' · <span class="up">up '+diff+"</span> since the run of "+escapeHtml(mapRunLabel(before.at)):diff<0?' · <span class="down">down '+(-diff)+"</span> since the run of "+escapeHtml(mapRunLabel(before.at)):" · unchanged since the run of "+escapeHtml(mapRunLabel(before.at));
+  const seeded=points.some(point=>point.seeded);
+  return'<div class="tf-trend-pop-head"><div><span class="tf-trend-pop-title" id="tf-trend-pop-title">'+escapeHtml(title)+'</span><span class="tf-trend-pop-sub">'+escapeHtml(phrase)+" · last "+points.length+" retained runs</span></div>"
+   +'<button type="button" class="tf-trend-pop-close" data-trend-close aria-label="Close"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button></div>'
+   +chart(points)
+   +'<p class="tf-trend-summary">Now <b>'+last.value+"</b>"+(last.of!=null?" of "+last.of:"")+step+(peak.value>last.value?" · highest "+peak.value+" on "+escapeHtml(mapRunLabel(peak.at)):"")+"</p>"
+   +runs(points)
+   +'<p class="tf-trend-note">Red: more fail than in the run before; green: fewer. Each retained run adds a row to the monitor\'s history (.ai-bridge/monitor-history.jsonl)'+(seeded?"; hollow points are runs retained before it began, their commits not recorded.":".")+"</p>"
+   +(o.hasChanges()?'<div class="tf-trend-pop-actions"><button type="button" class="tf-trend-pop-action" data-trend-changes><i class="fa-solid fa-code-compare" aria-hidden="true"></i>Outline what changed since the previous run</button></div>':"");
+ }
+ // Under the card the button sits on, right edges in line, so the card's own number stays beside the details; above
+ // it when only there they fit whole; where neither fits, on the roomier side with their own scroll. Always inside the
+ // window.
+ function place(){
+  if(!trigger)return;
+  if(!trigger.isConnected){close(false);return}
+  const box=(trigger.closest(".tf-map-tab-box")||trigger).getBoundingClientRect();
+  if(box.bottom<0||box.top>innerHeight){close(false);return}
+  const gap=6,margin=12,below=innerHeight-box.bottom-gap-margin,above=box.top-gap-margin;
+  pop.style.maxHeight="none";
+  const natural=pop.scrollHeight+2,width=pop.getBoundingClientRect().width;
+  const down=natural<=below||!(natural<=above)&&below>=above,room=Math.max(160,down?below:above),height=Math.min(natural,room);
+  pop.style.maxHeight=Math.round(room)+"px";
+  pop.style.left=Math.round(Math.max(margin,Math.min(innerWidth-width-margin,box.right-width)))+"px";
+  pop.style.top=Math.round(down?box.bottom+gap:box.top-gap-height)+"px";
+ }
+ function open(button,key,title,phrase,points){
+  if(trigger===button&&opened===key){close(true);return}
+  if(trigger)close(false);
+  trigger=button;opened=key;
+  pop.innerHTML=body(title,phrase,points);
+  if(native)pop.showPopover();else pop.classList.add("open");
+  button.setAttribute("aria-expanded","true");
+  place();
+  pop.querySelector("[data-trend-close]")?.focus({preventScroll:true});
+ }
+ function close(restore){
+  const button=trigger;
+  if(!button)return;
+  trigger=null;opened="";
+  button.setAttribute("aria-expanded","false");
+  if(native){if(pop.matches(":popover-open"))pop.hidePopover()}else pop.classList.remove("open");
+  if(restore&&button.isConnected)button.focus({preventScroll:true});
+ }
+ // Esc and a click outside close a native popover by themselves: the button then reads closed and takes the focus back.
+ if(native)pop.addEventListener("toggle",event=>{if(event.newState==="closed"&&trigger){const button=trigger;trigger=null;opened="";button.setAttribute("aria-expanded","false");if(!document.activeElement||document.activeElement===document.body||pop.contains(document.activeElement))button.focus({preventScroll:true})}});
+ else{
+  document.addEventListener("keydown",event=>{if(event.key==="Escape"&&trigger)close(true)});
+  document.addEventListener("pointerdown",event=>{if(trigger&&!pop.contains(event.target)&&!trigger.contains(event.target))close(false)});
+ }
+ pop.addEventListener("click",event=>{
+  if(event.target.closest("[data-trend-close]"))close(true);
+  else if(event.target.closest("[data-trend-changes]")){close(true);o.showChanges()}
+ });
+ addEventListener("scroll",()=>{if(trigger&&!frame)frame=requestAnimationFrame(()=>{frame=0;place()})},{passive:true,capture:true});
+ addEventListener("resize",place);
+ return{open,close,
+  // A rebuilt strip has new buttons: the open details follow theirs, or close.
+  follow:find=>{if(!trigger)return;const button=find(opened);if(!button){close(false);return}trigger=button;button.setAttribute("aria-expanded","true");place()}};
+}
 function mapChanges(button,delta,apply){
  let on=false;
  if(!button)return{on:()=>on};
@@ -611,16 +802,20 @@ function mapStrip(o){
  const toneOf=key=>o.groups().find(group=>group.keys.includes(key))?.tone||"";
  // A card and, for a layer with several views, the slider of their thumbnails that the open card shows beside it.
  function tabHtml(key){
-   const[,label,help]=byKey.get(key),card=o.card(key),views=o.views?.(key)||"",list=views?o.viewList(key):[];
+   const[,label,help]=byKey.get(key),card=o.card(key),views=o.views?.(key)||"",list=views?o.viewList(key):[],trend=o.trend?.(key);
    // A closed card with several views shows a dot for each under its mini-map, the one it opens in filled.
    const dots=list.length?'<span class="tf-map-dots" aria-hidden="true">'+list.map(view=>'<i data-dot="'+view.key+'"></i>').join("")+"</span>":"";
    const spoken=escapeHtml(help)+(list.length?" Views: "+list.map(view=>escapeHtml(view.label)).join(", ")+".":"");
+   // The trend's button sits beside the card's own, in one box: a button inside a tab would not be a button.
+   const opener=trend?'<button type="button" class="tf-trend-open" data-trend="'+key+'" tabindex="-1" aria-haspopup="dialog" aria-expanded="false" aria-controls="tf-trend-pop"'
+     +' aria-label="'+escapeHtml(label+" over the last "+trend.points.length+" runs: "+mapTrendWords(trend.points)+". Open the details.")+'" data-tip="'+escapeHtml("Over the last "+trend.points.length+" runs: "+mapTrendWords(trend.points)+". Click for the details.")+'">'
+     +mapSpark(trend.points,40,13)+'<i class="fa-solid fa-up-right-and-down-left-from-center" aria-hidden="true"></i></button>':"";
    return'<div class="tf-map-tab-wrap" data-map-wrap="'+key+'">'
-     +'<button type="button" role="tab" class="tf-map-tab'+(views?" has-views":"")+'" id="tf-map-tab-'+key+'" data-map-layer="'+key+'" aria-label="'+escapeHtml(card.name)+'" aria-controls="tf-map-stage" aria-describedby="tf-map-help-'+key+'">'
+     +'<div class="tf-map-tab-box"><button type="button" class="tf-map-tab'+(views?" has-views":"")+(trend?" has-trend":"")+'" id="tf-map-tab-'+key+'" data-map-layer="'+key+'" aria-label="'+escapeHtml(card.name)+'" aria-controls="tf-map-stage" aria-describedby="tf-map-help-'+key+'">'
      +'<span class="tf-map-tab-title">'+label+"</span>"+card.thumb
      +'<span class="tf-map-tab-status">'+card.status+'<span class="tf-map-help" aria-hidden="true" data-tip="'+escapeHtml(help)+'">?</span></span>'
      +'<span class="tf-map-count"><span class="tf-map-count-text">'+card.count+"</span>"+card.delta+"</span>"
-     +dots+'<span class="tf-sr-only" id="tf-map-help-'+key+'">'+spoken+"</span></button>"+views+"</div>";
+     +dots+'<span class="tf-sr-only" id="tf-map-help-'+key+'">'+spoken+"</span></button>"+opener+"</div>"+views+"</div>";
  }
  function groupHtml(group,index){
    if(!group.keys.length)return"";
@@ -634,6 +829,7 @@ function mapStrip(o){
    tabs.innerHTML=o.groups().map(groupHtml).join("");
    scroller.scrollLeft=left;
    sync(true);syncBar();
+   o.rebuilt?.(key=>tabs.querySelector('[data-trend="'+key+'"]'));
    // A rebuild (fonts, a resize) stops a scroll on its way: put the current layer in sight at once, and its views
    // once they have grown.
    const tab=$("tf-map-tab-"+o.current());
@@ -670,9 +866,13 @@ function mapStrip(o){
    if(current!==lastLayer){lastLayer=current;folded=null;full=null}
    tabs.querySelectorAll("[data-map-layer]").forEach(button=>{
      const active=button.dataset.mapLayer===current;
-     button.setAttribute("aria-selected",String(active));
+     // The strip is a toolbar (WAI-ARIA APG): a layer's card is a button, the one shown is current, and the card's own
+     // controls (its trend, its views) sit beside it, which a tab list would not allow.
+     button.setAttribute("aria-current",String(active));
      button.tabIndex=active?0:-1;
    });
+   // The open card's trend button is the one Tab stops at, right after the card.
+   tabs.querySelectorAll("[data-trend]").forEach(button=>{button.tabIndex=button.dataset.trend===current?0:-1});
    // The open card shows its views and the thumbnail of the one in view; the others fold theirs away at once, and a
    // second click on the open card folds its own until the next click. A slider grows and folds to its own width, so
    // both take the whole transition. Three views or more open with one and a half of them in sight, faded at the cut,
@@ -788,10 +988,13 @@ function mapStrip(o){
  const currentRow=()=>o.currentRow?.()||o.current();
  const withViews=keys=>keys.flatMap(key=>[key,...(o.subrows?.(key)||[])]);
  function rowHtml(key){
-   const row=o.row(key),label=row.label||byKey.get(key)[1],selected=key===currentRow();
-   return'<div class="tf-map-row'+(row.sub?" sub":"")+'" role="option" data-map-row="'+key+'" aria-selected="'+selected+'" tabindex="'+(selected?0:-1)+'" aria-label="'+escapeHtml(row.name)+'">'
+   const row=o.row(key),label=row.label||byKey.get(key)?.[1]||key,selected=key===currentRow(),trend=o.rowTrend?.(key);
+   const values=trend?trend.points.map(point=>point.value):[];
+   const cell=trends?'<span class="tf-map-row-trend"'+(trend?' data-tip="'+escapeHtml(label+": "+mapTrendWords(trend.points)+".")+'"':"")+">"
+     +(trend?mapSpark(trend.points,62,13)+"<span>"+Math.min(...values)+"–"+Math.max(...values)+"</span>":"")+"</span>":"";
+   return'<div class="tf-map-row'+(row.sub?" sub":"")+'" role="option" data-map-row="'+key+'" aria-selected="'+selected+'" tabindex="'+(selected?0:-1)+'" aria-label="'+escapeHtml(row.name+(trend?"; trend: "+mapTrendWords(trend.points):""))+'">'
      +'<span class="tf-map-row-head"><span class="tf-map-row-name">'+label+"</span>"+row.status+'<span class="tf-map-row-count">'+row.count+"</span></span>"
-     +'<svg class="tf-map-row-strip" viewBox="0 0 '+o.columns.units+' 16" preserveAspectRatio="none" aria-hidden="true" focusable="false">'+o.cells(key)+"</svg></div>";
+     +'<svg class="tf-map-row-strip" viewBox="0 0 '+o.columns.units+' 16" preserveAspectRatio="none" aria-hidden="true" focusable="false">'+o.cells(key)+"</svg>"+cell+"</div>";
  }
  function rowsGroup(group){
    if(!group.keys.length)return"";
@@ -803,8 +1006,12 @@ function mapStrip(o){
    foot.textContent=FOOT_IDLE;
    rowsBox.querySelector(".tf-map-band")?.classList.remove("visible");
  }
+ // The table gets a trend column when any of its rows has a trend.
+ let trends=false;
  function renderTable(){
    const[first,...rest]=o.groups();
+   trends=o.groups().some(group=>withViews(group.keys).some(key=>o.rowTrend?.(key)));
+   rowsBox.classList.toggle("tf-with-trend",trends);
    rowsBox.innerHTML=withViews(first.keys).map(rowHtml).join("")+rest.map(rowsGroup).join("")+'<div class="tf-map-band" aria-hidden="true"></div>';
    resetFoot();
  }
@@ -908,6 +1115,8 @@ function mapStrip(o){
  viewsRow?.addEventListener("click",pickView);
  viewsRow?.addEventListener("keydown",pickView);
  tabs.addEventListener("click",event=>{
+   const trend=event.target.closest("[data-trend]");
+   if(trend){o.hint.hide();o.openTrend?.(trend.dataset.trend,trend);return}
    const more=event.target.closest("[data-map-more]");
    if(more){full=more.dataset.mapMore;sync();revealGrown(full);return}
    if(pickView(event))return;
@@ -1945,7 +2154,22 @@ function mapPage(o){
      +views.map(view=>{const tip=view.ask||view.tip,name=view.label||labelOf(view.layer);return'<button type="button" role="radio" class="tf-map-choice" data-map-view="'+view.key+'" aria-checked="false" tabindex="-1"'+(tip?' data-tip="'+escapeHtml(tip)+'"':"")+">"+viewThumb(view)+'<span class="tf-map-choice-name" data-name="'+escapeHtml(name)+'">'+escapeHtml(name)+"</span></button>"}).join("")
      +"</span>"+more+"</span>";
  }
- const strip=mapStrip({groups:o.strip.groups,layers:o.layers,columns:tree.columns,hint,views:viewsHtml,viewTip:key=>{const view=viewOf(key);return view?.ask||view?.tip||""},viewNote:key=>idleNote(viewOf(key)),viewList:key=>lensesOf(key).map(view=>({key:view.key,label:view.label||labelOf(view.layer)})),thumb:thumbOf,currentView:key=>openingView(key).key,selectView:key=>select(key,false),
+ // Each number's trend (ADR_0009): the page's history of it and its number now; a layer or view without one has none.
+ const trendOf=key=>{
+   const earlier=(o.insights?.trend||{})[key];
+   if(!earlier?.length)return null;
+   const points=mapTrendPoints(earlier,o.trendNow?.(key),o.insights?.run);
+   return points.length>1?{points}:null;
+ };
+ const trendPop=mapTrendPopover($("tf-map-layerbar").closest("section")||document.body,{
+   hasChanges:()=>!!delta.baseline,
+   showChanges:()=>{const button=$("tf-map-changes");if(button&&button.getAttribute("aria-pressed")!=="true")button.click()}
+ });
+ const strip=mapStrip({
+   trend:trendOf,rowTrend:key=>trendOf(projectionOfRow(key)),
+   openTrend:(key,button)=>{const trend=trendOf(key);if(trend)trendPop.open(button,key,labelOf(key),o.trendLabel?.(key)||"What fails",trend.points)},
+   rebuilt:find=>trendPop.follow(find),
+   groups:o.strip.groups,layers:o.layers,columns:tree.columns,hint,views:viewsHtml,viewTip:key=>{const view=viewOf(key);return view?.ask||view?.tip||""},viewNote:key=>idleNote(viewOf(key)),viewList:key=>lensesOf(key).map(view=>({key:view.key,label:view.label||labelOf(view.layer)})),thumb:thumbOf,currentView:key=>openingView(key).key,selectView:key=>select(key,false),
    card:key=>{const lines=o.strip.card(key);return{...lines,name:spoken(key,lines),delta:mapDelta(delta,key,o.words(key)),thumb:thumbOf(key)}},
    row:key=>{
      if(LAYER_KEYS.includes(key))return{...o.strip.row(key),name:spoken(key,o.strip.card(key))};
@@ -2204,7 +2428,7 @@ def map_strip(page: str, legend: str, unit: str = "contract") -> str:
     return (
         '<div class="tf-map-layerbar" id="tf-map-layerbar">'
         '<div class="tf-map-scroller" id="tf-map-scroller">'
-        f'<div class="tf-map-layers" id="tf-map-tabs" role="tablist" aria-label="{page} layer"></div></div>'
+        f'<div class="tf-map-layers" id="tf-map-tabs" role="toolbar" aria-label="{page} layers"></div></div>'
         '<div class="tf-map-edge left" aria-hidden="true">'
         '<button type="button" tabindex="-1" data-map-scroll="-1"></button></div>'
         '<div class="tf-map-edge right" aria-hidden="true">'
@@ -2567,6 +2791,8 @@ return{
  href:hrefFor,says,describe,paint,legend:legendHtml,tone:toneOf,blank:(row,key)=>status(row,key)==="na",
  facets:FACETS,panels:PANELS,filterRows:marked,
  strip:{groups:layerGroups,card:layerCard,row:layerRow},
+ // A layer's number now, for its trend: what fails of what the layer judges.
+ trendNow:key=>[failingOf(key),applicableOf(key)],trendLabel:()=>"Contracts, capabilities and goals that fail",
  table:TABLE,tableCell,groupCell,
  tiles:{leaf:(row,key)=>'class="tf-map-tile '+status(row,key)+'"',mark:(row,key)=>status(row,key)==="failed"?"tf-health-own-failed":""},
  rings:RINGS,
@@ -3063,7 +3289,7 @@ function pairsMap(H,D){
  // Changes: verdicts from the health snapshots, measures from the depth snapshots, since the same earlier run.
  const healthDelta=H.insights?.delta||{},depthDelta=D.insights?.delta||{};
  const measureChanges=Object.fromEntries(Object.entries(depthDelta.layers||{}).map(([key,value])=>[key==="overall"?"depth":key,value]));
- const insights={run:H.insights?.run,delta:{baseline:healthDelta.baseline||depthDelta.baseline||null,layers:{...(healthDelta.layers||{}),...measureChanges}}};
+ const insights={run:H.insights?.run,trend:H.insights?.trend,delta:{baseline:healthDelta.baseline||depthDelta.baseline||null,layers:{...(healthDelta.layers||{}),...measureChanges}}};
  // The card of a verdict names its measures and the card of a measure names the verdict: the other half of the pair.
  const VERDICT_OF=Object.fromEntries(VIEWS.filter(view=>measured(view.projection)).map(view=>[view.projection,view.layer]));
  function pairLine(row,projection){
@@ -3141,6 +3367,8 @@ function pairsMap(H,D){
      row:projection=>measured(projection)?D.strip.row(own(projection)):H.strip.row(projection),
      cells:projection=>measured(projection)?D.strip.cells(own(projection)):undefined},
    table:TABLE,
+   // Health's layers have a history (ADR_0009); a measure has none yet.
+   trendNow:projection=>measured(projection)?undefined:H.trendNow(projection),trendLabel:H.trendLabel,
    tiles:{dots:true,leaf:(row,projection)=>side(projection).tiles.leaf(as(row,projection),own(projection)),mark:(row,projection)=>measured(projection)?"":H.tiles.mark(healthRow(row),projection)},
    ringSets:{overall:H.rings,depth:{...D.rings,label:"Overall depth: goals, capabilities and contracts inside, one ring per test level and the share of mutants caught outside"}},
    find:row=>{const verdict=H.find(row),depth=D.find(depthRow(row));return{rank:verdict.rank,badge:()=>verdict.badge()+depth.badge()}},
@@ -3212,7 +3440,8 @@ EXPLORER_CSS = r"""/* The explorer's own layout: the list beside the shared filt
 #verification-explorer .tf-ex-search:focus-visible{outline:2px solid var(--tf-map-ring);outline-offset:1px}
 #verification-explorer .tf-map-summary b{font-weight:650}
 #verification-explorer .tf-map-kinds{flex-wrap:wrap}
-#verification-explorer .tf-map-kind{flex:1 1 calc(25% - 2px);padding-left:.4rem;padding-right:.4rem}
+/* Eleven kinds, three to a row, so that every name fits (Exceptions and Base changes are the longest). */
+#verification-explorer .tf-map-kind{flex:1 1 calc(33.333% - 2px);padding-left:.4rem;padding-right:.4rem}
 #verification-explorer .tf-map-sw.unknown{background:repeating-linear-gradient(45deg,var(--tf-hm-fail) 0 2px,transparent 2px 4px)}
 #verification-explorer .tf-ex-define{margin:0 0 .6rem;padding:.5rem .75rem;border:1px solid var(--tf-map-line);border-radius:10px;background:var(--tf-map-goal);font-size:.78rem}
 #verification-explorer .tf-ex-define[hidden]{display:none}
@@ -3285,7 +3514,13 @@ EXPLORER_CSS = r"""/* The explorer's own layout: the list beside the shared filt
  #verification-explorer :is(.tf-ex-state,.tf-ex-body,.tf-ex-links){grid-column:2}
  #verification-explorer .tf-ex-links{justify-content:flex-start;white-space:normal}
  #verification-explorer .tf-ex-object-links{margin-left:0}
-}"""
+}
+/* The filters panel of Exceptions opens with the numbers that may only fall, as a Code map layer's panel does. */
+.tf-cm-ratchet{margin:0 0 .7rem;font-size:.76rem;color:var(--pst-color-text-muted)}
+.tf-cm-ratchet b{font-weight:700;color:var(--pst-color-text-base)}
+.tf-cm-ratchet .failed,.tf-cm-ratchet b.failed{color:var(--tf-hm-fail-ink)}
+/* A release snapshot's list says under its title what it froze. */
+#verification-explorer .tf-release-lead{max-width:62rem;margin:-.4rem 0 .9rem;color:var(--pst-color-text-muted);font-size:.86rem}"""
 
 EXPLORER_JS = r"""// The Verification Explorer: every item behind the monitors, one row each. A monitor judges and counts; here each
 // item says what it is, how it stands, why it fails and where its details are. The tools line, the filters panel,
@@ -3304,7 +3539,11 @@ function explorerPage(model){
   ["noeffect","fa-ghost","No effect","Code with no effect","Code with no effect","Code that does not do what it is meant to: removing it changes nothing. It needs a fix, or a decision to keep it."],
   ["check","fa-diagram-project","Checks","Assurance checks","Assurance check","A goal's or capability's own integration or validation scenario: what its contracts cannot prove one by one."],
   ["support","fa-sitemap","Support","Support","Support","A contract, capability or goal this one rests on. It cannot pass while that fails."],
-  ["producer","fa-industry","Producers","Evidence producers","Evidence producer","A tool that captures or judges evidence. Qualified means a control showed it does not turn a wrong result into a pass."]
+  ["producer","fa-industry","Producers","Evidence producers","Evidence producer","A tool that captures or judges evidence. Qualified means a control showed it does not turn a wrong result into a pass."],
+  // Exceptions cut across the kinds (ADR_0009): a survivor judged or decided out and a closed finding are listed under
+  // their own kind and here; a comment, a skip, a spared pin, an ignored import and an exemption only here.
+  ["exception","fa-flag","Exceptions","Exceptions","Exception","A decision that something which would count as a failure does not: a survivor judged or decided out, a finding closed, a comment that tells a tool to look away, a test skip, a pin outside the oracle rule, an ignored import or a code exemption. Each has a reason and holds until a date, or while the question a model answered is unchanged."],
+  ["basechange","fa-scale-unbalanced","Base changes","Metric base changes","Metric base change","A commit since the merge base with main that changed what a number is measured against: a held number, an exception record, a survivor verdict or decision, a verification profile, a tool's settings or the CI workflow. One that loosened a base together with the product's code or tests fails, so that a reviewer looks."]
  ];
  const KIND=Object.fromEntries(KINDS.map(([key,icon,short,many,one,what])=>[key,{icon,short,many,one,what}]));
  // How to fix what a cause says; what it means is the Health Map's own sentence.
@@ -3340,7 +3579,12 @@ function explorerPage(model){
   "metric:Freshness":"Run the evidence again: its inputs changed after the retained run.",
   "metric:M&S":"Validate the model behind the evidence against its referent to the required level.",
   "metric:Integration":"Make the integration scenario pass.",
-  "metric:Validation":"Make the validation scenario pass."
+  "metric:Validation":"Make the validation scenario pass.",
+  "exception:unreasoned":"Write why after the comment's codes (# noqa: E402 - why), or record the reason and the day in .ai-bridge/exception-records.json.",
+  "exception:undated":"Record the day the exception was decided.",
+  "exception:overdue":"Look at the exception again: record a new day if it still holds, or remove it.",
+  "exception:orphan":"Remove the record: what it excused changed or went.",
+  "base:loosened":"Read the commit: if the number improved only because its base was loosened, restore the base or record why the looser base is right."
  };
  // What a link opens, in one sentence.
  const LINK_TIP={
@@ -3354,8 +3598,17 @@ function explorerPage(model){
   Opens:"The monitor of the item this one rests on.",
   "Evidence trust":"What the tool is for, what it risks and how it is qualified.",
   Qualification:"The retained qualification record, as raw JSON.",
-  Items:"The items of the item this one rests on, here."
+  Items:"The items of the item this one rests on, here.",
+  Commit:"The commit on GitHub: what it changed in the base and in the code.",
+  "Code map":"The function on the Code map, with whom it serves.",
+  "Record its reason":"The record file where the reason and the day of this exception go."
  };
+ // The exception registry (ADR_0009): its types, the state of each exception's review, and the numbers that may only fall.
+ const EXCEPTION_TYPES=model.exception_types||[];
+ const EXCEPTION_TYPE=Object.fromEntries(EXCEPTION_TYPES.map(([key,label,what])=>[key,{label,what}]));
+ const REVIEWS=[["valid","Holds"],["overdue","Review overdue"],["unreasoned","No reason"],["undated","No decision date"],["orphan","Excuses nothing"]];
+ const dayLabel=iso=>{const at=new Date(iso+"T00:00:00Z");return Number.isNaN(at.getTime())?iso:new Intl.DateTimeFormat("en-GB",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(at)};
+ const holdWord=exception=>exception.state==="valid"?(exception.holds==="question"?"holds while its question is unchanged":"holds until "+dayLabel(exception.review_by)):exception.state==="overdue"?"review overdue since "+dayLabel(exception.review_by):(REVIEWS.find(([key])=>key===exception.state)||["",exception.state])[1].toLowerCase();
  const STATUS={fail:{mark:"✕",word:"Fail",cls:"failed"},unknown:{mark:"?",word:"Unknown",cls:"unknown"},pass:{mark:"✓",word:"Pass",cls:"passed"},na:{mark:"–",word:"N/A",cls:"na"}};
  const STATUS_ORDER=["fail","unknown","pass","na"];
  const LAYERS=MAP_HEALTH_LAYERS.filter(([key])=>key!=="overall");
@@ -3399,14 +3652,19 @@ function explorerPage(model){
  // What changed since the previous retained run: up fails now, down passes now, new was not there. Each run keeps one
  // snapshot of its items, so drawing the same run again never moves the baseline.
  const delta=model.delta||{},changes=(delta.layers||{}).items||{up:[],down:[],new:[],gone:0};
- const CHANGED={up:new Set(changes.up),down:new Set(changes.down),new:new Set(changes.new)};
- const changeOf=item=>CHANGED.up.has(item.id)?"up":CHANGED.down.has(item.id)?"down":CHANGED.new.has(item.id)?"new":"";
- const since=delta.baseline?"the run of "+mapRunLabel(delta.baseline.started_at):"";
- const CHANGE_WORDS={up:["▲","Fails now","It did not fail in "],down:["▼","Passes now","It failed in "],new:["+","New","It was not there in "]};
+ // A release snapshot's list compares the other way (ADR_0009): its items as they stood, and what each became since:
+ // fails or passes now, or gone from the current run.
+ const RELEASE=model.release||null;
+ const CHANGED={up:new Set(changes.up),down:new Set(changes.down),new:new Set(changes.new),gone:new Set(changes.gone_ids||[])};
+ const changeOf=item=>CHANGED.up.has(item.id)?"up":CHANGED.down.has(item.id)?"down":CHANGED.new.has(item.id)?"new":CHANGED.gone.has(item.id)?"gone":"";
+ const since=RELEASE?"the snapshot "+RELEASE.name:delta.baseline?"the run of "+mapRunLabel(delta.baseline.started_at):"";
+ const CHANGE_WORDS=RELEASE
+  ?{up:["▲","Fails now","It did not fail at "],down:["▼","Passes now","It failed at "],gone:["○","Gone","The current run no longer has it; it was there at "]}
+  :{up:["▲","Fails now","It did not fail in "],down:["▼","Passes now","It failed in "],new:["+","New","It was not there in "]};
  const causeCount=id=>items.filter(item=>item.causes.includes(id)).length;
  const causeIds=[...new Set(items.flatMap(item=>item.causes))].sort((a,b)=>causeCount(b)-causeCount(a));
  const facets={
-  kind:{label:"Kind",switch:true,options:KINDS.map(([key,,,many])=>[key,many]),test:(item,value)=>item.kind===value},
+  kind:{label:"Kind",switch:true,options:KINDS.map(([key,,,many])=>[key,many]),test:(item,value)=>value==="exception"?Boolean(item.exception):item.kind===value},
   status:{label:"Status",options:STATUS_ORDER.map(key=>[key,STATUS[key].word]),test:(item,value)=>item.status===value,swatch:value=>mapSwatch(STATUS[value].cls)},
   cause:{label:"Why it fails",options:causeIds.map(id=>[id,CAUSES[id]?.label||id]),test:(item,value)=>item.causes.includes(value),tip:value=>CAUSES[value]?.hint||""},
   layer:{label:"Layer",options:LAYERS.map(([key,label])=>[key,label]),test:(item,value)=>item.layers.includes(value),tip:value=>LAYER[value].ask},
@@ -3421,9 +3679,15 @@ function explorerPage(model){
   operator:{label:"Operator",options:OPERATORS.filter(([key])=>items.some(item=>item.attrs?.operator===key)),test:(item,value)=>item.attrs?.operator===value,tip:value=>OPERATOR_TIP[value]||""},
   origin:{label:"Origin",options:[["rule","Rule operator"],["semantic","Semantic mutant"]],test:(item,value)=>item.attrs?.origin===value,
    tip:value=>value==="rule"?"Planted by a rule operator of the engine.":"Proposed by a generator for a risk the profile names, frozen as a patch and filtered by the cascade."},
+  exception:{label:"Exception",options:EXCEPTION_TYPES.map(([key,label])=>[key,label]).filter(([key])=>items.some(item=>item.exception?.type===key)),test:(item,value)=>item.exception?.type===value,tip:value=>EXCEPTION_TYPE[value]?.what||""},
+  review:{label:"Review",options:REVIEWS,test:(item,value)=>item.exception?.state===value,
+   tip:value=>({valid:"It has a reason and its date has not passed, or a model's verdict whose question is unchanged.",overdue:"Its "+(model.review_days||90)+" days since the decision have passed.",unreasoned:"Nothing says why it is allowed.",undated:"It has a reason but no day it was decided.",orphan:"A record whose exception is gone."})[value]||""},
+  direction:{label:"Direction",options:[["looser","Looser"],["tighter","Tighter"],["changed","Changed"]],test:(item,value)=>item.attrs?.direction===value,
+   tip:value=>({looser:"A held number rose, an exception was added or renewed, a profile asks for less, or a tool excludes more.",tighter:"It only asks for more.",changed:"It changed in a way the reading cannot call looser or tighter."})[value]||""},
+  withcode:{label:"With the code",options:[["yes","Changes code or tests too"],["no","Changes only the base"]],test:(item,value)=>item.attrs?.code===value},
   diff:{label:"In this change",options:[["yes","Changed lines"]],test:(item,value)=>item.attrs?.diff===value,
    help:model.change_base?.merge_base?"Mutants on lines this branch changes against "+model.change_base.base+".":"No merge base with main, so no change to compare."},
-  change:{label:"Since the previous run",options:[["any","Any change"],["up","Fails now"],["down","Passes now"],["new","New"]],keepEmpty:()=>true,test:(item,value)=>value==="any"?changeOf(item)!=="":changeOf(item)===value,
+  change:{label:RELEASE?"Since this snapshot":"Since the previous run",options:RELEASE?[["any","Any change"],["down","Passes now"],["up","Fails now"],["gone","Gone"]]:[["any","Any change"],["up","Fails now"],["down","Passes now"],["new","New"]],keepEmpty:()=>true,test:(item,value)=>value==="any"?changeOf(item)!=="":changeOf(item)===value,
    help:delta.baseline?"Compared with "+since+".":"No earlier retained run to compare with yet: changes show here after the next retained run."},
   q:{label:"Text",switch:true,name:value=>"“"+value+"”",valid:value=>value.length>0,test:(item,value)=>searchText(item).includes(value.toLowerCase())}
  };
@@ -3438,7 +3702,9 @@ function explorerPage(model){
   noeffect:["status","cause","change","owner","goal","capability"],
   check:["status","cause","change","owner","goal","capability","level","boundary"],
   support:["status","change","owner","goal","capability"],
-  producer:["status","cause","change","goal","capability"]
+  producer:["status","cause","change","goal","capability"],
+  exception:["review","exception","status","change","owner","goal","capability"],
+  basechange:["status","direction","withcode","change"]
  };
  const hint=mapHint($("tf-map-hint"));
  const listBox=$("tf-ex-list"),groupBox=$("tf-ex-group-by"),search=$("tf-ex-search"),kindBox=$("tf-map-kinds");
@@ -3447,7 +3713,7 @@ function explorerPage(model){
  filters=mapFilters({
   facets,rows:items,leaves:items,noun:"items",
   view:()=>"items",
-  panel:()=>({title:"Filters",help:"Point at an option to see what it keeps; a click keeps only those items. Options of one filter add up, filters narrow each other.",before:()=>"",facets:PANEL_FACETS[chosen("kind")]||PANEL_FACETS[""]}),
+  panel:()=>({title:"Filters",help:"Point at an option to see what it keeps; a click keeps only those items. Options of one filter add up, filters narrow each other.",before:()=>chosen("kind")==="exception"?exceptionRatchet():"",facets:PANEL_FACETS[chosen("kind")]||PANEL_FACETS[""]}),
   previews:()=>false,previewed:()=>{},
   hideTip:()=>hint.hide(),
   rendered:()=>renderKinds(),
@@ -3462,7 +3728,7 @@ function explorerPage(model){
  function renderKinds(){
   const kind=chosen("kind"),others=items.filter(item=>filters.matches(item,"kind"));
   kindButtons.forEach(button=>{
-   const value=button.dataset.value,found=value?others.filter(item=>item.kind===value).length:others.length,pressed=value===kind;
+   const value=button.dataset.value,found=value?others.filter(item=>facets.kind.test(item,value)).length:others.length,pressed=value===kind;
    button.setAttribute("aria-pressed",String(pressed));
    button.disabled=!found&&!pressed;
    button.querySelector("b").textContent=found;
@@ -3504,6 +3770,8 @@ function explorerPage(model){
   // Current evidence is the norm and stays silent.
   if(a.freshness&&a.freshness!=="CURRENT")parts.push(String(a.freshness));
   if(a.operator)parts.push(a.operator);
+  if(item.exception)parts.push(item.kind==="exception"?(a.codes?a.marker+" "+a.codes:a.marker||""):(EXCEPTION_TYPE[item.exception.type]?.label||item.exception.type)+" · "+holdWord(item.exception));
+  if(item.kind==="basechange"&&a.bases)parts.push(a.bases);
   if(item.kind==="producer"){
    const users=(a.users||[]).map(id=>rowById.get(id)).filter(Boolean),contracts=users.filter(row=>row.level==="requirement"||row.level==="treq").length;
    parts.push("evidence for "+plural(contracts,"contract","contracts")+(users.length>contracts?" and "+plural(users.length-contracts,"goal or capability","goals or capabilities"):""));
@@ -3575,9 +3843,22 @@ function explorerPage(model){
   ["completeness","Completeness",["silent"]],
   ["code","Code",["noeffect"]],
   ["assurance","Assurance",["check"]],
-  ["support","Support",["support"]]
+  ["support","Support",["support"]],
+  ["exceptions","Exceptions",["exception"]],
+  ["bases","Metric bases",["basechange"]]
  ];
- const blockAsk={coverage:LAYER.coverage.ask,faults:LAYER.faults.ask,completeness:LAYER.completeness.ask,code:"Does its code do what it is meant to?",assurance:LAYER.assurance.ask,support:"What does it rest on, and does that pass?"};
+ const blockAsk={coverage:LAYER.coverage.ask,faults:LAYER.faults.ask,completeness:LAYER.completeness.ask,code:"Does its code do what it is meant to?",assurance:LAYER.assurance.ask,support:"What does it rest on, and does that pass?",
+  exceptions:"What is excused from counting, why, and until when?",bases:"Which commits changed what a number is measured against, together with the code?"};
+ // The numbers of exceptions per type, each held to a baseline that falls with it; a rise fails the gate until the
+ // baseline records a reason (ADR_0009).
+ function exceptionRatchet(){
+  const numbers=model.exceptions||{},held=numbers.held||{},rises=numbers.rises||{},counts=numbers.counts||{};
+  const parts=EXCEPTION_TYPES.filter(([key])=>key in held||key in rises).map(([key,label])=>{
+   const rise=rises[key],failing=(counts[key]||{}).failing||0;
+   return(rise?'<b class="failed">'+escapeHtml(label)+" rose from "+rise[0]+" to "+rise[1]+"</b>":escapeHtml(label)+" <b>"+held[key]+"</b>")+(failing?' <span class="failed">('+failing+" failing)</span>":"");
+  });
+  return'<p class="tf-cm-ratchet" data-tip="Per type, the gate holds the number of exceptions to a baseline that falls with it; a rise fails it until a reason is recorded in the baseline.">May only fall: '+parts.join(" · ")+"</p>";
+ }
  function blocksHtml(list){
   return BLOCKS.map(([key,label,kinds])=>{
    const inside=list.filter(item=>kinds.includes(item.kind));
@@ -3627,6 +3908,7 @@ function explorerPage(model){
  }
  // Grouped by contract, a chosen cause or kind says first what it is: the cause and kind groups already say so.
  function definition(){
+  if(filters.sets.change.size&&RELEASE)return"<b>Since "+escapeHtml(since)+"</b><p>"+[[changes.down.length,"passes now","pass now"],[changes.up.length,"fails now","fail now"],[CHANGED.gone.size,"is gone","are gone"]].map(([count,one,many])=>plural(count,"item","items")+" "+(count===1?one:many)).join(" · ")+".</p>";
   if(filters.sets.change.size&&delta.baseline)return"<b>Since "+escapeHtml(since)+"</b><p>"+[[changes.up.length,"fails now","fail now"],[changes.down.length,"passes now","pass now"],[changes.new.length,"is new","are new"]].map(([count,one,many])=>plural(count,"item","items")+" "+(count===1?one:many)).join(" · ")+(changes.gone?" · "+plural(changes.gone,"item","items")+" of that run "+(changes.gone===1?"is":"are")+" gone":"")+".</p>";
   if(groupBy!=="owner")return"";
   const cause=chosen("cause"),kind=chosen("kind");
@@ -3725,10 +4007,52 @@ function explorerPage(model){
 }"""
 
 
-def explorer_article(model_json: str) -> str:
+RELEASES_CSS = r"""/* The release snapshots: one row each, newest first, with what it froze and what became of it since. */
+#releases .tf-rel-lead{max-width:62rem;color:var(--pst-color-text-muted);font-size:.86rem}
+#releases table.tf-rel-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:.8rem}
+#releases .tf-rel-table th{text-align:left;font-weight:650;font-size:.72rem;color:var(--pst-color-text-muted);border-bottom:1px solid var(--pst-color-border);padding:.35rem .5rem;white-space:nowrap}
+#releases .tf-rel-table td{border-bottom:1px solid var(--pst-color-border);padding:.5rem;vertical-align:top}
+#releases .tf-rel-table td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+#releases .tf-rel-name{font-weight:700;white-space:nowrap}
+#releases .tf-rel-table td:first-child{white-space:nowrap}
+#releases .tf-rel-kind{display:block;font-size:.7rem;color:var(--pst-color-text-muted)}
+#releases .tf-rel-dirty{color:#b45309}
+#releases .tf-rel-failed{color:#c0392b;font-weight:650}
+html[data-theme=dark] #releases .tf-rel-dirty{color:#f0a04b}
+html[data-theme=dark] #releases .tf-rel-failed{color:#ff7b72}
+#releases .tf-rel-empty{padding:1rem 0;color:var(--pst-color-text-muted)}
+@media (max-width:640px){#releases .tf-rel-table{display:block;overflow-x:auto}}"""
+
+
+def releases_article(rows_html: str, count: int) -> str:
+    """The Releases page: every frozen snapshot, newest first (ADR_0009)."""
+    from html import escape
+
+    lead = (
+        "Each row is a snapshot the monitor froze: the numbers, every item that failed and every exception in force, "
+        "as they stood. A release tag freezes its own first run; any run can be frozen on request, and is then named "
+        "by how far it is from the last release (git describe). A snapshot is never rewritten."
+    )
+    body = rows_html if count else '<p class="tf-rel-empty">No snapshot has been frozen yet.</p>'
+    # A run's time as the reader's clock shows it, as the maps' run line does.
+    clock = (
+        "<script>document.querySelectorAll('#releases time[datetime]').forEach(node=>{const at=new Date(node.dateTime);"
+        "if(!Number.isNaN(at.getTime()))node.textContent=new Intl.DateTimeFormat('en-GB',{day:'numeric',month:'short',year:'numeric',"
+        "hour:'2-digit',minute:'2-digit'}).format(at)})</script>"
+    )
+    return (
+        '<section id="releases">\n<h1>Releases<a class="headerlink" href="#releases" title="Link to this heading">#</a></h1>\n'
+        f'<style id="tf-releases-style">\n{RELEASES_CSS}\n</style>\n<p class="tf-rel-lead">{escape(lead)}</p>\n{body}\n{clock}\n</section>'
+    )
+
+
+def explorer_article(model_json: str, title: str = "Verification Explorer", lead: str = "") -> str:
     """The Verification Explorer: every item behind the monitors, one row each, on the map's tools line, filters
     panel, hints and Find. One section holds the heading, the map's shared styles and health palette scoped to the
-    explorer, then its own, the markup and one script: the shared runtime, the facts and the explorer."""
+    explorer, then its own, the markup and one script: the shared runtime, the facts and the explorer. A release
+    snapshot's list is the same explorer under its own title, with a lead that says what it froze (ADR_0009)."""
+    from html import escape
+
     scope = "#verification-explorer"
     css = "\n".join(
         (
@@ -3763,9 +4087,10 @@ def explorer_article(model_json: str) -> str:
     )
     script = "\n".join((MAP_SHARED_JS, f"const model={model_json};", EXPLORER_JS, "explorerPage(model).start();"))
     return (
-        '<section id="verification-explorer">\n<h1>Verification Explorer'
+        f'<section id="verification-explorer">\n<h1>{escape(title)}'
         '<a class="headerlink" href="#verification-explorer" title="Link to this heading">#</a></h1>\n'
-        f'<style id="tf-explorer-style">\n{css}\n</style>\n'
+        + (f'<p class="tf-release-lead">{lead}</p>\n' if lead else "")
+        + f'<style id="tf-explorer-style">\n{css}\n</style>\n'
         f"{markup}\n"
         f"<script>\n(()=>{{\n{script}\n}})();\n</script>\n</section>"
     )
@@ -4080,7 +4405,7 @@ def model_roles_article(facts: dict, facts_json: str) -> str:
 CODE_MAP_CSS = r"""/* The Code map's palette: each layer's values. What a layer fails on is health's red, the unrun lines' other causes
    amber (no test) and violet (extraneous); what passes is health's green, a function marked for a requirement a deeper
    one; what passes with a reason is a cool grey and what a layer does not judge is health's N/A grey. */
-#verification-health-map{--tf-cm-marked:#4fae6e;--tf-cm-helper:var(--tf-hm-pass);--tf-cm-exempt:#a7b6c4;--tf-cm-none:var(--tf-hm-fail);--tf-cm-run:var(--tf-hm-pass);--tf-cm-not-run:var(--tf-hm-fail);--tf-cm-na:var(--tf-hm-na);--tf-cm-used:var(--tf-hm-pass);--tf-cm-unused:var(--tf-hm-fail);--tf-cm-clean:var(--tf-hm-pass);--tf-cm-deactivated:#a7b6c4;--tf-cm-no-test:#e8a33d;--tf-cm-no-requirement:var(--tf-hm-fail);--tf-cm-extraneous:#8f63c4}
+#verification-health-map{--tf-cm-marked:#4fae6e;--tf-cm-helper:var(--tf-hm-pass);--tf-cm-exempt:#a7b6c4;--tf-cm-none:var(--tf-hm-fail);--tf-cm-run:var(--tf-hm-pass);--tf-cm-not-run:var(--tf-hm-fail);--tf-cm-na:var(--tf-hm-na);--tf-cm-used:var(--tf-hm-pass);--tf-cm-unused:var(--tf-hm-fail);--tf-cm-clean:var(--tf-hm-pass);--tf-cm-deactivated:#a7b6c4;--tf-cm-no-test:#e8a33d;--tf-cm-no-requirement:var(--tf-hm-fail);--tf-cm-extraneous:#8f63c4;--tf-cm-taken:var(--tf-hm-pass);--tf-cm-missing:var(--tf-hm-fail);--tf-cm-no-branches:var(--tf-hm-na);--tf-cm-new-run:var(--tf-hm-pass);--tf-cm-new-missing:var(--tf-hm-fail);--tf-cm-no-new:var(--tf-hm-na)}
 html[data-theme=dark] #verification-health-map{--tf-cm-marked:#2f8a52;--tf-cm-exempt:#4d5b69;--tf-cm-deactivated:#4d5b69;--tf-cm-no-test:#c98a2a;--tf-cm-extraneous:#9a74cf}
 #verification-health-map .tf-map-tile.cm-marked{fill:var(--tf-cm-marked)}
 #verification-health-map .tf-map-tile.cm-helper{fill:var(--tf-cm-helper)}
@@ -4096,6 +4421,12 @@ html[data-theme=dark] #verification-health-map{--tf-cm-marked:#2f8a52;--tf-cm-ex
 #verification-health-map .tf-map-tile.cm-no-test{fill:var(--tf-cm-no-test)}
 #verification-health-map .tf-map-tile.cm-no-requirement{fill:var(--tf-cm-no-requirement)}
 #verification-health-map .tf-map-tile.cm-extraneous{fill:var(--tf-cm-extraneous)}
+#verification-health-map .tf-map-tile.cm-taken{fill:var(--tf-cm-taken)}
+#verification-health-map .tf-map-tile.cm-missing{fill:var(--tf-cm-missing)}
+#verification-health-map .tf-map-tile.cm-no-branches{fill:var(--tf-cm-no-branches)}
+#verification-health-map .tf-map-tile.cm-new-run{fill:var(--tf-cm-new-run)}
+#verification-health-map .tf-map-tile.cm-new-missing{fill:var(--tf-cm-new-missing)}
+#verification-health-map .tf-map-tile.cm-no-new{fill:var(--tf-cm-no-new)}
 /* The card names every layer's value for the mark, one chip per layer. */
 .tf-cm-strip{grid-template-columns:repeat(4,minmax(0,1fr))}
 /* The table: each layer's value as its swatch and a short word, the requirements a function serves as links. */
@@ -4106,6 +4437,10 @@ html[data-theme=dark] #verification-health-map{--tf-cm-marked:#2f8a52;--tf-cm-ex
 .tf-cm-serves a{font-family:var(--pst-font-family-monospace);font-size:.66rem}
 .tf-cm-causes{font-size:.7rem;white-space:nowrap;color:var(--pst-color-text-muted)}
 .tf-cm-causes b{font-weight:700;color:var(--tf-hm-fail-ink)}
+/* Line and branch coverage and the new lines: what ran of what there is, and its share. */
+.tf-cm-cover{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tf-cm-cover small{margin-left:.3rem;color:var(--pst-color-text-muted);font-size:.66rem}
+.tf-cm-cover.failed small{color:var(--tf-hm-fail-ink);font-weight:650}
 #verification-health-map .tf-map-list-table .name small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* A layer's panel opens with the numbers it may only lower. */
 .tf-cm-ratchet{margin:0 0 .7rem;font-size:.76rem;color:var(--pst-color-text-muted)}
@@ -4125,11 +4460,15 @@ const CODE_VALUES={
  owner:[["marked","Marked for a requirement","passed","Marked"],["helper","Helper of a requirement","passed","Helper"],["exempt","No requirement needed","passed","Exempt"],["none","Serves no requirement","failed","None"]],
  run:[["run","Run by its tests","passed","Run"],["not-run","Not run by its tests","failed","Not run"],["na","No requirement to test it","na","–"]],
  used:[["used","Used","passed","Used"],["unused","Nothing uses it","failed","Unused"]],
- lines:[["clean","Every line runs","passed","–"],["deactivated","Deactivated on purpose","passed","Deactivated"],["no-test","No test","failed","No test"],["no-requirement","No requirement","failed","No requirement"],["extraneous","Extraneous","failed","Extraneous"]]
+ lines:[["clean","Every line runs","passed","–"],["deactivated","Deactivated on purpose","passed","Deactivated"],["no-test","No test","failed","No test"],["no-requirement","No requirement","failed","No requirement"],["extraneous","Extraneous","failed","Extraneous"]],
+ // Two more views of the lines layer (ADR_0009): the branches the tests take, and the lines the branch changes.
+ branches:[["taken","Every branch taken","passed","Taken"],["missing","Branches not taken","failed","Not taken"],["no-branches","No branches","na","–"]],
+ new:[["new-run","New lines run","passed","Run"],["new-missing","New lines not run","failed","Not run"],["no-new","No new lines","na","–"]]
 };
-const CODE_ASK={owner:"Which requirement does each function serve?",run:"Do its requirement's tests run it?",used:"Does anything use it?",lines:"Why does no test run its lines?"};
+const CODE_ASK={owner:"Which requirement does each function serve?",run:"Do its requirement's tests run it?",used:"Does anything use it?",lines:"Why does no test run its lines?",branches:"Do its tests take every branch?",new:"Do its tests run the lines this branch changes?"};
 // What a layer's failing marks are, for a card and a group: "61 of 452 serve none".
-const CODE_FAILS={owner:"serve none",run:"not run",used:"unused",lines:"with unrun lines"};
+const CODE_FAILS={owner:"serve none",run:"not run",used:"unused",lines:"with unrun lines",branches:"with branches not taken",new:"with new lines not run"};
+const CODE_VIEW_LABEL={branches:"Branches",new:"New lines"};
 const CODE_CAUSES=[["no-test","No test"],["no-requirement","No requirement"],["extraneous","Extraneous"],["deactivated","Deactivated"]];
 const CODE_TERMS={
  kind:{product:"Package",goal:"Area",feature:"Module",requirement:"Function",treq:"Class"},
@@ -4147,25 +4486,36 @@ function codeMap(model){
 let map=null;
 const tree=mapTree(model.rows),{root}=tree,leaves=tree.leaves;
 const META=Object.fromEntries(Object.entries(CODE_VALUES).map(([key,values])=>[key,new Map(values.map(([value,label,tone,word],rank)=>[value,{label,tone,word,rank}]))]));
-const labelOf=key=>CODE_LAYERS.find(layer=>layer[0]===key)[1];
+const labelOf=key=>CODE_VIEW_LABEL[key]||CODE_LAYERS.find(layer=>layer[0]===key)[1];
+// What ran of what there is, and its share: "39/41 · 95%"; "–" when there is nothing to run.
+const share=(done,all)=>{if(!all)return"–";const pc=100*done/all;return(pc>0&&pc<1?1:pc>99&&pc<100?99:Math.round(pc))+"%"};
+const coverText=(done,all)=>all?done+"/"+all+" · "+share(done,all):"–";
+const newRun=row=>(row.new_lines||[]).length-(row.new_missing||[]).length;
+const totals=list=>list.reduce((sum,row)=>({statements:sum.statements+(row.kind==="function"?row.statements||0:0),executed:sum.executed+(row.kind==="function"?row.executed||0:0),
+ branches:sum.branches+(row.branches||0),taken:sum.taken+(row.branches_taken||0),fresh:sum.fresh+(row.new_lines||[]).length,freshRun:sum.freshRun+newRun(row)}),{statements:0,executed:0,branches:0,taken:0,fresh:0,freshRun:0});
+const changeBase=model.change_base?.merge_base?"the lines this branch changes against its merge base with "+model.change_base.base+" ("+model.change_base.merge_base.slice(0,7)+")":"";
 const valueOf=(row,key)=>row.layers?.[key];
 const toneOfValue=(key,value)=>META[key].get(value)?.tone||"na";
 const fill=value=>"var(--tf-cm-"+value+")";
 const failsIn=(row,key)=>toneOfValue(key,valueOf(row,key))==="failed";
-const failing=key=>Number(model.failing[key]||0);
+// What fails in a layer; in the lines layer's two other views, the branches no test takes and the new lines no test runs.
+const cover=model.counts.coverage||{};
+const failing=key=>key==="branches"?(cover.branches||0)-(cover.branches_taken||0):key==="new"?(cover.new_lines||0)-(cover.new_run||0):Number(model.failing[key]||0);
 const owned=leaves.filter(row=>(row.owners||[]).length).length;
 const unrunLines=row=>["no-test","no-requirement","extraneous"].reduce((sum,cause)=>sum+((row.causes||{})[cause]||[]).length,0);
-const verdict=key=>failing(key)?"failed":"passed";
+const verdict=key=>key==="branches"&&!model.counts.branches_measured||key==="new"&&!cover.new_lines?"na":failing(key)?"failed":"passed";
 const word=value=>value==="passed"?"PASS":value==="failed"?"FAIL":"N/A";
 function countLine(key,short){
  const n=failing(key);
  if(key==="lines"){const where=leaves.filter(row=>failsIn(row,"lines")).length;return n?"<b>"+n+"</b>"+(short?" lines":" lines no test runs, in "+where):"every line runs"}
+ if(key==="branches"){const where=leaves.filter(row=>failsIn(row,"branches")).length;return!model.counts.branches_measured?"not measured":n?"<b>"+n+"</b>"+(short?" branches":" branches no test takes, in "+where):"every branch taken"}
+ if(key==="new")return!cover.new_lines?"no new lines":n?"<b>"+n+"</b>"+(short?" new lines":" of "+cover.new_lines+" new lines not run"):"every new line runs";
  const of=key==="run"?owned:leaves.length;
  return n?"<b>"+n+"</b>"+(short?"/"+of:" of "+of+" "+CODE_FAILS[key]):"all "+of+" pass";
 }
 function verdictHtml(key,row){
  const value=verdict(key);
- return'<span class="tf-health-verdict '+value+'"><i class="fa-solid '+(value==="passed"?"fa-circle-check":"fa-circle-xmark")+'" aria-hidden="true"></i>'+(row?'<span class="tf-map-row-word"> '+word(value)+"</span>":" "+word(value))+"</span>";
+ return'<span class="tf-health-verdict '+value+'"><i class="fa-solid '+(value==="passed"?"fa-circle-check":value==="na"?"fa-circle-minus":"fa-circle-xmark")+'" aria-hidden="true"></i>'+(row?'<span class="tf-map-row-word"> '+word(value)+"</span>":" "+word(value))+"</span>";
 }
 // Failing layers first, most failing marks first; passing layers behind them. No layer is pinned: the four stand side
 // by side.
@@ -4197,26 +4547,38 @@ function describe(row,key){
    if(owners.length)body+='<span>Of its requirements</span><span class="value '+(row.owner_tests?"passed":"failed")+'">'+row.owner_tests+"</span>";
    const unrun=CODE_CAUSES.map(([cause,label])=>{const lines=(row.causes||{})[cause]||[];return lines.length?label+": "+(lines.length===1?"line ":"lines ")+lines.slice(0,6).join(", ")+(lines.length>6?" and "+(lines.length-6)+" more":""):""}).filter(Boolean);
    body+=unrun.length?'<div class="sub">Unexecuted lines</div>'+unrun.map(text=>'<span class="note">'+escapeHtml(text)+"</span>").join(""):"<span>Unexecuted lines</span><span class=\"value\">none</span>";
+   if(row.kind==="function")body+=coverHtml(totals([row]),(row.missing_branches||[]).map(([from,to])=>from+(to<0?"→exit":"→"+to)));
    if(row.unused)body+='<span class="note">Vulture: '+escapeHtml(row.unused)+"</span>";
  }else{
    const inside=tree.inside(row);
    body+='<div class="sub">Inside</div>'+CODE_VALUES[key].map(([value,label,tone])=>{const n=inside.filter(item=>valueOf(item,key)===value).length;return n?"<span>"+escapeHtml(label)+'</span><span class="value '+(tone==="failed"?"failed":"")+'">'+n+"</span>":""}).join("");
+   body+=coverHtml(totals(inside),[]);
  }
  const chips='<div class="tf-health-strip tf-cm-strip">'+CODE_LAYERS.map(([layer,label,,short])=>{const said=says(row,layer);return'<span class="tf-health-chip '+said.tone+(layer===key?" current":"")+'" title="'+escapeHtml(label+": "+said.text)+'">'+escapeHtml(short)+"</span>"}).join("")+"</div>";
  return{body,extra:chips};
+}
+// Line and branch coverage and the new lines, for a function or everything inside an area or module.
+function coverHtml(sum,missing){
+ let out='<div class="sub">Coverage</div><span>Lines run</span><span class="value">'+coverText(sum.executed,sum.statements)+"</span>";
+ out+="<span>Branches taken</span><span class=\"value"+(sum.taken<sum.branches?" failed":"")+'">'+(model.counts.branches_measured?coverText(sum.taken,sum.branches):"not measured")+"</span>";
+ if(missing.length)out+='<span class="note">Not taken: '+escapeHtml(missing.slice(0,6).join(", ")+(missing.length>6?" and "+(missing.length-6)+" more":""))+"</span>";
+ if(sum.fresh)out+="<span>New lines run</span><span class=\"value"+(sum.freshRun<sum.fresh?" failed":"")+'">'+coverText(sum.freshRun,sum.fresh)+"</span>";
+ return out;
 }
 function paint(entries,key){
  entries.forEach(entry=>{if(entry.kind==="leaf")entry.shape.setAttribute("class","tf-map-tile cm-"+valueOf(entry.row,key))});
 }
 function legendHtml(key){
- const counts=model.counts.layers[key]||{};
  const help={
    owner:"its colour is whom it serves: a requirement by its own marker, the requirements of the functions that call it, none with a recorded reason, or none at all.",
    run:"its colour says whether a test of a requirement it serves runs it; a function that serves none has nothing to be run by.",
    used:"its colour says whether anything in the package uses it; a class nothing uses has a tile of its own.",
-   lines:"its colour is the worst cause among the lines no test runs in it: extraneous, no requirement, no test, then deactivated on purpose. The card counts the lines; "+(model.counts.lines["no-test"]+model.counts.lines["no-requirement"]+model.counts.lines.extraneous)+" lines in all."
+   lines:"its colour is the worst cause among the lines no test runs in it: extraneous, no requirement, no test, then deactivated on purpose. The card counts the lines; "+(model.counts.lines["no-test"]+model.counts.lines["no-requirement"]+model.counts.lines.extraneous)+" lines in all.",
+   branches:model.counts.branches_measured?"its colour says whether the tests take every branch of it, as coverage.py measures branches; "+coverText(model.counts.coverage.branches_taken,model.counts.coverage.branches)+" of the branches taken in all, and "+coverText(model.counts.coverage.executed,model.counts.coverage.statements)+" of the lines run.":"the retained run did not measure branches, so no function has a branch to show.",
+   new:changeBase?"its colour says whether the tests run "+changeBase+"; "+coverText(model.counts.coverage.new_run,model.counts.coverage.new_lines)+" of them run.":"no merge base with main, so no change to show."
  }[key];
- return{items:CODE_VALUES[key].map(([value,label])=>mapLegendItem(mapSwatch("",fill(value)),label,counts[value]||0)).join(""),help};
+ const counted=model.counts.layers[key]||model.counts.measures?.[key]||{};
+ return{items:CODE_VALUES[key].map(([value,label])=>mapLegendItem(mapSwatch("",fill(value)),label,counted[value]||0)).join(""),help};
 }
 function toneOf(row,key){
  if(!tree.isLeaf(row))return null;
@@ -4224,7 +4586,7 @@ function toneOf(row,key){
  return{key:value,fill:fill(value),rank:meta?.rank??9,label:meta?.label||value};
 }
 const FACETS={};
-CODE_LAYERS.forEach(([key,label])=>{
+[...CODE_LAYERS.map(([key,label])=>[key,label]),["branches","Branches"],["new","New lines"]].forEach(([key,label])=>{
  FACETS[key]={label,options:CODE_VALUES[key].map(([value,name])=>[value,name]),swatch:value=>mapSwatch("",fill(value)),test:(row,value)=>tree.isLeaf(row)&&valueOf(row,key)===value};
 });
 // The requirement a function serves: a contract page's Code links here with it chosen.
@@ -4232,16 +4594,18 @@ FACETS.req={label:"Requirement",title:"Serves",help:"The requirements the functi
  options:Object.keys(model.contracts).map(id=>[id,id]),tip:value=>model.contracts[value]?.title||"",test:(row,value)=>tree.isLeaf(row)&&(row.owners||[]).includes(value)};
 // The numbers each layer may only lower (ADR_0008): the gate holds them to a baseline that drops with them, and a rise
 // fails it until the baseline records a reason.
-const RATCHET_KEYS={owner:["owner:none"],run:["run:not-run"],used:["used:unused"],lines:["lines:no-test","lines:no-requirement","lines:extraneous"]};
+const RATCHET_KEYS={owner:["owner:none"],run:["run:not-run"],used:["used:unused"],lines:["lines:no-test","lines:no-requirement","lines:extraneous"],branches:["branches:missing"],new:[]};
 function ratchetLine(key){
  const held=model.ratchet?.held||{},rises=model.ratchet?.rises||{};
- const parts=RATCHET_KEYS[key].map(name=>{
-   const cause=name.split(":")[1],label=key==="lines"?CODE_CAUSES.find(item=>item[0]===cause)[1]+" ":"",rise=rises[name];
+ const names=RATCHET_KEYS[key].filter(name=>name in held||name in rises);
+ if(!names.length)return"";
+ const parts=names.map(name=>{
+   const cause=name.split(":")[1],label=key==="lines"?CODE_CAUSES.find(item=>item[0]===cause)[1]+" ":key==="branches"?"Branches not taken ":"",rise=rises[name];
    return rise?'<b class="failed">'+escapeHtml(label)+"rose from "+rise[0]+" to "+rise[1]+"</b>":escapeHtml(label)+"held at <b>"+held[name]+"</b>";
  });
  return'<p class="tf-cm-ratchet" data-tip="The gate holds these numbers to a baseline that falls with them; a rise fails it until a reason is recorded.">May only fall: '+parts.join(" · ")+"</p>";
 }
-const PANELS=Object.fromEntries(CODE_LAYERS.map(([key,label])=>[key,{title:label,help:"Point at a value or a requirement to light its functions on the map, or click it to keep only them.",before:()=>ratchetLine(key),facets:[key,"req"]}]));
+const PANELS=Object.fromEntries([...CODE_LAYERS.map(([key,label])=>[key,label]),["branches","Branches"],["new","New lines"]].map(([key,label])=>[key,{title:label,help:"Point at a value or a requirement to light its functions on the map, or click it to keep only them.",before:()=>ratchetLine(key),facets:[key,"req"]}]));
 // The table: every function or class with what each layer says, the requirements it serves and its tests. A group row
 // counts what fails in every column.
 const COLUMNS=[
@@ -4250,8 +4614,14 @@ const COLUMNS=[
  ["run","Run",labelOf("run")+": "+CODE_ASK.run,"",[labelOf("run")]],
  ["tests","Tests","Tests of its requirements that run it, of all the tests that run it","tf-map-num",[labelOf("run")]],
  ["used","Used",labelOf("used")+": "+CODE_ASK.used,"",[labelOf("used")]],
- ["lines","Causes","The lines no test runs, by cause","",[labelOf("lines")]]
+ ["lines","Causes","The lines no test runs, by cause","",[labelOf("lines")]],
+ ["cover","Lines run","Lines its tests run, of its statements","tf-map-num",[labelOf("lines")]],
+ ["branch","Branches","Branches its tests take, of its branches","tf-map-num",[labelOf("lines")]],
+ ["fresh","New lines","Lines this branch changes that its tests run, of those it changes","tf-map-num",[labelOf("lines")]]
 ];
+function coverCell(done,all,missing){
+ return'<td class="tf-map-num tf-cm-cover'+(all&&done<all?" failed":"")+'">'+(all?done+"/"+all+"<small>"+share(done,all)+"</small>":'<span class="tf-map-muted">'+(missing||"–")+"</span>")+"</td>";
+}
 function valueCell(row,key){
  const value=valueOf(row,key),meta=META[key].get(value)||{};
  return'<td class="tf-cm-cell'+(meta.tone==="failed"?" failed":"")+'" title="'+escapeHtml(labelOf(key)+": "+(meta.label||value))+'">'+mapSwatch("",fill(value))+escapeHtml(meta.word||value)+"</td>";
@@ -4261,12 +4631,19 @@ function cells(row){
    if(key==="serves"){const owners=row.owners||[];return'<td class="tf-cm-serves">'+(owners.length?owners.slice(0,3).map(contractLink).join(", ")+(owners.length>3?' <span class="tf-map-muted" title="'+escapeHtml(owners.join(", "))+'">+'+(owners.length-3)+"</span>":"")+(row.via==="inherited"?' <span class="tf-map-muted">helper</span>':""):row.exemption?'<span class="tf-map-muted">'+escapeHtml(row.exemption)+"</span>":'<span class="tf-map-muted">–</span>')+"</td>"}
    if(key==="tests")return'<td class="tf-map-num">'+((row.owners||[]).length?row.owner_tests+" / ":"")+row.tests+"</td>";
    if(key==="lines"){const text=causesText(row);return'<td class="tf-cm-causes">'+(text?escapeHtml(text).replace(/(\d+)/g,"<b>$1</b>"):"–")+"</td>"}
+   if(key==="cover")return row.kind==="function"?coverCell(row.executed,row.statements):coverCell(0,0);
+   if(key==="branch")return coverCell(row.branches_taken||0,row.branches||0,model.counts.branches_measured?"":"not measured");
+   if(key==="fresh")return coverCell(newRun(row),(row.new_lines||[]).length);
    return valueCell(row,key);
  }).join("");
 }
 function groupCells(list){
+ const sum=totals(list);
  return COLUMNS.map(([key])=>{
    if(key==="serves"||key==="tests")return"<td></td>";
+   if(key==="cover")return coverCell(sum.executed,sum.statements);
+   if(key==="branch")return coverCell(sum.taken,sum.branches);
+   if(key==="fresh")return coverCell(sum.freshRun,sum.fresh);
    const n=key==="lines"?list.reduce((sum,row)=>sum+unrunLines(row),0):list.filter(row=>failsIn(row,key)).length;
    return'<td class="tf-health-cell">'+(n?'<span class="tf-health-fails" title="'+escapeHtml(labelOf(key)+": "+n+(key==="lines"?" lines":" fail"))+'">✕ '+n+"</span>":'<span class="tf-map-muted" title="All pass">✓</span>')+"</td>";
  }).join("");
@@ -4278,26 +4655,36 @@ const TABLE={
  keys:(row,group)=>group==="owner"?[valueOf(row,"owner")]:(row.owners||[]).length?row.owners:["none"],
  name:(group,key)=>group==="owner"?META.owner.get(key)?.label||key:key==="none"?"Serves no requirement":key+" · "+(model.contracts[key]?.title||""),
  order:(group,keys)=>group==="owner"?CODE_VALUES.owner.map(item=>item[0]).filter(key=>keys.includes(key)):[...keys].sort((a,b)=>(a==="none")-(b==="none")||a.localeCompare(b)),
- sortValue:(row,key)=>key==="serves"?(row.owners||[]).length:key==="tests"?row.owner_tests:key==="lines"?unrunLines(row):sortRank(row,key),
+ sortValue:(row,key)=>key==="serves"?(row.owners||[]).length:key==="tests"?row.owner_tests:key==="lines"?unrunLines(row)
+   :key==="cover"?(row.statements?row.executed/row.statements:2):key==="branch"?(row.branches?row.branches_taken/row.branches:2):key==="fresh"?((row.new_lines||[]).length?newRun(row)/row.new_lines.length:2):sortRank(row,key),
  stats:list=>{
    const parts=CODE_LAYERS.map(([key])=>{const n=key==="lines"?list.reduce((sum,row)=>sum+unrunLines(row),0):list.filter(row=>failsIn(row,key)).length;return n?(key==="lines"?plural(n,"line","lines")+" unrun":n+" "+CODE_FAILS[key]):""}).filter(Boolean);
    return parts.length?parts.join(" · "):"all pass";
  },
  cells,groupCells,
- csv:{file:"code-map.csv",head:["path","start","end","owner","serves","run","tests_of_its_requirements","tests","used","lines_no_test","lines_no_requirement","lines_extraneous","lines_deactivated"],
-   line:row=>[row.path,row.start,row.end,valueOf(row,"owner"),(row.owners||[]).join(" "),valueOf(row,"run"),row.owner_tests,row.tests,valueOf(row,"used"),...["no-test","no-requirement","extraneous","deactivated"].map(cause=>((row.causes||{})[cause]||[]).length)]}
+ csv:{file:"code-map.csv",head:["path","start","end","owner","serves","run","tests_of_its_requirements","tests","used","lines_no_test","lines_no_requirement","lines_extraneous","lines_deactivated","statements","lines_run","branches","branches_taken","new_lines","new_lines_run"],
+   line:row=>[row.path,row.start,row.end,valueOf(row,"owner"),(row.owners||[]).join(" "),valueOf(row,"run"),row.owner_tests,row.tests,valueOf(row,"used"),...["no-test","no-requirement","extraneous","deactivated"].map(cause=>((row.causes||{})[cause]||[]).length),
+     row.statements,row.executed,row.branches||0,row.branches_taken||0,(row.new_lines||[]).length,newRun(row)]}
 };
 const VIEWS=CODE_LAYERS.flatMap(([key])=>[
- {key,layer:key,projection:key,form:"tiles",label:"Map",ask:CODE_ASK[key]},
+ {key,layer:key,projection:key,form:"tiles",label:key==="lines"?"Lines":"Map",ask:CODE_ASK[key]},
+ ...(key==="lines"?[
+   {key:"lines/branches",layer:key,projection:"branches",form:"tiles",label:"Branches",ask:CODE_ASK.branches,tip:"The branches each function's tests take, as coverage.py measures them."},
+   {key:"lines/new",layer:key,projection:"new",form:"tiles",label:"New lines",ask:CODE_ASK.new,tip:changeBase?"Whether the tests run "+changeBase+".":"No merge base with main, so no change to show."}
+ ]:[]),
  {key:key+"/table",layer:key,projection:key,form:"table",label:"Table",ask:"Every function with what each layer says of it"}
 ]);
 return{
  tree,layers:CODE_LAYERS,views:VIEWS,insights:model.insights,terms:CODE_TERMS,words:()=>["newly failing","fixed"],
- href:row=>row.href,says,describe,paint,legend:legendHtml,tone:toneOf,blank:(row,key)=>tree.isLeaf(row)&&valueOf(row,key)==="na",
+ href:row=>row.href,says,describe,paint,legend:legendHtml,tone:toneOf,blank:(row,key)=>tree.isLeaf(row)&&["na","no-branches","no-new"].includes(valueOf(row,key)),
  facets:FACETS,panels:PANELS,filterRows:leaves,
  strip:{groups:layerGroups,card:key=>({status:verdictHtml(key,false),count:countLine(key,false)}),row:key=>({status:verdictHtml(key,true),count:countLine(key,true)})},
  table:TABLE,
  tiles:{dots:false,leaf:(row,key)=>'class="tf-map-tile cm-'+valueOf(row,key)+'"',mark:()=>""},
+ // A layer's number now, for its trend (ADR_0009), and what it counts.
+ trendNow:key=>[failing(key),{owner:leaves.length,run:owned,used:leaves.length,lines:cover.statements||0,branches:cover.branches||0,new:cover.new_lines||0}[key]],
+ trendLabel:key=>({owner:"Functions and classes that serve no requirement",run:"Functions their requirements' tests do not run",used:"Functions and classes nothing uses",
+   lines:"Lines no test runs",branches:"Branches no test takes",new:"New lines no test runs"})[key]||"What fails",
  ringSets:{},
  find:row=>{
    const marks=CODE_LAYERS.map(([key])=>says(row,key).tone);

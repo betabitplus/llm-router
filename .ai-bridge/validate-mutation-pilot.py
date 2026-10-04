@@ -178,7 +178,7 @@ def check_verification_explorer(module: str) -> None:
     used_causes = {cause for item in items for cause in item["causes"]}
     check(
         {item["kind"] for item in items} <= kinds
-        and kinds == {"path", "unbound", "fault", "mutant", "silent", "noeffect", "check", "support", "producer"}
+        and kinds == {"path", "unbound", "fault", "mutant", "silent", "noeffect", "check", "support", "producer", "exception", "basechange"}
         and used_causes <= set(model["causes"])
         and used_causes <= fixes
         and all(item["causes"] for item in items if item["status"] in {"fail", "unknown"})
@@ -1331,7 +1331,7 @@ def check_code_map(module: str, monitor_facts: dict) -> None:
     counts = facts.get("counts") or {}
     check(
         facts.get("schema") == "ternforge-code-map-1" and bool(rows)
-        and counts == tool["map_counts"](rows, facts.get("loose") or [])
+        and {key: value for key, value in counts.items() if key != "branches_measured"} == tool["map_counts"](rows, facts.get("loose") or [])
         and len({row["id"] for row in rows}) == len(rows)
         and all(row["kind"] in {"function", "class"} for row in rows),
         f"the code map's facts recount: {counts.get('functions')} functions and {counts.get('classes')} classes nothing uses, every count from its rows",
@@ -1437,6 +1437,213 @@ def check_code_map(module: str, monitor_facts: dict) -> None:
     )
     index_nav = (HTML / "index.html").read_text().split('<main id="main-content"', 1)[0] if (HTML / "index.html").is_file() else ""
     check('href="code-map.html"' in index_nav, "the portal navigation lists the Code map")
+
+
+def page_model(path: Path) -> dict:
+    """The model a portal page carries in its script (const model={...})."""
+    page = path.read_text() if path.is_file() else ""
+    if "const model=" not in page:
+        return {}
+    start = page.index("const model=") + len("const model=")
+    model, _end = json.JSONDecoder().raw_decode(page, start)
+    return model
+
+
+def check_monitor_ledger(module: str) -> None:
+    """Stage 3 (062, ADR_0009): the exception registry reads every exception where it lives and reviews each as of its
+    run's day; the metric base changes recount from git; the monitor's history holds the run drawn now with the numbers
+    its pages show; every release snapshot is frozen and has its list; the Code map's branches and new lines recount."""
+    registry = runpy.run_path(str(BRIDGE / "exception_registry.py"), run_name="gate_exception_registry")
+    bases = runpy.run_path(str(BRIDGE / "metric_bases.py"), run_name="gate_metric_bases")
+    history = runpy.run_path(str(BRIDGE / "monitor_history.py"), run_name="gate_monitor_history")
+    oracle = runpy.run_path(str(BRIDGE / "pin_oracle.py"), run_name="gate_exception_oracle")
+    explorer = page_model(HTML / "verification-explorer.html")
+    items = explorer.get("items") or []
+    run = explorer.get("run") or {}
+
+    # The registry: every exception in and beside the code is one item, reviewed as of the run's day.
+    found = [
+        *registry["tool_comments"](ROOT, "llm_router"), *registry["test_skips"](ROOT), *registry["ignored_imports"](ROOT),
+        *registry["spared_pins"](ROOT, "tests/llm_router/mutation_pins", oracle["oracle_problems"]),
+    ]
+    exemptions = load(BRIDGE / "code-exemptions.json") if (BRIDGE / "code-exemptions.json").is_file() else {}
+    records = registry["load"](BRIDGE / "exception-records.json")
+    day = registry["run_date"](str(run.get("started_at") or ""))
+    expected = {f"exception|{item['key']}": registry["review"](item, records, day) for item in found}
+    expected.update({f"exception|{item['key']}": item for item in registry["orphans"](records, [*found, *({"key": f"exemption|{key}"} for key in exemptions)])})
+    shown = {item["id"]: item for item in items if item.get("kind") == "exception"}
+    wrong = [
+        item_id for item_id, exception in expected.items()
+        if item_id not in shown
+        or {key: shown[item_id]["exception"].get(key) for key in ("type", "reason", "decided", "review_by", "state")}
+        != {key: exception.get(key) for key in ("type", "reason", "decided", "review_by", "state")}
+        or shown[item_id]["status"] != ("fail" if exception["state"] in registry["FAILING"] else "pass")
+    ]
+    extra = sorted(set(shown) - set(expected) - {f"exception|exemption|{key}" for key in exemptions})
+    check(
+        bool(found) and not wrong and not extra,
+        f"the registry lists each of the {len(expected)} exceptions in and beside the code once, with its reason, its day and "
+        f"its state as of {day}" + (f"; wrong: {wrong[:4]}" if wrong else "") + (f"; not found in the code: {extra[:4]}" if extra else ""),
+    )
+    excused = [item for item in items if item.get("exception")]
+    bad = [
+        item["id"] for item in excused
+        if item["exception"]["type"] not in registry["TYPES"]
+        or item["exception"]["state"] != registry["review"]({**item["exception"], "decided": item["exception"].get("decided")}, records if item["kind"] == "exception" else {}, day)["state"]
+        or (item["exception"]["type"] == "judged") != (item["exception"].get("holds") == "question")
+        or (item["kind"] in {"silent", "noeffect"} and item.get("state") not in {"Not required", "Kept"})
+        or (item["kind"] == "mutant" and not str(item.get("state") or "").startswith("Suppressed"))
+    ]
+    check(
+        not bad,
+        "every exception names its type, and its state follows its review: a model's verdict holds while its question is "
+        "unchanged, every other exception for its days from its decision; a closed finding and a suppressed mutant carry one"
+        + (f"; wrong: {bad[:4]}" if bad else ""),
+    )
+    numbers = explorer.get("exceptions") or {}
+    counted = registry["counts"]([item["exception"] for item in excused])
+    baseline = load(BRIDGE / "exceptions-baseline.json") if (BRIDGE / "exceptions-baseline.json").is_file() else {}
+    held = baseline.get("numbers") or {}
+    now = {kind: row["all"] for kind, row in counted.items()}
+    rises = {kind: [held.get(kind), value] for kind, value in now.items() if kind in held and value > held[kind]}
+    unexplained = {kind: value for kind, value in rises.items() if not str((baseline.get("reasons") or {}).get(kind) or "").strip()}
+    check(
+        numbers.get("counts") == counted and baseline.get("schema") == "ternforge-exceptions-baseline-1" and set(held) == set(registry["TYPES"])
+        and all(held[kind] == value for kind, value in now.items() if kind not in rises)
+        and all(str(row.get("reason") or "").strip() and row.get("to", 0) > row.get("from", 0) for row in baseline.get("accepted") or [])
+        and not unexplained,
+        "the exceptions per type may only fall: held at " + ", ".join(f"{kind} {value}" for kind, value in sorted(held.items()) if value)
+        + (f"; rose without a recorded reason: {unexplained}" if unexplained else ""),
+    )
+
+    # The metric bases: every change since the merge base with main, read again from git.
+    reread = bases["base_changes"](ROOT, "main")
+    changes = {item["id"]: item for item in items if item.get("kind") == "basechange"}
+    expected_changes = {f"basechange|{change['commit'] or 'working-tree'}": change for change in reread["changes"]}
+
+    def base_status(change: dict) -> str:
+        if change["direction"] == "looser" and change["with_code"]:
+            return "fail"
+        return "pass" if change["direction"] == "tighter" else "na"
+
+    wrong_bases = [
+        item_id for item_id, change in expected_changes.items()
+        if item_id not in changes or changes[item_id]["status"] != base_status(change)
+        or changes[item_id]["attrs"].get("direction") != change["direction"] or changes[item_id]["attrs"].get("code") != ("yes" if change["with_code"] else "no")
+    ]
+    check(
+        bool(reread["merge_base"]) and not wrong_bases and set(changes) == set(expected_changes),
+        f"the Explorer lists each of the {len(expected_changes)} changes of a metric base since the merge base with main as git "
+        f"reads them again, {sum(base_status(change) == 'fail' for change in expected_changes.values())} loosened together with the code"
+        + (f"; wrong: {wrong_bases[:4]}" if wrong_bases else ""),
+    )
+
+    # The history: one row per run, the run drawn now with the numbers its pages show.
+    rows = history["load"](BRIDGE / "monitor-history.jsonl")
+    raw = [line for line in (BRIDGE / "monitor-history.jsonl").read_text().splitlines() if line.strip()] if (BRIDGE / "monitor-history.jsonl").is_file() else []
+    current = next((row for row in rows if row["run_id"] == run.get("run_id")), {})
+    inputs = load(ROOT / "test-results/evidence-run-inputs.json") if (ROOT / "test-results/evidence-run-inputs.json").is_file() else {}
+    health = page_model(HTML / "verification-health-map.html").get("health") or {}
+    code = page_model(HTML / "code-map.html")
+    health_numbers = {}
+    for key in ("overall", "execution", "coverage", "faults", "completeness", "evidence", "assurance"):
+        statuses = [((row.get("own") or {}).get(key) or {}).get("status") for row in health.get("rows") or []]
+        health_numbers[key] = [sum(status == "failed" for status in statuses), sum(status not in {None, "na"} for status in statuses)]
+    kinds = sorted({item["kind"] for item in items})
+    explorer_numbers = {kind: [sum(item["kind"] == kind and item["status"] in {"fail", "unknown"} for item in items), sum(item["kind"] == kind for item in items)] for kind in kinds}
+    check(
+        len(raw) == len(rows) and len({row["run_id"] for row in rows}) == len(rows)
+        and [row["started_at"] for row in rows] == sorted(row["started_at"] for row in rows)
+        and all(row.get("schema") == "ternforge-monitor-history-1" for row in rows)
+        and all(row.get("seeded") or row.get("commit") for row in rows)
+        and bool(current) and current.get("started_at") == run.get("started_at")
+        and current.get("commit") == str(inputs.get("git_head") or "")[:7]
+        and current.get("tree") == history["tree_state"](ROOT, inputs.get("inputs") or {}, str(inputs.get("git_head") or ""))
+        and (current.get("numbers") or {}).get("health") == health_numbers
+        and (current.get("numbers") or {}).get("explorer") == explorer_numbers
+        and {key: value for key, value in ((current.get("numbers") or {}).get("code") or {}).items() if key in {"owner", "run", "used", "lines"}}
+        == {key: [value, ((current.get("numbers") or {}).get("code") or {}).get(key, [0, 0])[1]] for key, value in (code.get("failing") or {}).items()},
+        f"the monitor's history keeps one row per run ({len(rows)}, {sum(bool(row.get('seeded')) for row in rows)} seeded from runs "
+        f"retained before it, their commits not recorded), and the run drawn now with its commit, whether its inputs were that "
+        f"commit's files ({current.get('tree')}) and the numbers its pages show",
+    )
+    check(
+        "merge=union" in ((ROOT / ".gitattributes").read_text() if (ROOT / ".gitattributes").is_file() else "")
+        and ".ai-bridge/monitor-history.jsonl" in (ROOT / ".gitattributes").read_text(),
+        "git merges the history as a union, so the rows two clones add both keep",
+    )
+    trend = ((health.get("insights") or {}).get("trend")) or {}
+    code_trend = ((code.get("insights") or {}).get("trend")) or {}
+    earlier = [row for row in rows if row["run_id"] != run.get("run_id")]
+    check(
+        set(trend) == set(health_numbers) and all(point.get("run") != run.get("run_id") for series in trend.values() for point in series)
+        and len(trend.get("overall") or []) == min(30, len([row for row in earlier if (row["numbers"].get("health") or {}).get("overall")]))
+        and all(point.get("value") == (next(row for row in earlier if row["run_id"] == point.get("run"))["numbers"]["health"][key][0]) for key, series in trend.items() for point in series)
+        and set(code_trend) == {"owner", "run", "used", "lines", "branches", "new"}
+        and all(point.get("run") != run.get("run_id") for series in code_trend.values() for point in series),
+        "each Health Map and Code map number carries its trend over the earlier runs, each point the number its run's row "
+        "holds; the run drawn now is added by the page from its own numbers",
+    )
+    shared_js = module.split('MAP_SHARED_JS = r"""', 1)[-1].split('"""', 1)[0]
+    check(
+        "function mapTrendPopover(host,o){" in shared_js and 'pop.setAttribute("popover","")' in shared_js
+        and 'class="tf-trend-open" data-trend="' in shared_js and 'aria-haspopup="dialog"' in shared_js
+        and "fa-up-right-and-down-left-from-center" in shared_js and 'class="tf-map-tab-box"' in shared_js
+        and 'rowsBox.classList.toggle("tf-with-trend",trends)' in shared_js
+        and "trendNow:key=>[failingOf(key),applicableOf(key)]" in module and "trendNow:key=>[failing(key)," in module,
+        "a card's trend is a word-sized line with the expand mark, one button beside the card's own that opens the details in "
+        "a popover; the All layers table has a trend column; both maps give each layer's number now",
+    )
+
+    # The release snapshots: frozen, each with its list.
+    snapshots = history["snapshots"](BRIDGE / "release-snapshots")
+    releases = (HTML / "releases.html").read_text() if (HTML / "releases.html").is_file() else ""
+    # A snapshot counts as frozen once committed: the files HEAD holds, not the ones only staged.
+    tracked = set(subprocess.run(["git", "ls-tree", "-r", "--name-only", "HEAD", "--", ".ai-bridge/release-snapshots"], cwd=ROOT, text=True, capture_output=True, check=False).stdout.split())
+    rewritten = [
+        snapshot["file"] for snapshot in snapshots
+        if f".ai-bridge/release-snapshots/{snapshot['file']}" in tracked
+        and subprocess.run(["git", "diff", "--quiet", "HEAD", "--", f".ai-bridge/release-snapshots/{snapshot['file']}"], cwd=ROOT, check=False).returncode
+    ]
+    lists = [
+        snapshot["file"] for snapshot in snapshots
+        if not (HTML / f"release-{history['snapshot_name'](snapshot['name'])}.html").is_file()
+        or len(page_model(HTML / f"release-{history['snapshot_name'](snapshot['name'])}.html").get("items") or []) != len(snapshot.get("items") or [])
+        or f'href="release-{history["snapshot_name"](snapshot["name"])}.html"' not in releases
+    ]
+    check(
+        '<section id="releases">' in releases and not rewritten and not lists
+        and all(snapshot.get("schema") == "ternforge-release-snapshot-1" and snapshot["file"] == f"{history['snapshot_name'](snapshot['name'])}.json" for snapshot in snapshots),
+        f"the Releases page lists the {len(snapshots)} frozen snapshots, none rewritten since committed, each with its own list of "
+        "what was open" + (f"; rewritten: {rewritten}" if rewritten else "") + (f"; no list: {lists}" if lists else ""),
+    )
+
+    # The Code map's branches and new lines (row 18).
+    facts = load(HTML / "code-map-facts.json") if (HTML / "code-map-facts.json").is_file() else {}
+    functions = facts.get("functions") or []
+    counts = facts.get("counts") or {}
+    cover = counts.get("coverage") or {}
+    check(
+        bool(counts.get("branches_measured")) == any(row.get("branches") for row in functions)
+        and cover.get("branches") == sum(row.get("branches") or 0 for row in functions)
+        and cover.get("branches_taken") == sum(row.get("branches_taken") or 0 for row in functions)
+        and all(len(row.get("missing_branches") or []) == (row.get("branches") or 0) - (row.get("branches_taken") or 0) for row in functions)
+        and all(set(row.get("new_missing") or []) <= set(row.get("new_lines") or []) for row in functions)
+        and cover.get("new_lines") == sum(len(row.get("new_lines") or []) for row in functions),
+        f"the Code map counts the branches its tests take ({cover.get('branches_taken')} of {cover.get('branches')}) and the lines "
+        f"the branch changes ({cover.get('new_run')} of {cover.get('new_lines')} run), function by function",
+    )
+    code_js = module.split('CODE_MAP_JS = r"""', 1)[-1].split('"""', 1)[0]
+    check(
+        '{key:"lines/branches",layer:key,projection:"branches"' in code_js and '{key:"lines/new",layer:key,projection:"new"' in code_js
+        and '["cover","Lines run"' in code_js and '["branch","Branches"' in code_js and '["fresh","New lines"' in code_js,
+        "the Code map's Unexecuted lines layer has a Branches and a New lines view, and its table the coverage of every function and module",
+    )
+    qualification = load(HTML / "evidence-confidence-qualification.json") if (HTML / "evidence-confidence-qualification.json").is_file() else {}
+    check(
+        all(str(((qualification.get("producers") or {}).get(producer) or {}).get("status") or "") == "QUALIFIED" for producer in ("PRODUCER_EXCEPTION_REGISTRY", "PRODUCER_METRIC_BASES")),
+        "the exception registry and the metric base reader passed their controls: projects whose every exception and base change is known",
+    )
 
 
 def check_model_roles_page(budget: dict) -> None:
@@ -7251,7 +7458,7 @@ def main() -> None:
         and '" Views: "' in map_pages_js
         and ".tf-map-dots{grid-column:2;grid-row:3;align-self:end;justify-self:center;" in map_pages_css
         and ".tf-map-tab-wrap.open .tf-map-dots{opacity:0}" in map_pages_css
-        and "@media(max-width:640px){.tf-map-tab[aria-selected=true]>.tf-map-dots{opacity:0}}" in map_pages_css
+        and "@media(max-width:640px){.tf-map-tab[aria-current=true]>.tf-map-dots{opacity:0}}" in map_pages_css
         and ".tf-map-views-track{position:relative;flex:none;display:grid;grid-auto-flow:column;grid-auto-columns:1fr;"
         in map_pages_css
         and ".tf-map-choice .tf-map-thumb{width:54px;height:30px}" in map_pages_css
@@ -7440,6 +7647,7 @@ def main() -> None:
     check_verification_explorer(map_pages_module)
     check_model_roles_page(((monitor_facts.get("policy") or {}).get("model_generation") or {}).get("budget") or {})
     check_code_map(map_pages_module, monitor_facts)
+    check_monitor_ledger(map_pages_module)
     # The roadmap page is retired: the owner keeps the plan in the development history (060).
     check(
         not (HTML / "assurance-roadmap.html").exists()
@@ -7452,14 +7660,15 @@ def main() -> None:
         "'<section id=\"verification-health-map\">\\n<h1>Verification Health Map'" in map_pages_module
         and "f'<style id=\"tf-health-map-style\">\\n{css}\\n</style>\\n'" in map_pages_module
         and re.findall(r"^def (\w+)\(", map_pages_module, flags=re.MULTILINE)
-        == ["map_tools", "map_panel", "map_find", "map_frame", "map_strip", "health_map_article", "explorer_article", "_palette", "model_roles_article", "code_map_article"]
+        == ["map_tools", "map_panel", "map_find", "map_frame", "map_strip", "health_map_article", "releases_article", "explorer_article", "_palette", "model_roles_article", "code_map_article"]
         and "verification-depth-map" not in map_pages_module
         and '<section id="verification-health-map">' not in health_builder_source
         and "MAP_PAGES.health_map_article(" in health_builder_source
         and "MAP_PAGES.explorer_article(" in health_builder_source
         and "MAP_PAGES.model_roles_article(" in health_builder_source
         and "MAP_PAGES.code_map_article(" in health_builder_source
-        and health_builder_source.count("MAP_PAGES.") == 4
+        and "MAP_PAGES.releases_article(" in health_builder_source
+        and health_builder_source.count("MAP_PAGES.") == 6
         and "assurance_map_pages" not in qualification_harness_source
         and "assurance_monitor_ui" not in qualification_harness_source
         and '"assurance_monitor_ui_sha256"' not in health_builder_source
@@ -7473,6 +7682,9 @@ def main() -> None:
                 "assurance_monitor_registry.py",
                 "implementation_faults.py",
                 "code_map.py",
+                "exception_registry.py",
+                "metric_bases.py",
+                "monitor_history.py",
             )
         ),
         "page markup lives outside the evidence-producer fingerprint: the builder passes only facts, every file that computes facts stays fingerprinted",
@@ -7608,6 +7820,14 @@ def main() -> None:
         "code_map.py",
         "code-exemptions.json",
         "code-map-baseline.json",
+        # Stage 3 (062, ADR_0009): the exception registry with its records and baseline, the metric bases, and the
+        # monitor's history with its release snapshots.
+        "exception_registry.py",
+        "exception-records.json",
+        "exceptions-baseline.json",
+        "metric_bases.py",
+        "monitor_history.py",
+        "monitor-history.jsonl",
         "mutation-testing-integration-plan.md",
         "mutation-testing-practice-audit.md",
         "mutation-testing-platform-extraction-manifest.md",
@@ -7716,6 +7936,16 @@ def main() -> None:
         ".ai-bridge/code_map.py",
         ".ai-bridge/code-exemptions.json",
         ".ai-bridge/code-map-baseline.json",
+        ".ai-bridge/exception_registry.py",
+        ".ai-bridge/exception-records.json",
+        ".ai-bridge/exceptions-baseline.json",
+        ".ai-bridge/metric_bases.py",
+        ".ai-bridge/monitor_history.py",
+        ".ai-bridge/monitor-history.jsonl",
+        ".ai-bridge/release-snapshots/",
+        ".gitattributes",
+        "docs/releases.md",
+        "docs/decisions/0009-monitor-history-and-exceptions.md",
         ".ai-bridge/verification-health-map-local-prototype.md",
         ".ai-bridge/verification-depth-map-local-prototype.md",
         ".ai-bridge/verification-explorer-local-prototype.md",

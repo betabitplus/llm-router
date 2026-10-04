@@ -1,0 +1,2 @@
+# The monitor history: every retained run adds one row, so a merge keeps the rows of both sides (ADR_0009).
+.ai-bridge/monitor-history.jsonl merge=union

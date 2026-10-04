@@ -1,0 +1,16 @@
+{
+  "accepted": [],
+  "numbers": {
+    "comment": 16,
+    "decided": 1,
+    "exemption": 0,
+    "import": 1,
+    "judged": 50,
+    "kept": 18,
+    "not-required": 20,
+    "pin": 1,
+    "skip": 1
+  },
+  "reasons": {},
+  "schema": "ternforge-exceptions-baseline-1"
+}

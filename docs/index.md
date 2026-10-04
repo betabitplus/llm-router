@@ -49,6 +49,9 @@ The {doc}`Code map <code-map>` reads the product the other way, bottom-up: every
 with the requirement it serves, whether that requirement's tests run it, what nothing uses
 and why the lines no test runs stay unrun.
 
+{doc}`Releases <releases>` keeps what was open when a version shipped: a release's first
+monitor run freezes its numbers, every item that failed and every exception in force.
+
 ## The normal reading direction
 
 Goal → Capability → Requirement → Technical requirement → Implementation / Verification
@@ -165,6 +168,7 @@ traceability-reader
 verification-health-map
 verification-explorer
 code-map
+releases
 model-roles
 experiments/index
 decisions/index

@@ -45,6 +45,12 @@ LAYERS = {
     "lines": ("clean", "deactivated", "no-test", "no-requirement", "extraneous"),
 }
 FAILING = {"owner": ("none",), "run": ("not-run",), "used": ("unused",), "lines": ("no-test", "no-requirement", "extraneous")}
+# Two more views of the lines layer (ADR_0009): whether a function's tests take every branch of it, which coverage.py
+# measures when the run asks for branches, and whether they run the lines the branch changes against its merge base.
+MEASURES = {
+    "branches": ("taken", "missing", "no-branches"),
+    "new": ("new-run", "new-missing", "no-new"),
+}
 
 
 def _module_name(path: str) -> str:
@@ -246,9 +252,12 @@ def is_public(qualname: str, exported: set[str]) -> bool:
 
 
 def code_map(root: Path, coverage: dict, scopes: list[dict], descendants: dict[str, set[str]],
-             test_rows: list[dict], exemptions: dict, package: str = "llm_router") -> dict:
+             test_rows: list[dict], exemptions: dict, package: str = "llm_router",
+             new_lines: set[tuple[str, int]] | None = None) -> dict:
     """Every function of the product with its owners, how it gets them, the tests that run it and
-    the causes of the lines no test runs; and the counts a ratchet holds."""
+    the causes of the lines no test runs; the branches its tests take and which of its lines the
+    branch changes (``new_lines``, (path, line) against the merge base); and the counts a ratchet holds."""
+    branch_lines = new_lines or set()
     files = sorted(path for path in coverage["files"] if path.startswith(f"src/{package}/"))
     exported = exported_names(root, package)
     functions: dict[str, dict] = {}
@@ -270,12 +279,17 @@ def code_map(root: Path, coverage: dict, scopes: list[dict], descendants: dict[s
                 context.split("|", 1)[0]
                 for line in lines for context in contexts.get(str(line), []) if context
             })
+            summary = region.get("summary") or {}
+            fresh = [line for line in lines if (path, line) in branch_lines]
             functions[f"{path}::{qualname}"] = {
                 "id": f"{path}::{qualname}", "kind": "function", "path": path, "module": _module_name(path), "qualname": qualname,
                 "start": node.lineno, "end": node.end_lineno or node.lineno,
                 "first": min([node.lineno, *(decorator.lineno for decorator in getattr(node, "decorator_list", []))]),
                 "statements": len(lines), "executed": len(region.get("executed_lines", [])),
                 "missing_lines": sorted(region.get("missing_lines", [])),
+                "branches": int(summary.get("num_branches") or 0), "branches_taken": int(summary.get("covered_branches") or 0),
+                "missing_branches": sorted([int(a), int(b)] for a, b in region.get("missing_branches") or []),
+                "new_lines": fresh, "new_missing": [line for line in fresh if line in set(region.get("missing_lines", []))],
                 "excluded_lines": sorted(line for line in excluded if node.lineno <= line <= (node.end_lineno or node.lineno)),
                 "tests": tests, "public": is_public(qualname, exported),
             }
@@ -379,7 +393,8 @@ def code_map(root: Path, coverage: dict, scopes: list[dict], descendants: dict[s
         if entry["excluded_lines"]:
             causes["deactivated"].extend(entry["excluded_lines"])
         rows.append({
-            **{key: entry[key] for key in ("id", "kind", "path", "module", "qualname", "start", "end", "statements", "executed", "public")},
+            **{key: entry[key] for key in ("id", "kind", "path", "module", "qualname", "start", "end", "statements", "executed", "public",
+                                           "branches", "branches_taken", "missing_branches", "new_lines", "new_missing")},
             "state": state, "owners": owners, "via": via if owners else "", "callers": sorted(callers.get(function_id, set())),
             "tests": len(entry["tests"]), "owner_tests": len(owner_tests), "confirmed": bool(owners) and confirmed,
             "tests_by_owner": {owner: len(tests) for owner, tests in sorted(by_owner.items())},
@@ -401,13 +416,18 @@ def code_map(root: Path, coverage: dict, scopes: list[dict], descendants: dict[s
         rows.append({
             "id": f"{path}::{node.name}", "kind": "class", "path": path, "module": _module_name(path), "qualname": node.name,
             "start": node.lineno, "end": node.end_lineno or node.lineno, "statements": 1, "executed": int(node.lineno in executed),
+            "branches": 0, "branches_taken": 0, "missing_branches": [],
+            "new_lines": [node.lineno] if (path, node.lineno) in branch_lines else [],
+            "new_missing": [node.lineno] if (path, node.lineno) in branch_lines and node.lineno not in executed else [],
             "public": False, "state": "unused", "owners": [], "via": "", "callers": [], "tests": 0, "owner_tests": 0, "confirmed": False, "tests_by_owner": {},
             "exemption": {}, "unused": finding, "causes": {}, "markers": [],
         })
     rows.sort(key=lambda row: str(row["id"]))
     for row in rows:
         row["layers"] = layer_values(row)
-    return {"schema": "ternforge-code-map-1", "functions": rows, "counts": map_counts(rows, loose), "loose": loose,
+    counts = map_counts(rows, loose)
+    counts["branches_measured"] = bool((coverage.get("meta") or {}).get("branch_coverage"))
+    return {"schema": "ternforge-code-map-1", "functions": rows, "counts": counts, "loose": loose,
             "vulture": {"tool": VULTURE, "findings": findings}}
 
 
@@ -423,6 +443,8 @@ def layer_values(row: dict) -> dict[str, str]:
         "run": ("run" if row["confirmed"] else "not-run") if row["owners"] else "na",
         "used": "unused" if row["state"] == "unused" else "used",
         "lines": next((cause for cause in ("extraneous", "no-requirement", "no-test", "deactivated") if row["causes"].get(cause)), "clean"),
+        "branches": ("missing" if row.get("missing_branches") else "taken") if row.get("branches") else "no-branches",
+        "new": ("new-missing" if row.get("new_missing") else "new-run") if row.get("new_lines") else "no-new",
     }
 
 
@@ -436,7 +458,17 @@ def map_counts(rows: list[dict], loose: list[dict]) -> dict:
         "classes": sum(row["kind"] == "class" for row in rows),
         "states": {state: sum(row["state"] == state for row in rows) for state in STATES},
         "layers": {layer: {value: sum(row["layers"][layer] == value for row in rows) for value in values} for layer, values in LAYERS.items()},
+        "measures": {key: {value: sum(row["layers"].get(key) == value for row in rows) for value in values} for key, values in MEASURES.items()},
         "lines": lines,
+        # Line and branch coverage of the functions, as coverage.py counts them, and of the lines the branch changes.
+        "coverage": {
+            "statements": sum(row["statements"] for row in rows if row["kind"] == "function"),
+            "executed": sum(row["executed"] for row in rows if row["kind"] == "function"),
+            "branches": sum(row.get("branches") or 0 for row in rows),
+            "branches_taken": sum(row.get("branches_taken") or 0 for row in rows),
+            "new_lines": sum(len(row.get("new_lines") or []) for row in rows),
+            "new_run": sum(len(row.get("new_lines") or []) - len(row.get("new_missing") or []) for row in rows),
+        },
     }
 
 
@@ -455,13 +487,18 @@ def load_exemptions(path: Path) -> dict:
 
 def ratchet_numbers(counts: dict) -> dict[str, int]:
     """The numbers that may only fall (ADR_0008): functions and classes that serve no requirement, that
-    their requirement's tests never run or that nothing uses, and the lines no test runs by cause."""
-    return {
+    their requirement's tests never run or that nothing uses, the lines no test runs by cause, and the
+    branches no test takes once the run measures branches (ADR_0009)."""
+    held = {
         "owner:none": counts["layers"]["owner"]["none"],
         "run:not-run": counts["layers"]["run"]["not-run"],
         "used:unused": counts["layers"]["used"]["unused"],
         **{f"lines:{cause}": counts["lines"][cause] for cause in FAILING["lines"]},
     }
+    # Branches its tests do not take, once the run measures branches (ADR_0009).
+    if counts.get("branches_measured"):
+        held["branches:missing"] = counts["coverage"]["branches"] - counts["coverage"]["branches_taken"]
+    return held
 
 
 def ratchet(counts: dict, baseline: dict) -> tuple[dict, dict]:

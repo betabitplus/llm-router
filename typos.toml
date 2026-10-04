@@ -12,4 +12,10 @@ extend-exclude = [
   ".ai-bridge/survivor-verdicts/",
   # Mutation pins are named after the mutant they pin: its fingerprint is 16 hex digits.
   "tests/llm_router/mutation_pins/",
+  # Release snapshots are frozen copies of the monitor's items: digests and clipped model answers.
+  ".ai-bridge/release-snapshots/",
 ]
+
+[default]
+# Digests (run ids, fingerprints, record keys) are 12 or more hex digits, never words.
+extend-ignore-re = ["\\b[0-9a-f]{12,}\\b"]

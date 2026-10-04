@@ -101,4 +101,5 @@ strict Sphinx graph build; it never executes the project test suite itself.
 0006-survivor-verdicts
 0007-survivor-dispositions
 0008-code-ownership
+0009-monitor-history-and-exceptions
 ```

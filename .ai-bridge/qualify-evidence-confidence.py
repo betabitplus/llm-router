@@ -90,6 +90,9 @@ def environment() -> dict[str, str | None]:
         "pin_oracle_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/pin_oracle.py"),
         "callee_cards_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/callee_cards.py"),
         "code_map_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/code_map.py"),
+        "exception_registry_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/exception_registry.py"),
+        "metric_bases_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/metric_bases.py"),
+        "monitor_history_sha256": FINGERPRINTS["code_digest"](ROOT / ".ai-bridge/monitor_history.py"),
         "qualification_harness_sha256": FINGERPRINTS["code_digest"](Path(__file__)),
         "trace_bridge_sha256": FINGERPRINTS["code_digest"](ROOT / "tests/conftest.py"),
     }
@@ -4344,7 +4347,7 @@ def code_map_controls() -> dict[str, dict[str, object]]:
         env: dict[str, str] = {**os.environ, "COVERAGE_FILE": str(tmp / ".coverage"), "PYTHONDONTWRITEBYTECODE": "1"}
         env.pop("PYTHONPATH", None)
         run = subprocess.run(
-            [str(ROOT / ".venv/bin/python"), "-m", "pytest", "-q", "-p", "no:cacheprovider", "--cov=app", "--cov-context=test", "--cov-report=", "tests"],
+            [str(ROOT / ".venv/bin/python"), "-m", "pytest", "-q", "-p", "no:cacheprovider", "--cov=app", "--cov-context=test", "--cov-branch", "--cov-report=", "tests"],
             cwd=tmp, env=env, capture_output=True, text=True, timeout=300, check=False,
         )
         report = subprocess.run(
@@ -4374,8 +4377,13 @@ def code_map_controls() -> dict[str, dict[str, object]]:
             {"nodeid": "tests/test_w.py::test_handle", "verifies": ["REQ_W"]},
         ]
         exemptions = {"src/app/core.py::exempted": {"reason": "A constant the entry point adds; no behaviour of its own.", "by": "delegate"}}
+        # The lines a branch changes (ADR_0009): one its tests run, in marked, and one they do not, in lonely.
+        changed = {
+            ("src/app/core.py", next(index for index, line in enumerate(lines["src/app/core.py"], 1) if "return helper(value)" in line)),
+            ("src/app/core.py", next(index for index, line in enumerate(lines["src/app/core.py"], 1) if "if value:" in line and "pragma" not in line)),
+        }
         facts = tool["code_map"](
-            tmp, coverage, FINGERPRINTS["resolve_impl_scopes"](tmp, needs), FINGERPRINTS["descendants_map"](needs), test_rows, exemptions, "app"
+            tmp, coverage, FINGERPRINTS["resolve_impl_scopes"](tmp, needs), FINGERPRINTS["descendants_map"](needs), test_rows, exemptions, "app", changed
         )
     got = {row["id"]: (row["state"], *(row["layers"][layer] for layer in tool["LAYERS"])) for row in facts["functions"]}
     rows = {row["id"]: row for row in facts["functions"]}
@@ -4400,13 +4408,220 @@ def code_map_controls() -> dict[str, dict[str, object]]:
         and rises == {"owner:none": [3, 5]} and lowered["numbers"]["used:unused"] == 2 and lowered["numbers"]["owner:none"] == 3
         and not unexplained and raised["numbers"]["owner:none"] == 5 and not raised["reasons"]
         and raised["accepted"] == [{"number": "owner:none", "from": 3, "to": 5, "reason": "a planted rise"}]
+        # Branches as coverage.py measures them: entry takes one of its two, lonely none, deactivated's branch is
+        # excluded on purpose, marked has none; and the changed lines: marked's runs, lonely's does not.
+        and facts["counts"]["branches_measured"] is True
+        and (rows["src/app/api.py::entry"]["branches"], rows["src/app/api.py::entry"]["branches_taken"], rows["src/app/api.py::entry"]["layers"]["branches"]) == (2, 1, "missing")
+        and (rows["src/app/core.py::lonely"]["branches"], rows["src/app/core.py::lonely"]["branches_taken"], rows["src/app/core.py::lonely"]["layers"]["branches"]) == (2, 0, "missing")
+        and rows["src/app/core.py::deactivated"]["layers"]["branches"] == "no-branches" and rows["src/app/core.py::marked"]["layers"]["branches"] == "no-branches"
+        and rows["src/app/core.py::marked"]["layers"]["new"] == "new-run" and rows["src/app/core.py::lonely"]["layers"]["new"] == "new-missing"
+        and rows["src/app/core.py::helper"]["layers"]["new"] == "no-new"
+        and (facts["counts"]["coverage"]["branches"], facts["counts"]["coverage"]["branches_taken"]) == (4, 1)
+        and (facts["counts"]["coverage"]["new_lines"], facts["counts"]["coverage"]["new_run"]) == (2, 1)
+        and tool["ratchet_numbers"](facts["counts"])["branches:missing"] == 3
     )
     return {
         "PRODUCER_CODE_MAP": {
             "status": "QUALIFIED" if ok else "NOT QUALIFIED",
-            "intended_use": "name the requirement each function serves (by its marker, as a helper of its callers or by a registration), whether that requirement's tests run it, what nothing uses and the cause of every line no test runs, from coverage.py's report with test contexts, the @impl scopes and vulture; and hold the failing numbers to a baseline that only falls",
-            "false_green_control": "a marked function its requirement's tests never run must fail even when another requirement's test runs it; a helper must take its caller's owner, also across subpackages by an absolute import; an unowned function must fail unless an exemption gives a reason; private code nothing uses and a class nothing uses must fail as unused while owned code and the methods of an exported class stay used; unreachable statements must count as extraneous though coverage.py drops them; a line excluded on purpose is deactivated; a test of a derived technical requirement counts for its parent; a number above the baseline must be reported as a rise, and held at its new value only once a reason is recorded",
+            "intended_use": "name the requirement each function serves (by its marker, as a helper of its callers or by a registration), whether that requirement's tests run it, what nothing uses and the cause of every line no test runs, from coverage.py's report with test contexts, the @impl scopes and vulture; the branches its tests take and whether they run the lines the branch changes; and hold the failing numbers to a baseline that only falls",
+            "false_green_control": "a marked function its requirement's tests never run must fail even when another requirement's test runs it; a helper must take its caller's owner, also across subpackages by an absolute import; an unowned function must fail unless an exemption gives a reason; private code nothing uses and a class nothing uses must fail as unused while owned code and the methods of an exported class stay used; unreachable statements must count as extraneous though coverage.py drops them; a line excluded on purpose is deactivated; a test of a derived technical requirement counts for its parent; a branch no test takes must count against its function, one excluded on purpose must not; a changed line no test runs must count as new and not run; a number above the baseline must be reported as a rise, and held at its new value only once a reason is recorded",
             "control": {"got": got, "pytest": run.returncode, "coverage": report.returncode, "rises": rises},
+        }
+    }
+
+
+# The control project of the exception registry (062, ADR_0009): every kind of exception it reads, each with a known
+# answer, and the decoys it must leave alone (a marker inside a string, prose that names a marker).
+EXCEPTION_CONTROL_FILES = {
+    "src/app/__init__.py": "",
+    "src/app/mod.py": (
+        '"""Mentions # noqa: E501 and # pragma: no cover in a docstring, which no tool reads."""\n'
+        "# pyright: reportUnusedImport=false\n"
+        "import os  # noqa: F401 - re-exported for callers\n"
+        "TEXT = 'a # type: ignore inside a string'\n"
+        "LIMIT = 1  # noqa: E501\n"
+        "# we keep this free of noqa on purpose\n\n\n"
+        "def guarded(flag):\n"
+        "    if flag:  # pragma: no cover - only without the package metadata\n"
+        "        return 0\n"
+        "    return os.sep  # type: ignore[return-value]\n"
+    ),
+    "tests/test_mod.py": (
+        "import sys\n\nimport pytest\n\n\n"
+        "@pytest.mark.skipif(sys.platform == 'win32', reason='posix paths only')\n"
+        "def test_paths():\n    assert True\n\n\n"
+        "@pytest.mark.xfail\n"
+        "def test_flaky():\n    assert True\n\n\n"
+        "def test_network():\n    note = 'pytest.skip is only named here'\n    pytest.skip('no network in the sandbox')\n    assert note\n"
+    ),
+    "tests/pins/test_pin_req_app_abc123.py": "from app.mod import guarded\n\n\ndef test_pin():\n    assert guarded(None) == '/'  # type: ignore[arg-type]\n",
+    "tests/pins/test_pin_treq_app_def456.py": "from app.mod import guarded\n\n\ndef test_pin():\n    assert guarded(False)\n",
+    "pyproject.toml": (
+        "[[tool.importlinter.contracts]]\nname = 'Layers'\nid = 'layers'\ntype = 'layers'\n"
+        "layers = ['app.mod', 'app']\nignore_imports = ['app.mod -> app']\n"
+    ),
+}
+# What the registry must read: (type, path, line, marker, codes, reason from the code).
+EXCEPTION_EXPECTED = [
+    ("comment", "src/app/mod.py", 2, "pyright", "reportUnusedImport=false", ""),
+    ("comment", "src/app/mod.py", 3, "noqa", "F401", "re-exported for callers"),
+    ("comment", "src/app/mod.py", 5, "noqa", "E501", ""),
+    ("comment", "src/app/mod.py", 10, "pragma: no cover", "", "only without the package metadata"),
+    ("comment", "src/app/mod.py", 12, "type: ignore", "return-value", ""),
+    ("skip", "tests/test_mod.py", 6, "pytest skipif", "", "posix paths only"),
+    ("skip", "tests/test_mod.py", 11, "pytest xfail", "", ""),
+    ("skip", "tests/test_mod.py", 18, "pytest skip", "", "no network in the sandbox"),
+    ("import", "pyproject.toml", 6, "ignore_imports", "layers", ""),
+    ("pin", "tests/pins/test_pin_req_app_abc123.py", 1, "pin oracle rule", "", ""),
+]
+
+
+def exception_registry_controls() -> dict[str, dict[str, object]]:
+    """Qualify the exception registry (062, ADR_0009) on a small project whose every exception is known: tool comments
+    with and without a reason after their codes, a file-level type checker setting, skips and an expected failure, an
+    ignored import and a pin the oracle rule refuses, beside the decoys it must leave alone. The project is a git
+    repository committed on a known day, so an exception written in the code is decided on that day. Records give a
+    reason and a day to some (a record's day confirms it again), one record excuses nothing, and the review is judged on
+    a fixed day: one record is on its last valid day, one a day past it."""
+    tool = runpy.run_path(str(ROOT / ".ai-bridge/exception_registry.py"), run_name="evidence_confidence_exception_registry")
+    oracle = runpy.run_path(str(ROOT / ".ai-bridge/pin_oracle.py"), run_name="evidence_confidence_exception_oracle")
+    with tempfile.TemporaryDirectory(prefix="ternforge-exception-registry-qualification-") as temp_dir:
+        tmp = Path(temp_dir)
+        for name, text in EXCEPTION_CONTROL_FILES.items():
+            (tmp / name).parent.mkdir(parents=True, exist_ok=True)
+            (tmp / name).write_text(text)
+        _git(tmp, "init", "-q", "-b", "main")
+        _git(tmp, "add", "-A")
+        _git(tmp, "commit", "-q", "-m", "the control project", date="2026-07-10T12:00:00+00:00")
+        found = [
+            *tool["tool_comments"](tmp, "app"), *tool["test_skips"](tmp), *tool["ignored_imports"](tmp),
+            *tool["spared_pins"](tmp, "tests/pins", oracle["oracle_problems"]),
+        ]
+    got = sorted((item["type"], item["path"], item["line"], item["marker"], item["codes"], item["reason"]) for item in found)
+    keys = {(item["path"], item["line"]): item["key"] for item in found}
+    written = {item["decided"] for item in found}
+    day = datetime(2026, 10, 3).date()
+    records = {
+        keys.get(("src/app/mod.py", 2), "missing|2"): {"reason": "The module re-exports.", "decided": "2026-07-05"},  # day 90: holds
+        keys.get(("src/app/mod.py", 12), "missing|12"): {"reason": "os.sep is a str here.", "decided": "2026-07-04"},  # day 91: overdue
+        keys.get(("tests/test_mod.py", 11), "missing|11"): {"reason": "Upstream is flaky."},  # no day of its own: its line's
+        "comment|src/app/gone.py|noqa|E402|000000000000": {"reason": "The line went.", "decided": "2026-10-01"},
+    }
+    reviewed = {(item["path"], item["line"]): tool["review"](item, records, day) for item in found}
+    states = {place: row["state"] for place, row in reviewed.items()}
+    judged = tool["review"]({"type": "judged", "key": "judged|X|1", "reason": "Equivalent: same output.", "decided": "2025-01-01", "holds": "question"}, {}, day)
+    undated = tool["review"]({"type": "exemption", "key": "exemption|src/app/mod.py::guarded", "reason": "A guard of the entry point."}, {}, day)
+    orphans = tool["orphans"](records, found)
+    counted = tool["counts"]([*reviewed.values(), *orphans])
+    lowered, rises = tool["ratchet"]({"comment": 5, "skip": 3}, {"numbers": {"comment": 4, "skip": 9}})
+    accepted, unexplained = tool["ratchet"]({"comment": 5}, {"numbers": {"comment": 4}, "reasons": {"comment": "a planted rise"}})
+    ok = (
+        got == sorted(EXCEPTION_EXPECTED)
+        and written == {"2026-07-10"}
+        and states == {
+            ("src/app/mod.py", 2): "valid", ("src/app/mod.py", 3): "valid", ("src/app/mod.py", 5): "unreasoned",
+            ("src/app/mod.py", 10): "valid", ("src/app/mod.py", 12): "overdue", ("tests/test_mod.py", 6): "valid",
+            ("tests/test_mod.py", 11): "valid", ("tests/test_mod.py", 18): "valid", ("pyproject.toml", 6): "unreasoned",
+            ("tests/pins/test_pin_req_app_abc123.py", 1): "unreasoned",
+        }
+        and reviewed[("src/app/mod.py", 2)]["review_by"] == "2026-10-03" and reviewed[("src/app/mod.py", 12)]["review_by"] == "2026-10-02"
+        and reviewed[("src/app/mod.py", 3)]["review_by"] == "2026-10-08" and reviewed[("tests/test_mod.py", 11)]["review_by"] == "2026-10-08"
+        and judged["state"] == "valid" and not judged["review_by"] and undated["state"] == "undated"
+        and [row["key"] for row in orphans] == ["comment|src/app/gone.py|noqa|E402|000000000000"] and orphans[0]["state"] == "orphan"
+        and counted["comment"] == {"all": 6, "failing": 3} and counted["skip"] == {"all": 3, "failing": 0}
+        and rises == {"comment": [4, 5]} and lowered["numbers"] == {"comment": 4, "skip": 3}
+        and not unexplained and accepted["numbers"]["comment"] == 5 and accepted["accepted"] == [{"number": "comment", "from": 4, "to": 5, "reason": "a planted rise"}]
+    )
+    return {
+        "PRODUCER_EXCEPTION_REGISTRY": {
+            "status": "QUALIFIED" if ok else "NOT QUALIFIED",
+            "intended_use": "read every exception where it lives (tool comments in the product, test skips, ignored imports, pins the oracle rule spares, survivor verdicts and decisions, code exemptions), give each its reason and the day until which it holds, and hold their number per type to a baseline that only falls",
+            "false_green_control": "a marker inside a string or a docstring, or prose that names one, must not count; a comment without a reason after its codes must fail unless a record gives one; an exception in the code is decided the day git blame dates its line, and a record's day confirms it again; an exception past its 90 days must fail on the 91st and hold on the 90th; a reason without a day must fail; a model's verdict must hold without a date; a record whose exception is gone must fail; a rise in a type's number must be reported until a reason accepts it",
+            "control": {"got": got, "states": {f"{path}:{line}": state for (path, line), state in states.items()}, "rises": rises},
+        }
+    }
+
+
+def _git(root: Path, *args: str, date: str = "") -> None:
+    """Run git in a control's own repository, as a control user, on a given day when one is given."""
+    when = {"GIT_AUTHOR_DATE": date, "GIT_COMMITTER_DATE": date} if date else {}
+    subprocess.run(["git", *args], cwd=root, check=True, capture_output=True, text=True,
+                   env={**os.environ, "GIT_AUTHOR_NAME": "control", "GIT_AUTHOR_EMAIL": "control@example.invalid",
+                        "GIT_COMMITTER_NAME": "control", "GIT_COMMITTER_EMAIL": "control@example.invalid", **when})
+
+
+METRIC_PROFILE = (
+    "## Profile · REQ_A\n\n### Verification criteria\n\n| Criterion | Required paths |\n| --- | ---: |\n| `VC_A` | {paths} |\n{moved}\n"
+    "### Fault applicability\n\n| REQUIRED | OPTIONAL | N/A |\n| --- | --- | --- |\n| {required} | — | — |\n"
+    "{extra}"
+)
+
+
+def metric_bases_controls() -> dict[str, dict[str, object]]:
+    """Qualify the metric base reader (062, ADR_0009) on a small repository whose every commit changes a base in a known
+    way: a profile asking a criterion for fewer paths together with the code, a held number falling, a criterion moving
+    to another contract with the code, exception records added alone, a tool ignoring one more rule together with a
+    test, a commit that changes no base, and an uncommitted verdict that judges one more survivor out with the code."""
+    tool = runpy.run_path(str(ROOT / ".ai-bridge/metric_bases.py"), run_name="evidence_confidence_metric_bases")
+    with tempfile.TemporaryDirectory(prefix="ternforge-metric-bases-qualification-") as temp_dir:
+        tmp = Path(temp_dir)
+
+        def write(name: str, text: str) -> None:
+            (tmp / name).parent.mkdir(parents=True, exist_ok=True)
+            (tmp / name).write_text(text)
+
+        def commit(message: str) -> None:
+            _git(tmp, "add", "-A")
+            _git(tmp, "commit", "-q", "-m", message)
+
+        def profile(paths: int, required: str = "`impl.comparison` · `impl.effect`", moved: str = "", extra: str = "") -> str:
+            return METRIC_PROFILE.format(paths=paths, required=required, moved=moved, extra=extra)
+
+        _git(tmp, "init", "-q", "-b", "main")
+        write("docs/verification-profiles/a.md", profile(2, moved="| `VC_B` | 1 |\n"))
+        write(".ai-bridge/code-map-baseline.json", json.dumps({"numbers": {"owner:none": 5}}))
+        write(".ai-bridge/exception-records.json", "{}")
+        write("pyproject.toml", "[tool.ruff]\nlint.ignore = ['E501']\n[project]\nname = 'app'\n")
+        write(".ai-bridge/survivor-verdicts/REQ_A/verdicts.json", json.dumps({"m1": {"answer": {"verdict": "pin"}}}))
+        write("src/app.py", "VALUE = 1\n")
+        write("tests/test_app.py", "def test_value():\n    assert True\n")
+        commit("base")
+        _git(tmp, "checkout", "-q", "-b", "work")
+        write("docs/verification-profiles/a.md", profile(1, moved="| `VC_B` | 1 |\n"))
+        write("src/app.py", "VALUE = 2\n")
+        commit("fewer paths with the code")
+        write(".ai-bridge/code-map-baseline.json", json.dumps({"numbers": {"owner:none": 4}}))
+        commit("a held number falls")
+        write("docs/verification-profiles/a.md", profile(1) + "## Profile · TREQ_A\n\n### Verification criteria\n\n| Criterion | Required paths |\n| --- | ---: |\n| `VC_B` | 1 |\n")
+        write("src/app.py", "VALUE = 3\n")
+        commit("a criterion moves with the code")
+        write(".ai-bridge/exception-records.json", json.dumps({"comment|src/app.py|noqa|E501|x": {"reason": "Long URL.", "decided": "2026-10-03"}}))
+        commit("records alone")
+        write("pyproject.toml", "[tool.ruff]\nlint.ignore = ['E501', 'E402']\n[project]\nname = 'app'\n")
+        write("tests/test_app.py", "def test_value():\n    assert 1\n")
+        commit("a rule ignored with a test")
+        write("pyproject.toml", "[tool.ruff]\nlint.ignore = ['E501', 'E402']\n[project]\nname = 'app'\nversion = '1.0'\n")
+        write("src/app.py", "VALUE = 4\n")
+        commit("no base, only the version and the code")
+        write(".ai-bridge/survivor-verdicts/REQ_A/verdicts.json", json.dumps({"m1": {"answer": {"verdict": "pin"}}, "m2": {"answer": {"verdict": "equivalent"}}}))
+        write("src/app.py", "VALUE = 5\n")
+        found = tool["base_changes"](tmp, "main")
+    got = [(row["subject"], row["direction"], row["with_code"], sorted(base["kind"] for base in row["bases"])) for row in found["changes"]]
+    expected = [
+        ("Uncommitted changes", "looser", True, ["verdicts"]),
+        ("a rule ignored with a test", "looser", True, ["settings"]),
+        ("records alone", "looser", False, ["records"]),
+        ("a criterion moves with the code", "changed", True, ["profile"]),
+        ("a held number falls", "tighter", False, ["ratchet"]),
+        ("fewer paths with the code", "looser", True, ["profile"]),
+    ]
+    ok = got == expected and found["commits"] == 6
+    return {
+        "PRODUCER_METRIC_BASES": {
+            "status": "QUALIFIED" if ok else "NOT QUALIFIED",
+            "intended_use": "list every change of a metric base since the merge base with main and in the uncommitted change: whether it loosened or tightened the base, and whether it changed the product's code or tests with it",
+            "false_green_control": "a profile asking a criterion for fewer paths, a tool ignoring one more rule, records added and one more survivor judged out must each read as looser, with or without code as they were made; a held number falling must read as tighter; a criterion that only moves to another contract must not read as looser; a commit that changes only a project's version must not read as a base change",
+            "control": {"got": got},
         }
     }
 
@@ -4461,6 +4676,7 @@ CONTROL_GROUPS = (
     "implementation_fault_controls", "semantic_mutant_controls", "survivor_judgement_controls", "external_controls",
     "scenario_mutant_controls", "architecture_mutant_controls", "code_map_controls", "internal_controls", "project_sdk_controls",
     "model_generation_controls", "assessor_ensemble_controls", "model_canary_controls",
+    "exception_registry_controls", "metric_bases_controls",
 )
 CACHED_GROUPS = {"implementation_fault_controls", "semantic_mutant_controls", "survivor_judgement_controls", "scenario_mutant_controls", "architecture_mutant_controls", "code_map_controls"}
 # Groups at once: enough to overlap the heavy ones, few enough that their own time limits hold.

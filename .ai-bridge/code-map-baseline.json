@@ -1,6 +1,7 @@
 {
   "accepted": [],
   "numbers": {
+    "branches:missing": 210,
     "lines:extraneous": 6,
     "lines:no-requirement": 72,
     "lines:no-test": 299,
